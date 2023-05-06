@@ -1,0 +1,248 @@
+{
+  "name": "unreal-clangd",
+  "displayName": "Unreal Clangd",
+  "description": "Unreal Engine clangd extension",
+  "version": "1.0.4",
+  "engines": {
+    "vscode": "^1.77.3"
+  },
+  "categories": [
+    "Other"
+  ],
+  "publisher": "boocs",
+  "license": "MIT",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/boocs/unreal-clangd"
+  },
+  "extensionDependencies": [
+    "llvm-vs-code-extensions.vscode-clangd"
+  ],
+  "activationEvents": [
+    "workspaceContains:*.uproject"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "unreal-clangd.createUnrealClangdProject",
+        "title": "Create Unreal clangd project (cfg files and settings)",
+        "shortTitle": "Create Unreal clangd project",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.updateCompileCommands",
+        "title": "Update compile commands file",
+        "shortTitle": "Update compile commands",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.fixQuotesResponseFiles",
+        "title": "Fix paths in response files by surrounding them with quotes",
+        "shortTitle": "Fix paths in response files",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.tidyNoLintCurrentLine",
+        "title": "Tidy: Remove linting(Current)",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.tidyNoLintNextLine",
+        "title": "Tidy: Remove linting(Next)",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.tidyTEST",
+        "title": "Tidy: Test warning",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.uninstall",
+        "title": "Uninstall Unreal Clangd Project",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.addToCompletionHelper",
+        "title": "Add headers to completionHelper.cpp",
+        "category": "unreal clangd"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Unreal Clangd",
+        "properties": {
+          "unreal-clangd.fixes.responseFilesQuotedPaths": {
+            "type": "boolean",
+            "default": true,
+            "description": "In reponse files, surrounds paths with quotes.",
+            "scope": "resource"
+          },
+          "unreal-clangd.fixes.delegateFuncCompletions": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Some delegate func completion names start with `__Internal_*`. These are `real functions`! When `true`, the proper function macro will be used with the completion instead of the `wrong` macro expansion version.",
+            "scope": "resource"
+          },
+          "unreal-clangd.fixes.autoIncludeSourceOnly": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable to make 'auto includes' only work on source files, not headers.",
+            "scope": "resource"
+          },
+          "unreal-clangd.compileCommands.execType": {
+            "type": "string",
+            "default": "Task",
+            "enum": [
+              "Task",
+              "Debug"
+            ],
+            "markdownEnumDescriptions": [
+              "Quiet and doesn't require Microsoft C# extension",
+              "Shows what Unreal Build Tool is doing. `(requires Microsoft C# extension)`"
+            ],
+            "description": "How updating compile commands will be run",
+            "scope": "resource"
+          },
+          "unreal-clangd.compileCommands.platform": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "`Leave blank for auto detection.`",
+            "scope": "resource"
+          },
+          "unreal-clangd.compileCommands.architecture": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "For **Mac M1/M2** users this should be **arm64** `(Most users can leave this blank)`",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.overwrite": {
+            "type": "string",
+            "default": "strict",
+            "enum": [
+              "strict",
+              "lazy",
+              "full"
+            ],
+            "enumDescriptions": [
+              "Overwrite nothing if any cfg file found",
+              "Will overwrite anything not created yet (files or settings)",
+              "Overwrite all files and settings"
+            ],
+            "markdownDescription": "**This setting will be reset to strict, `in the folder config`, after creation is run.**\n`The folder config,(.vscode/settings.json), overrides User and Workspace configs!`",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.tidy": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Enables/Disables clang tidy `Read github Clang Tidy section before enabling!`",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.bypassUnrealVersionCheck": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "`Warning: Older Unreal versions will not work with this extension! This is for future version testing only.`",
+            "scope": "resource"
+          },
+          "unreal-clangd.utility.checkForIntellisenseFilesOnStartup": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "On startup, it will ask you to update compile commands if it doesn't find Intellisense files. `Do not set until after successfully creating extension project!`",
+            "scope": "resource"
+          },
+          "unreal-clangd.utility.createProjectOnStartup": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "`Extension use only. Don't set.`",
+            "scope": "resource"
+          },
+          "unreal-clangd.editor.parameterHints": {
+            "default": "needed",
+            "enum": [
+              "all",
+              "needed",
+              "disabled"
+            ],
+            "markdownEnumDescriptions": [
+              "Also triggers on functions with default parameters and empty params`(see doc for side effects)`",
+              "Only triggers on functions that are guaranteed to need it",
+              ""
+            ],
+            "description": "Auto trigger parameter hints for functions",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.completionHelper": {
+            "type": "boolean",
+            "default": true,
+            "description": "Adds Unreal symbols to code completion. Creates a completionHelper.cpp and adds it to compile_commands.json",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.completionHelperMP": {
+            "type": "boolean",
+            "default": true,
+            "description": "Adds UnrealNetwork.h(multiplayer symbols) to completionHelper.cpp for use in code completion",
+            "scope": "resource"
+          },
+          "unreal-clangd.completion.openCompletionHelperOnStartup": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Opens `completionHelper.cpp` on startup. Code completion symbols, like macros, don't seem to fully load. This 'hack' seems to work. `Must wait for clangd to fully process completionHelper.cpp before switching to another file`",
+            "scope": "resource"
+          },
+          "unreal-clangd.completion.completionHelperInfoOnStartup": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "`Info window` pops up on startup and explains about completionHelper.cpp",
+            "scope": "resource"
+          }
+        }
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorTextFocus && editorLangId == cpp",
+          "command": "unreal-clangd.tidyNoLintCurrentLine",
+          "group": "1_modification@15"
+        },
+        {
+          "when": "editorTextFocus && editorLangId == cpp",
+          "command": "unreal-clangd.tidyNoLintNextLine",
+          "group": "1_modification@16"
+        },
+        {
+          "when": "editorTextFocus && editorLangId == cpp",
+          "command": "unreal-clangd.tidyTEST",
+          "group": "z_commands@10"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.68.0",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "@vscode/test-electron": "^2.1.3",
+    "eslint": "^8.16.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.0.0",
+    "typescript": "^4.7.2"
+  },
+  "dependencies": {
+    "@types/semver": "^7.3.13",
+    "delay": "^5.0.0",
+    "semver": "^7.5.0",
+    "yaml": "^2.2.1"
+  }
+}
