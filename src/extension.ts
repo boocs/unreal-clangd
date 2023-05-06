@@ -222,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const defaultCfgSettings: typ.AllDefaultSettings = consts.defaultConfigSettings;
 
-		const isError = dyn.addDynamicDefaultSettingsToConfig(defaultCfgSettings, newClangdUri.fsPath, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName:false}));
+		const isError = dyn.addDynamicDefaultSettingsToConfig(mainWorkspaceFolder, defaultCfgSettings, newClangdUri.fsPath, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName:false}));
 		
 		if(isError){
 			console.error(tr.ERROR_ADDING_DYNAMIC_SETTINGS);

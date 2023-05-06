@@ -1,7 +1,9 @@
 ```
 ```
 
-# Unreal 5.1.0 - 5.1.1 clangd extension for VSCode
+# Unreal 5.2.0 clangd extension for VSCode
+
+`note:`**This is currently in beta since Unreal 5.2.0 is in preview and things could change**
 
 [https://github.com/boocs/unreal-clangd](https://github.com/boocs/unreal-clangd)
 
@@ -56,6 +58,10 @@
   - [General](#auto-parameter-hints)
   - [Side effects with 'all'](#side-effects-using-all-setting)
   - [Template Functions](#template-functions)
+- [Inlay Hints](#inlay-hints)
+  - [General](#inlay-hints)
+  - [Disable](#disable-inlay-hints)
+  - [View Options](#view-options)
 - [Clang Tidy](#clang-tidy)
   - [General](#clang-tidy)
   - [Disable Warnings in .clangd-tidy File](#how-to-disable-tidy-warnings-in-a-clang-tidy-file)
@@ -70,6 +76,10 @@
   - [Task vs Debug](#task-vs-debug)
   - [C# Intellisense Errors](#c-intellisense-errors)
   - [clangd indexing](#clangd-indexing)
+- [Compiler Path](#compiler-path)
+  - [General](#compiler-path)
+  - [Why?](#why-set-this)
+  - [Manually Set](#manually-set-path)
 - [Help](#help)
 - [Known Issues](#known-issues)
   - [General](#known-issues)
@@ -93,8 +103,9 @@
 1. Code Completion/completionHelper.cpp is the heart of the extension. It's how you get Unreal symbols into code completion. [See Section](#code-completion)
 1. Like other Intellisense, you must wait for a file to load before using code completion [See Info Bar section](#bottom-info-bar)
 1. Weird Virtual function code completion behavior [See Section](#adding-virtual-functions-quirk)
-1. clangd doesn't have brace initialization completion yet for the current version that works with Unreal. 
-   * `Note:` Unreal 5.2 should have it since it will have an updated clangd version
+1. This version `does have brace initialization` completion!
+
+   * `Note:` This is because we're using an updated clangd version
 1. After installing the clangd extension(not this extension) it might ask you to automatically download and install the latest LLVM/clang/clangd. 
 
     **Make sure to choose No to this.**
@@ -153,26 +164,27 @@
 [Top](#table-of-contents)
 
 ---
+
 ## About
-This extension creates the files and config settings needed to get clangd working with Unreal Engine 5.1.0 - 5.1.1
+
+This extension creates the files and config settings needed to get clangd working with Unreal Engine 5.2.0
 
 This doesn't run automatically. You must run a command to create the configs. It also, by default, won't overwrite any current clangd files.
 
-Windows/Ubuntu 22.04 and Unreal 5.1.1(`non Full Source`) have been tested with:
-- Lyra (Windows)
-  - No errors
+Windows and Unreal 5.2.0(`non Full Source`) have been tested with:
 - First Person template (Windows/Ubuntu 22.04)
   - This does have 'fake' errors but are fixable if you add required include files to the top of certain .cpp files 
   - See [this](#fps-template) section for more info
 
 `Mac` will have to be tested by other users.
 
-Windows and Unreal 5.1.1 (`Full Source project`) tested with:
-- First Person template
+`Linux`: Older versions did work with 5.1.0-5.1.1
 
 ```
 ```
+
 ### Benefits
+
 - After clangd [parses](#bottom-info-bar) your file, you open, you'll get:
     - Quick/Snappy code completions
     - No weird slow Header file code completions
@@ -200,39 +212,41 @@ Windows and Unreal 5.1.1 (`Full Source project`) tested with:
 Keep it enabled for its `debugging` capability
 
 
-- Unreal Engine 5.1.0 - 5.1.1
+- Unreal Engine 5.2.0 
 - Requires specific LLVM/clang/clangd versions! (**see plaform categories below**)
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let clangd extension auto install LLVM)
 
 
 ```
 ```
+`Note:` The only info on required clang versions was 15.0.1
+
 ### Windows Requirements
-  - Visual Studio Build Tools 2019 (The 2022 version has libraries that require at least clang 14 so that can't be used)
-    - **note: I had to sign in to Microsoft to download the 2019 version.**
-  - LLVM 13.0.1 (I used **LLVM-13.0.1-win64.exe** from [here](https://github.com/llvm/llvm-project/releases/tag/llvmorg-13.0.1))
+  - Visual Studio Build Tools 2022 
+  - LLVM 15.0.1 (I used **LLVM-15.0.1-win64.exe** from [here](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.1))
   - `Note:` You can use clangd for Intellisense and still use Microsoft's compiler to build your project with
     - It is possible to also build with clang if you want to google it
 
 ```
 ```
 ### Ubuntu 22.04 Requirements
-  - clang-13
-  - clangd-13
+`Note:` 15.0.1 is the latest version that I've found was required
+  - clang-15
+  - clangd-15
   - dotnet-runtime-6.0
   - dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
 
 ```
 ```
 ### Mac Requirements
-  - Xcode 13.4.1
+  - Xcode 15?
   - Does Xcode come with clangd?
   - **(This is probably incomplete. Let me know!)**
 
 ```
 ```
 ### IOS Requirements
-  - Xcode 13.4.1 - Latest Xcode 14
+  - Xcode 15? 
 
 ```
 ```
@@ -243,7 +257,7 @@ Keep it enabled for its `debugging` capability
 ## Older Unreal Versions
 I probably won't release this for older Unreal versions. 5.0.0 had many compile command bugs(at least for Windows). These bugs are fixable just by using the clangd cfg so 5.0.0 would work with clangd...
 
-The other reason was a Unreal design change. 5.0.0 uses compile commands while 5.1.1 uses compile commands + response files. It would require  a little bit different extension code.
+The other reason was a Unreal design change. 5.0.0 uses compile commands while 5.1.1+ uses compile commands + response files. It would require  a little bit different extension code.
 
 ```
 ```
@@ -834,6 +848,60 @@ Check above on how to see your keybind for parameter hints. The default keybind,
 
 ---
 
+## Inlay Hints
+
+Note: Inlay Hints are new to Unreal because of the updated clangd version.
+
+Inlay Hints show the variable names of function parameters and more.
+
+`On:`
+
+![](https://user-images.githubusercontent.com/62588629/236118340-c49c78c1-0d79-4fb9-8130-73a214bdad00.png)
+
+`Off:`
+
+![](https://user-images.githubusercontent.com/62588629/236118474-17da67c2-8095-4eb1-921e-31f0be691ec9.png)
+
+```
+```
+### Disable Inlay Hints
+
+1. Open the `.clangd` file in your project's parent directory
+1. Under `InlayHints:` change Enabled to No like so:
+    ```
+    InlayHints:
+      Enabled: No
+    ```
+
+```
+```
+### View Options
+
+**To Adjust Color:**
+1. Open your *.code-workspace file in your project's parent directory
+2. Adjust these settings that should already be there:
+    ```
+    "workbench.colorCustomizations": {
+		"editorInlayHint.foreground": "#a2a2a2c0",
+		"editorInlayHint.background": "#00000000"
+	}
+    ```
+   `Note:` These colors aren't the default since the default colors didn't look good
+
+**To Adjust Size:**
+
+This setting isn't in the *.code-workspace file but you can add and adjust it to your liking:
+
+  ```
+  "editor.inlayHints.fontSize": 12
+  ```
+
+```
+```
+
+[Top](#table-of-contents)
+
+---
 ## Clang Tidy
 
 Clang Tidy is off by default. This is because there's a lot of ambiguity that applies to what clang tidy code Checks to enable/disable. 
@@ -1038,6 +1106,44 @@ Because we're using Full Source clangd indexing took longer:
 
 ---
 
+## Compiler Path
+
+You can auto set your compiler path when creating a project using this setting:
+
+![](https://user-images.githubusercontent.com/62588629/236426669-d1812e6e-87c5-4a56-8ed0-7918de4eaf14.png)
+
+`Note:` Most people wont need to set this
+
+### Why set this?
+
+Windows:
+
+If you're not Building Unreal with clang(only using it for Intellisense) and you're using both Unreal 5.1.1 and 5.2.0 you could install LLVM 15 in a non-standard directory. clangd 13.0.1 doesn't have the ability to change the compiler path. LLMV 15.0.1 does though.
+
+Unreal will use clang 13.0.1 because it's in the default path when your really want 15.0.1 with Unreal 5.2.0
+
+Linux:
+
+Unreal usually adds their own clang path. You can change this if you like.
+
+### Manually Set Path
+
+* Open your `.clangd` file in your project's parent folder
+* Add `Compiler:` under `CompileFlags:` like so:
+  ```
+  CompileFlags:
+    Add:
+      - -D__INTELLISENSE__
+    Compiler: C:\Program Files\LLVM-15\bin\clang-cl.exe
+  ```
+* Note: Your path will probably be different
+```
+```
+
+[Top](#table-of-contents)
+
+---
+
 ## Help
 
 You can post bugs or ask questions here:
@@ -1137,7 +1243,12 @@ Some might not know you can do this. With how function name code completions wor
 See [CHANGLELOG](/CHANGELOG.md)
 
 ### Latest Release
-Initial release
+- Adjusted requirements in docs for clang/clangd 15.0.1
+- Added InlayHints options to .clangd file (new clangd feature)
+- Added InlayHints color options to *.code-workspace file
+- Added compiler path option when creating (new clangd feature)
+- Added docs on how to add compiler path manually
+- Adjusted docs because bracket initialization completion now works
 
 ```
 ```

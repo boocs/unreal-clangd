@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Unreal Engine clangd extension",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "engines": {
     "vscode": "^1.77.3"
   },
@@ -136,6 +136,12 @@
             "type": "boolean",
             "default": false,
             "markdownDescription": "Enables/Disables clang tidy `Read github Clang Tidy section before enabling!`",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.compilerPath": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "`Not needed for most people.` See docs on why you would want to use this. Must use `same` compiler version as `clangd`. Windows uses clang-cl.exe and others use clang++",
             "scope": "resource"
           },
           "unreal-clangd.creation.bypassUnrealVersionCheck": {

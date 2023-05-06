@@ -1,17 +1,17 @@
-import { Uri } from "vscode";
+import * as vscode from "vscode";
 import * as consts from "./libs/consts";
 
 import { UnrealPlatform } from "./libs/indexTypes";
 import { AllDefaultSettings, ClangdCfgFileSettings, ExtensionYamlFiles } from "./libs/types";
 
 
-export function addDynamicDefaultSettingsToConfig(configSettings: AllDefaultSettings, clangdPath: string, compileCommandsDirUri: Uri | undefined): boolean {
+export function addDynamicDefaultSettingsToConfig(mainWorkspace: vscode.WorkspaceFolder, configSettings: AllDefaultSettings, clangdPath: string, compileCommandsDirUri: vscode.Uri | undefined): boolean {
 
 	if (!clangdPath) {
 		console.error("No clangd paths found!");
 		return true;
 	}
-
+	
 	if (!compileCommandsDirUri) {
 		console.error("No mainProjectVSCode uri found!");
 		return true;
@@ -35,6 +35,8 @@ export function addDynamicDefaultSettingsToConfig(configSettings: AllDefaultSett
 		console.error("Couldn't get clangd settings args!");
 		return true;
 	}
+
+	addSettingsToClangdCfg(mainWorkspace);
 
 	return false;
 }
@@ -66,4 +68,16 @@ function addToClangdAdd(clangdExtYamlFiles: ExtensionYamlFiles, addition: string
 			clangdCfg.CompileFlags.Add.push(addition);
 		}
 	}
+}
+
+function addSettingsToClangdCfg(mainWorkspace: vscode.WorkspaceFolder) {
+	
+	const unrealClangdCfg = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, mainWorkspace);
+	const compilerPath = unrealClangdCfg.get<string>(consts.settingNames.unrealClangd.settings["creation.compilerPath"]);
+
+	if(!compilerPath){
+		return;
+	}
+
+	consts.defaultGeneralClangdCfgSettings.CompileFlags.Compiler = compilerPath;
 }

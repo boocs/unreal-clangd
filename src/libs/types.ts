@@ -27,6 +27,7 @@ export type UeClangdSettingNamesKeys =
 	"compileCommands.execType" |
 	"compileCommands.platform" |
 	"compileCommands.architecture" |
+	"creation.compilerPath" |
 	"creation.overwrite" |
 	"creation.tidy" |
 	"creation.bypassUnrealVersionCheck" |
@@ -39,7 +40,7 @@ export type UeClangdSettingNamesKeys =
 	
 export type VSCodeSettingNamesKeys = 
 	"files.associations" | "editor.suggest.snippetsPreventQuickSuggestions" |
-	"editor.suggestFontSize";
+	"workbench.colorCustomizations" | "editor.suggestFontSize";
 export type ClangdSettingNamesKeys = "arguments" | "path" | "detectExtensionConflicts";
 export type CCppSettingNamesKeys = "intelliSenseEngine" | "autocomplete" | "formatting" | "errorSquiggles";
 
@@ -131,17 +132,26 @@ export interface ClangdExtensionFile {
 export interface ClangdCfgFileSettings {
 	"If": IfVars
 	"CompileFlags": CompileFlags
+	"InlayHints": InlayHintsFlags
 }
 
 export interface CompileFlags {
 	"Remove"?: string[],
 	"Add": string[],
-	"CompilationDatabase"?: string
+	"CompilationDatabase"?: string,
+	"Compiler"?: string
 }
 
 export interface IfVars {
 	"PathMatch"?: string | string[],
 	"PathExclude"?: string | string[]
+}
+
+export interface InlayHintsFlags {
+	"Designators": "Yes",
+  	"Enabled": "Yes"
+  	"ParameterNames": "Yes",
+  	"DeducedTypes": "Yes"
 }
 
 export interface ClangTidyFileSettings {
@@ -199,7 +209,9 @@ export type VSCodeSettingValues = string | string[] | ClangArgWithValue[] | bool
 // 	[settingName: string]: { value: VSCodeSettingValues, configTarget: ConfigurationTarget | undefined }
 // };
 
-export type ClangArgs = "-compile-commands-dir" | "-header-insertion" | "-all-scopes-completion" | "-limit-results" | "-header-insertion-decorators" | "-completion-style" | "-background-index" | "-limit-references";
+export type ClangArgs = "-compile-commands-dir" | "-header-insertion" | "-all-scopes-completion" | "-limit-results"
+	| "-header-insertion-decorators" | "-completion-style" | "-background-index" | "-limit-references"
+	| "-function-arg-placeholders";
 export type ClangArgWithValue = `${ClangArgs}=${string}`;
 
 export type SectionSettings = "C_Cpp" | "clangd";

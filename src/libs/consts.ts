@@ -2,13 +2,13 @@
 import * as vscode from "vscode";
 import * as ueHelpers from "./ueHelpers";
 
-import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNames, ClangdDefaultSettings, ClangdSettingNames, ClangFormatFileSettings, ClangTidyFileSettings, CreationCmdLineSettings, CreationCmdLineValue, UeClangdSettingNames, VSCodeDefaultSettings, VSCodeSettingNames} from "./types";
+import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNames, ClangdDefaultSettings, ClangdSettingNames, ClangFormatFileSettings, ClangTidyFileSettings, CreationCmdLineSettings, CreationCmdLineValue, InlayHintsFlags, UeClangdSettingNames, VSCodeDefaultSettings, VSCodeSettingNames} from "./types";
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "1.0.4";
+export const EXTENSION_VERSION = "2.0.0";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
-    { min: { major: 5, minor: 1, patch: 0 }, max: { major: 5, minor: 1, patch: 1 } };  // The unreal versions this extension was created for
+    { min: { major: 5, minor: 2, patch: 0 }, max: { major: 5, minor: 2, patch: 0 } };  // The unreal versions this extension was created for
 
 export const EXTENSION_NAME = "unreal clangd";
 export const UE5_WORKSPACE_NAME = "UE5";
@@ -50,6 +50,7 @@ const ueClangdSettingNames: UeClangdSettingNames = {
         "fixes.autoIncludeSourceOnly": "fixes.autoIncludeSourceOnly",
         "utility.checkForIntellisenseFilesOnStartup": "utility.checkForIntellisenseFilesOnStartup",
         "editor.parameterHints": "editor.parameterHints",
+        "creation.compilerPath": "creation.compilerPath",
         "creation.completionHelper": "creation.completionHelper",
         "creation.completionHelperMP": "creation.completionHelperMP",
         "completion.openCompletionHelperOnStartup": "completion.openCompletionHelperOnStartup",
@@ -63,6 +64,7 @@ const vscodeSettingNames: VSCodeSettingNames = {
     settings: {
         "files.associations": "files.associations",
         "editor.suggest.snippetsPreventQuickSuggestions": "editor.suggest.snippetsPreventQuickSuggestions",
+        "workbench.colorCustomizations": "workbench.colorCustomizations",
         "editor.suggestFontSize": "editor.suggestFontSize"
     }
 };
@@ -199,6 +201,13 @@ const defaultVSCodeSettings: VSCodeDefaultSettings = {
             configTarget: vscode.ConfigurationTarget.WorkspaceFolder,
             value: false
         },
+        "workbench.colorCustomizations": {
+            configTarget: vscode.ConfigurationTarget.Workspace,
+            value:  {
+                "editorInlayHint.foreground": "#a2a2a2c0",
+                "editorInlayHint.background": "#00000000",
+            },
+        },
         "editor.suggestFontSize": {
             configTarget: vscode.ConfigurationTarget.Workspace,
             value: 0
@@ -224,7 +233,8 @@ const defaultClangdArguments: ClangArgWithValue[] = [
     "-limit-results=100",  // default is 100
     "-background-index=true",
     "-limit-references=2000",
-    "-completion-style=detailed"
+    "-completion-style=detailed",
+    "-function-arg-placeholders=true"
 ];
 
 const defaultClangDSettings: ClangdDefaultSettings = {
@@ -249,9 +259,17 @@ export const defaultCompilerFlags: CompileFlags = {
     ]
 };
 
+const defaultInlayHints: InlayHintsFlags = {
+    Enabled: "Yes",
+    DeducedTypes: "Yes",
+    ParameterNames: "Yes",
+    Designators: "Yes"
+};
+
 export const defaultGeneralClangdCfgSettings: ClangdCfgFileSettings = {
     "If": {PathMatch: []},
-    "CompileFlags": defaultCompilerFlags
+    "CompileFlags": defaultCompilerFlags,
+    "InlayHints": defaultInlayHints
 };
 
 export const defaultGeneralClangTidySettings: ClangTidyFileSettings = {
