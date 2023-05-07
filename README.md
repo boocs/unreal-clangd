@@ -2,7 +2,7 @@
 # Unreal 5 Clangd extension for VSCode (Intellisense+)
 - [Info](#info)
 - [Recommends Extensions](#other-recommended-extensions)
-- [Releases](#releases)
+- [Documentation](#documentation)
 
 ## Info
 
@@ -23,7 +23,7 @@
 * [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (My extension)
 
 ---
-## Releases
+## Documentation
 ### v2.0.0 for Unreal `5.2.0`
 `Note:` Updated requirements and new features do to updated clang/clangd version
 
