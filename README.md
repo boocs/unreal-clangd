@@ -344,7 +344,7 @@ To install the VSIX file in VSCode do the following:
 
 Here's a `movie `of the installation process. `Step by Step` instructions are below the movie:
 
-<video src="https://user-images.githubusercontent.com/62588629/235394029-1319054d-9224-4ac0-8578-9e5ea0e2d0f0.mp4"></video>
+https://user-images.githubusercontent.com/62588629/235394029-1319054d-9224-4ac0-8578-9e5ea0e2d0f0.mp4
 
 
 1. Make sure the correct clangd version is installed and you have all the [requirements](#requirements)
@@ -705,8 +705,7 @@ When adding a symbol(e.g. class) to your code, it will automatically add the #in
 * The white dot, to left of completion symbol, shows what completions will also do auto include
 * You must wait, [see info bar section](#bottom-info-bar), for clangd to process the symbols in the new header.
 
-<video src="https://user-images.githubusercontent.com/62588629/235394484-329cd42f-6eae-4c61-80f5-42664b120efe.mp4"></video>
-
+https://user-images.githubusercontent.com/62588629/235394484-329cd42f-6eae-4c61-80f5-42664b120efe.mp4
 
 
 `This feature is enabled by default`
@@ -990,7 +989,8 @@ It will ask which settings to delete and if you want to delete the settings for 
 
 Here's a `movie` of the process:
 
-<video src="https://user-images.githubusercontent.com/62588629/235394362-533ec9d5-669c-4f3e-a292-51823bbaac3b.mp4"></video>
+https://user-images.githubusercontent.com/62588629/235394362-533ec9d5-669c-4f3e-a292-51823bbaac3b.mp4
+
 
 ```
 ```
