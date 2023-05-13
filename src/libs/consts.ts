@@ -6,7 +6,7 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.0.0";
+export const EXTENSION_VERSION = "2.0.1";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 5, minor: 2, patch: 0 } };  // The unreal versions this extension was created for
 
@@ -15,6 +15,7 @@ export const UE5_WORKSPACE_NAME = "UE5";
 export const UPROJECT_FILE_EXTENSION_WITH_DOT = ".uproject";
 
 export const LINUX_CLANGD_CFG_ADD_USR_INCLUDE = "-I/usr/include"; 
+export const LINUX_CLANGD_CFG_ADD_PROMOTE_PREINCLUDE = `-include../Source/ThirdParty/Unix/LibCxx/include/c++/v1/__type_traits/promote.h`;
 
 export const EXT_CMD_UPDATE_COMPILE_COMMANDS = "unreal-clangd.updateCompileCommands";
 export const EXT_CMD_FIX_RESPONSE_QUOTED_PATHS = "unreal-clangd.fixQuotesResponseFiles";

@@ -46,13 +46,14 @@ export function addPlatformSpecificChanges(uePlatform: UnrealPlatform, clangdExt
 
     switch (uePlatform) {
         case "Win64":
-
-            break;
+			
+			break;
         case 'Mac':
 
             break;
         case 'Linux':
             addToClangdAdd(clangdExtYamlFiles, consts.LINUX_CLANGD_CFG_ADD_USR_INCLUDE);
+			addToClangdAdd(clangdExtYamlFiles, consts.LINUX_CLANGD_CFG_ADD_PROMOTE_PREINCLUDE);
             break;
         default:
             break;

@@ -3,8 +3,6 @@
 
 # Unreal 5.2.0 clangd extension for VSCode
 
-`note:`**This is currently in beta since Unreal 5.2.0 is in preview and things could change**
-
 [https://github.com/boocs/unreal-clangd](https://github.com/boocs/unreal-clangd)
 
 ### Table of Contents
@@ -47,7 +45,7 @@
   - [Quotes around paths](#quotes-around-paths-in-response-files)
   - [Delegate Func Completion](#delegate-function-name-completions)
   - [Function parameter completions](#function-parameter-completions)
-  - [Linux Missing Include](#linux-missing-include)
+  - [Linux Fixes](#linux-fixes)
 - [Auto Include](#auto-includes)
   - [General](#auto-includes)
   - [Enabling for headers](#enabling-auto-include-for-header-files)
@@ -230,23 +228,26 @@ Keep it enabled for its `debugging` capability
 ```
 ```
 ### Ubuntu 22.04 Requirements
-`Note:` 15.0.1 is the latest version that I've found was required
-  - clang-15
-  - clangd-15
+`Note:` 15.0.1 is required but we have to install llvm 15.0.7. Of course you could always download and compile 15.0.1
+  - llvm-15
   - dotnet-runtime-6.0
   - dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
+
+`Note:` This release contains a simple fix for compatibility issues between Unreal's clang version and llvm-15 clangd version.
+
+ See [Linux Fixes](#linux-fixes) Section. 
 
 ```
 ```
 ### Mac Requirements
-  - Xcode 15?
+  - Xcode 14.1.0 or latest(Unreal docs say latest but I think they mean latest 14 version)
   - Does Xcode come with clangd?
   - **(This is probably incomplete. Let me know!)**
 
 ```
 ```
 ### IOS Requirements
-  - Xcode 15? 
+  - Xcode 14.1.0+? 
 
 ```
 ```
@@ -697,11 +698,16 @@ Thanks to Mark at [stackoverflow](https://stackoverflow.com/a/76096050/13950944)
 
 ```
 ```
-### Linux (missing include)
-Ubuntu 22.04 didn't seem to work. I finally figured out that it was because the path /usr/include wasn't being included.
+### Linux Fixes
 
--  This is `automatically fixed` in the .clangd file that is created for your project.
--  This could be because I didn't have something setup correct for my specific install.
+1. Unreal is setup to use clang 15.0.1 but when we download llvm-15 we're installing 15.0.7. This causes problems with promote.h.
+The simple fix is just to preinclude promote.h. Not the best solution but not too bad since this is just for `Intellisense use`. I'll still be looking for a better solution
+   * This fix is done in the `.clangd` file
+   * If you come up with a better fix you should remove this fix.
+
+2. 2nd fix is to include /usr/include 
+
+   -  This is `automatically fixed` in the .clangd file that is created for your project.
 
 ```
 ```
@@ -1243,12 +1249,8 @@ Some might not know you can do this. With how function name code completions wor
 See [CHANGLELOG](/CHANGELOG.md)
 
 ### Latest Release
-- Adjusted requirements in docs for clang/clangd 15.0.1
-- Added InlayHints options to .clangd file (new clangd feature)
-- Added InlayHints color options to *.code-workspace file
-- Added compiler path option when creating (new clangd feature)
-- Added docs on how to add compiler path manually
-- Adjusted docs because bracket initialization completion now works
+- Fix for Ubuntu 22.04
+- Updated Requirements for Ubuntu 22.04 and Mac
 
 ```
 ```
