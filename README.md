@@ -1,5 +1,7 @@
 
 # Unreal 5 Clangd extension for VSCode (Intellisense+)
+
+`Note:` v2.0.0/UE5.2.0 is confirmed only to work on Windows and also confirmed not to work on Linux(Ubuntu 22.04) yet
 - [Info](#info)
 - [Recommends Extensions](#other-recommended-extensions)
 - [Documentation](#documentation)
