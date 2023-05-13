@@ -1,7 +1,12 @@
 
 # Unreal 5 Clangd extension for VSCode (Intellisense+)
 
-`Note:` v2.0.0/UE5.2.0 is confirmed only to work on Windows and also confirmed not to work on Linux(Ubuntu 22.04) yet
+## Releases
+ * [2.0.1](https://github.com/boocs/unreal-clangd/tree/v2) for Unreal 5.2.0
+   * Fix for Ubuntu 22.04
+ * [1.0.4](https://github.com/boocs/unreal-clangd/tree/v1) for Unreal 5.1.0-5.1.1
+
+## Table of Contents
 - [Info](#info)
 - [Recommends Extensions](#other-recommended-extensions)
 - [Documentation](#documentation)
@@ -26,7 +31,7 @@
 
 ---
 ## Documentation
-### v2.0.0 for Unreal `5.2.0`
+### v2.0.1 for Unreal `5.2.0`
 `Note:` Updated requirements and new features do to updated clang/clangd version
 
 [**v2 Readme**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
