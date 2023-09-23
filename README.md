@@ -1,12 +1,14 @@
 
 # Unreal 5 Clangd extension for VSCode (Intellisense+)
 
-## Releases
- * [2.0.1](https://github.com/boocs/unreal-clangd/tree/v2) for Unreal 5.2.0
-   * Fix for Ubuntu 22.04
- * [1.0.4](https://github.com/boocs/unreal-clangd/tree/v1) for Unreal 5.1.0-5.1.1
+## Releases (`Updated Sept 22, 2023`)
+### v2.1.0 for Unreal `5.2+`
+   * Supports all Unreal versions >= 5.2
+   * Definitive fix for Ubuntu 22.04
+   * See Changelog for more info
+ 
 
-## Table of Contents
+# Table of Contents
 - [Info](#info)
 - [Recommends Extensions](#other-recommended-extensions)
 - [Documentation](#documentation)
@@ -16,7 +18,7 @@
 * Provides fast Code Completion, Formatting, and other cool features!
 
 * Has a command to create a clangd project for you
-
+  
 * Fixes some clangd/Unreal quirks
 
 * Has a uninstall command
@@ -27,18 +29,15 @@
 ## Other Recommended Extensions
 * [Microsoft C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) (Still useful for `debugging`)
  
-* [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension)
+* [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension) `Updated Sept 2023`
 
-* [Unreal Reflection Function Parameters](https://github.com/boocs/UE-Reflection-Func-Params) (my extension)
+* [Unreal Reflection Function Parameters](https://github.com/boocs/UE-Reflection-Func-Params) (my extension) `Updated Sept 2023`
 
 ---
 ## Documentation
-### v2.0.1 for Unreal `5.2.0`
-`Note:` Updated requirements and new features do to updated clang/clangd version
-
-[**v2 Readme**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
+### Unreal 5.2+
+`Note:` Make sure to read requirements! Different Unreal version usually require different `clang/clangd` and `XCode` versions
+### [**Extension Documentation**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
 
 ---
-### v1.0.4 for Unreal `5.1.0 - 5.1.1`
-
-[**v1 Readme**](https://github.com/boocs/unreal-clangd/tree/v1#readme)
+[Back to Top](#unreal-5-clangd-extension-for-vscode-intellisense)
