@@ -6,16 +6,15 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.0.1";
+export const EXTENSION_VERSION = "2.1.0";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
-    { min: { major: 5, minor: 2, patch: 0 }, max: { major: 5, minor: 2, patch: 0 } };  // The unreal versions this extension was created for
+    { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
 export const EXTENSION_NAME = "unreal clangd";
 export const UE5_WORKSPACE_NAME = "UE5";
 export const UPROJECT_FILE_EXTENSION_WITH_DOT = ".uproject";
 
-export const LINUX_CLANGD_CFG_ADD_USR_INCLUDE = "-I/usr/include"; 
-export const LINUX_CLANGD_CFG_ADD_PROMOTE_PREINCLUDE = `-include../Source/ThirdParty/Unix/LibCxx/include/c++/v1/__type_traits/promote.h`;
+export const LINUX_CLANGD_CFG_ADD_USR_INCLUDE = "-isystem/usr/include"; 
 
 export const EXT_CMD_UPDATE_COMPILE_COMMANDS = "unreal-clangd.updateCompileCommands";
 export const EXT_CMD_FIX_RESPONSE_QUOTED_PATHS = "unreal-clangd.fixQuotesResponseFiles";
@@ -300,6 +299,7 @@ export const completionHelperCppContent = "/*\n" +
     "\n" +
     "// Warning: Intellisense use only. Do not include these next two includes in your own code!\n" +
     "#include \"Engine.h\"\n" +
-    "#include \"Runtime/Engine/Public/EngineSharedPCH.h\"\n";
+    "#include \"Runtime/Engine/Public/EngineSharedPCH.h\"\n" +
+    "\n// Kismet Math\n#include \"Kismet/KismetMathLibrary.h\"\n";
 
 export const completionHelperCppMPcontent = "\n// For Unreal Multiplayer\n#include \"Net/UnrealNetwork.h\"\n";

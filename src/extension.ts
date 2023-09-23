@@ -160,7 +160,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		if(!(await handleExtensionConflict(mainWorkspaceFolder))){
 			return;
 		}
-
+		
 		const gcdRelativePattern = new vscode.RelativePattern(mainWorkspaceFolder, consts.GLOB_GCD_FILES);
 
 		const hasFoundIntellisense = await checkForIntellisenseFilesAndAskToCreate(
@@ -1937,7 +1937,12 @@ async function handleExtensionConflict(workspaceFolder: vscode.WorkspaceFolder):
 		cCppConfig.get(cCppSettingNames.formatting) === consts.SETTING_DISABLED &&
 		cCppConfig.get(cCppSettingNames.intelliSenseEngine) === consts.SETTING_DISABLED;
 
-	if(hasClangdSetting && hasCCppSettings){
+	const isCppExtEnabled = cCppConfig.has(cCppSettingNames.autocomplete);  // workaround to see if extension is disabled
+
+	if((hasClangdSetting && hasCCppSettings) || !isCppExtEnabled){
+		if(!isCppExtEnabled){
+			console.warning("Microsoft Cpp extension is disabled!");
+		}
 		return true;
 	}
 
@@ -1953,10 +1958,19 @@ async function handleExtensionConflict(workspaceFolder: vscode.WorkspaceFolder):
 
 	await unrealClangdConfig.update(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup'], true, vscode.ConfigurationTarget.WorkspaceFolder);
 	await clangdConfig.update(consts.settingNames.clangd.settings.detectExtensionConflicts, false, vscode.ConfigurationTarget.Workspace);
-	await cCppConfig.update(cCppSettingNames.autocomplete, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
-	await cCppConfig.update(cCppSettingNames.errorSquiggles, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
-	await cCppConfig.update(cCppSettingNames.formatting, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
-	await cCppConfig.update(cCppSettingNames.intelliSenseEngine, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
+	
+	try {	// Will fail if cpp ext is disabled. our workaround above should catch this but check anyway
+		await cCppConfig.update(cCppSettingNames.autocomplete, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
+		await cCppConfig.update(cCppSettingNames.errorSquiggles, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
+		await cCppConfig.update(cCppSettingNames.formatting, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
+		await cCppConfig.update(cCppSettingNames.intelliSenseEngine, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
+	} catch (error) {
+		if(error instanceof Error){
+			console.warning(error.message);
+			console.warning("This warning above isn't an error if you have the MS C++ extension disabled.");
+		}
+	}
+	
 
 	await vscode.commands.executeCommand(consts.VSCODE_CMD_RELOAD_WINDOW);
 

@@ -5,6 +5,17 @@
 - Create command that shows clang and clangd version in terminal
 - Add a way to add skeleton support for UE5 source intellisense (wont work but people will have a compile_flags.txt and a UE5 .clangd file to try to get it to work)
 
+## [2.1.0] - 2023-9-22
+### Removed
+- Ubuntu: promote.h preinclude
+- Unreal version checker(supports any Engine version >= 5.2)
+### Changed
+- Ubuntu: include for /usr/include now uses -isystem instead of -I (fixed everything)
+### Updated
+- completionHelper.h
+### Fixed
+- exception when MS Cpp Ext is disabled/uninstalled and you create a project
+
 ## [2.0.1] - 2023-5-13
 ### Added
 - Added 5.2.0 support to Ubuntu 22.04 by preincluding promote.h (not the ideal fix but works for now and is a simple fix)

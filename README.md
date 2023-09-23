@@ -1,7 +1,8 @@
 ```
 ```
 
-# Unreal 5.2.0 clangd extension for VSCode
+# Unreal 5.2+ clangd extension for VSCode
+#### `(Supports any Unreal version >= 5.2)`
 
 [https://github.com/boocs/unreal-clangd](https://github.com/boocs/unreal-clangd)
 
@@ -145,7 +146,7 @@
      https://github.com/electron/electron/issues/32857
   - This was tested with Ubuntu 22.04
   - This also includes a fix for my Ubuntu 22.04 setup
-    - This fix is in the .clangd cfg file ([added include directory](#linux-missing-include))
+    - This fix is in the .clangd cfg file ([added include directory](#linux-fixes))
     - Your version of Linux may or maybe not need this fix
   
 
@@ -165,18 +166,18 @@
 
 ## About
 
-This extension creates the files and config settings needed to get clangd working with Unreal Engine 5.2.0
+This extension creates the files and config settings needed to get clangd working with Unreal Engine 5.2+
 
 This doesn't run automatically. You must run a command to create the configs. It also, by default, won't overwrite any current clangd files.
 
-Windows and Unreal 5.2.0(`non Full Source`) have been tested with:
+Windows and Unreal 5.2+(`non Full Source`) have been tested with:
 - First Person template (Windows/Ubuntu 22.04)
   - This does have 'fake' errors but are fixable if you add required include files to the top of certain .cpp files 
   - See [this](#fps-template) section for more info
 
 `Mac` will have to be tested by other users.
 
-`Linux`: Older versions did work with 5.1.0-5.1.1
+`Linux`: Tested with Ubuntu 22.04 using FPS Template
 
 ```
 ```
@@ -210,44 +211,32 @@ Windows and Unreal 5.2.0(`non Full Source`) have been tested with:
 Keep it enabled for its `debugging` capability
 
 
-- Unreal Engine 5.2.0 
+- Unreal Engine 5.2+
 - Requires specific LLVM/clang/clangd versions! (**see plaform categories below**)
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let clangd extension auto install LLVM)
 
 
-```
-```
-`Note:` The only info on required clang versions was 15.0.1
+### Clang/XCode versions
+`note:` Versions for these are usually different for each release.
+https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
 
-### Windows Requirements
-  - Visual Studio Build Tools 2022 
-  - LLVM 15.0.1 (I used **LLVM-15.0.1-win64.exe** from [here](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.1))
-  - `Note:` You can use clangd for Intellisense and still use Microsoft's compiler to build your project with
-    - It is possible to also build with clang if you want to google it
 
-```
-```
-### Ubuntu 22.04 Requirements
-`Note:` 15.0.1 is required but we have to install llvm 15.0.7. Of course you could always download and compile 15.0.1
-  - llvm-15
-  - dotnet-runtime-6.0
-  - dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
+- Make sure to choose the correct Engine version in the documentation (the link above is for UE 5.3)
+- Requirements are only posted after a full release of UE. For Beta/Preview releases you'll have to test clang versions
 
-`Note:` This release contains a simple fix for compatibility issues between Unreal's clang version and llvm-15 clangd version.
 
- See [Linux Fixes](#linux-fixes) Section. 
+#### Windows clang
+- Windows users should use the Linux clang version requirement
+- Download clang/clangd from https://github.com/llvm/llvm-project/releases/
+  - Filename will be LLVM-(version)-win64.exe (e.g. for UE5.3.0, the filename will be LLVM-16.0.6-win64.exe)
+- `note:` With UE 5.3 unfortunately Unreal Build Tools requires updated libraries so needs to see new clang builds. This means you must install clang/clangd in the default directory.
 
-```
-```
-### Mac Requirements
-  - Xcode 14.1.0 or latest(Unreal docs say latest but I think they mean latest 14 version)
-  - Does Xcode come with clangd?
-  - **(This is probably incomplete. Let me know!)**
-
-```
-```
-### IOS Requirements
-  - Xcode 14.1.0+? 
+### Other requirements
+#### Windows Requirements
+- Visual Studio Build Tools 2022 - https://aka.ms/vs/17/release/vs_BuildTools.exe
+#### Ubuntu 22.04 Requirements
+- dotnet-runtime-6.0
+- dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
 
 ```
 ```
@@ -700,12 +689,7 @@ Thanks to Mark at [stackoverflow](https://stackoverflow.com/a/76096050/13950944)
 ```
 ### Linux Fixes
 
-1. Unreal is setup to use clang 15.0.1 but when we download llvm-15 we're installing 15.0.7. This causes problems with promote.h.
-The simple fix is just to preinclude promote.h. Not the best solution but not too bad since this is just for `Intellisense use`. I'll still be looking for a better solution
-   * This fix is done in the `.clangd` file
-   * If you come up with a better fix you should remove this fix.
-
-2. 2nd fix is to include /usr/include 
+Simple fix is to include /usr/include using -isystem
 
    -  This is `automatically fixed` in the .clangd file that is created for your project.
 
@@ -1249,8 +1233,10 @@ Some might not know you can do this. With how function name code completions wor
 See [CHANGLELOG](/CHANGELOG.md)
 
 ### Latest Release
-- Fix for Ubuntu 22.04
-- Updated Requirements for Ubuntu 22.04 and Mac
+- Fixed Ubuntu support
+- Updated completionHelper.h
+- Updated Requirements
+- Now supports UE versons >= 5.2
 
 ```
 ```
@@ -1261,7 +1247,7 @@ See [CHANGLELOG](/CHANGELOG.md)
 
 ## More Info
 ### Lyra
-This is the setting that can crash clangd
+This is the setting that can crash clangd (`note`: This should be tested with later clangd versions to see if it has been fixed)
 ```
 readability-static-accessed-through-instance
 ```
