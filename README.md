@@ -14,6 +14,7 @@
 - [Documentation](#documentation)
 - [Upgrading Projects](#upgrading-projects)
 - [Mac Support](#mac-support)
+- [Future](#future)
 
 ## Info
 
@@ -57,6 +58,13 @@ CompileFlags:
     - -isystem/usr/include
 ```
 `Note:` In previous extension versions, I wrongly used -I instead of -isystem for this include (it took awhile to figure that out)
+
+## Future
+I'd be nice to have these things:
+
+1. Figure out a way to have Intellisense files created for the Unreal source code. I use the Unreal Build Tool's GenerateClangDatabase flag to generate the Intellisense files for your project. Problem is, when you switch to a Unreal source file, clangd will use a translation unit from your project to provide Intellisense for a Unreal source file. It may or may not work. Generating separate Intellisense files for the Unreal source code needs to be looked into.
+2. Provide a ready made ,unreal centric, config file for clang tidy. I currently don't use clang tidy but I want to try it! This extension provides a mostly blank clang tidy config file but does have decent guidance in the [**extension documentation.**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
+3. Complete rewrite. What I should have done was make a generalized clangd helper extension instead of the Unreal/clangd version we have now. Would maybe need to have another lightweight Unreal extension to complement this extension but maybe not if designed correctly!
 
 ---
 [Back to Top](#unreal-5-clangd-extension-for-vscode-intellisense)
