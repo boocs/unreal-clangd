@@ -233,7 +233,58 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 
 ### Other requirements
 #### Windows Requirements
-- Visual Studio Build Tools 2022 - https://aka.ms/vs/17/release/vs_BuildTools.exe
+- Visual Studio Build Tools 2022 
+  - Download here: https://visualstudio.microsoft.com/downloads/
+    - Scroll down to **Tools for Visual Studio** and download `"Build Tools for Visual Studio 2022"`
+  - Direct Link https://aka.ms/vs/17/release/vs_BuildTools.exe
+
+- Note: `Different versions of Visual Studio Build Tools 2022 are required`
+
+    It's very easy to install different versions with the **Visual Studio Installer**.
+    
+    1. Open the Visual Studio Installer and click **Modify** on Visual Studio Build Tools 2022.
+
+       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/44aa6821-f123-4133-8399-39c20cc5c660)
+
+    2. Now go to **Individual components**
+
+       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/d7e2c16e-bdf3-4bb2-a1e7-204ba285e991)
+
+    3. Scroll down to all the listings for **MSVC v143 - VS 2022 C++ x64/x86 build tools**
+    
+       `For Unreal 5.2 you want to enable v14.34`:
+
+       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b5d8f068-8e77-43f0-b68d-7f390f007d4c)
+
+       `For Unreal 5.3 you want to enable v14.36`:
+
+       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/aec88536-557e-4171-96c3-c73d8dc15766)
+    
+    4. If you haven't created your Unreal project yet you can skip steps 5/6
+    5. If you know your project is already using the 'correct' Visual Studio Build Tools version, then you can skip Step 6 and just run this extension's '`Update Compile Commands`' command:
+
+       ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
+
+        - An easy way to check which Build Tools version your project is using is to open any compileCommands_*.json file in your project's .vscode folder.
+
+        - Check any 'arguments' property and it will have the path of the Build Tool which also has the version number.
+        For my Unreal 5.3 project this is how it looks:
+        ![image](https://github.com/boocs/unreal-clangd/assets/62588629/32c9b4f5-b67d-4d24-bea8-8645246c5c7d)
+
+          `note:` The Build Tools version in the compileCommands_*.json has nothing to do with the clang/clangd or intellisense. It's just an indicator of which Build Tools version Unreal saw when creating your Unreal project.
+    
+    6. Once installed, if you already have your Unreal project created you should probably Refresh your Unreal project by `Generating Visual Studio project files`
+
+       You can **Generate Visual Studio Project files** by right clicking on your project's *.uproject file in your project's parent folder.
+
+       You can also **Refresh Visual Studio Project** inside UE5's Tools menu
+
+       - Your VSCode config files will probably be using older Build Tools 2022 versions
+       - Doing the above will let Unreal choose the best Build Tools version from the versions you have installed
+       - `note:` You'll have to reinstall the project that this extension creates because `Generating Visual Studio project files` will overwrite your project's VSCode workspace file which has all the clangd project settings
+       - Reinstalling the project that this extension creates will also run the command specified in Step 5
+       - Check [this](#reinstall-without-overwrite) section about reinstalling without overwriting
+
 #### Ubuntu 22.04 Requirements
 - dotnet-runtime-6.0
 - dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
@@ -1108,7 +1159,9 @@ You can auto set your compiler path when creating a project using this setting:
 
 Windows:
 
-If you're not Building Unreal with clang(only using it for Intellisense) and you're using both Unreal 5.1.1 and 5.2.0 you could install LLVM 15 in a non-standard directory. clangd 13.0.1 doesn't have the ability to change the compiler path. LLMV 15.0.1 does though.
+`note:` This is no longer possible with Unreal 5.3. You need to install LLVM 16.0.6 in it's default folder because Unreal Build Tool needs to see the LLVM path and won't be able to in a nonstandard directory.
+
+If you're not Building Unreal with clang(only using it for Intellisense) and you're using both Unreal 5.1.1 and 5.2.0 you could install LLVM 15 in a non-standard directory. clangd 13.0.1 doesn't have the ability to change the compiler path. LLVM 15.0.1 does though.
 
 Unreal will use clang 13.0.1 because it's in the default path when your really want 15.0.1 with Unreal 5.2.0
 
