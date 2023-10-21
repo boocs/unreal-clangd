@@ -101,8 +101,8 @@ export enum ParamHints {
    all = "all"
 }
 
-export const OVERWRITE_STRICT: Overwrite = 'strict';
-export const OVERWRITE_LAZY: Overwrite = 'lazy';
+
+export const OVERWRITE_PARTIAL: Overwrite = 'partial';
 export const OVERWRITE_FULL: Overwrite = 'full';
 
 export const COMPILE_COMMANDS_EXEC_TYPE_TASK = "Task";
@@ -181,7 +181,7 @@ export const GLOB_SIMPLE_CHECK_CLANGD_PROJECT_FILES = `**/*.{clangd,clang-format
 
 export const defaultCreationCmdLine: [CreationCmdLineSettings, CreationCmdLineValue][] = [
     [CREATION_ARG_SETTING_UNREAL_PLATFORM, ""],
-    [CREATION_ARG_SETTING_OVERWRITE, OVERWRITE_STRICT],
+    [CREATION_ARG_SETTING_OVERWRITE, OVERWRITE_PARTIAL],
     [CREATION_ARG_SETTING_TIDY, false]
 ];
 

@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "clangd helper for UE 5.2+",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "engines": {
     "vscode": "^1.77.3"
   },
@@ -120,16 +120,14 @@
             "type": "string",
             "default": "strict",
             "enum": [
-              "strict",
-              "lazy",
+              "partial",
               "full"
             ],
             "enumDescriptions": [
-              "Overwrite nothing if any cfg file found",
-              "Will overwrite anything not created yet (files or settings)",
+              "Will create anything not created yet (files or settings)",
               "Overwrite all files and settings"
             ],
-            "markdownDescription": "**This setting will be reset to strict, `in the folder config`, after creation is run.**\n`The folder config,(.vscode/settings.json), overrides User and Workspace configs!`",
+            "markdownDescription": "This setting doesn't need to be set manually. It will be set during creation process.",
             "scope": "resource"
           },
           "unreal-clangd.creation.tidy": {

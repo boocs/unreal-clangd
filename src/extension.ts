@@ -141,11 +141,26 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const overwriteSetting: Overwrite | undefined = getUnrealClangdConfig(mainWorkspaceFolder).get(consts.settingNames.unrealClangd.settings['creation.overwrite']);
-		if (await hasClangdProjectFiles(mainWorkspaceFolder) && overwriteSetting === 'strict') {
-			await vscode.window.showWarningMessage(`${tr.FOUND_CLANGD_WHEN_OVERWRITE} ${overwriteSetting}.`, { detail: tr.CANCELLING_CREATION, modal: true }, tr.BTTN_OK);
-			return;
+		const ueClangdConfig = getUnrealClangdConfig(mainWorkspaceFolder);
+
+		const creatingProjectAfterReload = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
+		if (!creatingProjectAfterReload) {
+			const installTypeResult = await vscode.window.showWarningMessage(tr.WHAT_INSTALL_TYPE, { detail: tr.FULL_OR_PARTIAL, modal: true }, tr.BTTN_FULL, tr.BTTN_PARTIAL);
+		
+			if(!installTypeResult){
+				return;
+			}
+
+			if (installTypeResult === tr.BTTN_FULL) {
+				await ueClangdConfig.update(consts.settingNames.unrealClangd.settings['creation.overwrite'], consts.OVERWRITE_FULL, vscode.ConfigurationTarget.WorkspaceFolder);
+			}
+			else {
+				await ueClangdConfig.update(consts.settingNames.unrealClangd.settings['creation.overwrite'], consts.OVERWRITE_PARTIAL, vscode.ConfigurationTarget.WorkspaceFolder);
+			}
 		}
+
+		// Prevent redoing setup after a reload
+		await ueClangdConfig.update(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup'], false);
 
 		if(!(await handleUnrealVersionCheck(await getUnrealVersion(), getUnrealVersionBypass(mainWorkspaceFolder)))){
 			return;
@@ -211,7 +226,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const ueClangdConfig = getUnrealClangdConfig(mainWorkspaceFolder);
 		const isClangTidyEnabled: boolean | undefined = getCfgValue(ueClangdConfig, consts.settingNames.unrealClangd.settings['creation.tidy']);
 
 		if (isClangTidyEnabled === undefined) {
@@ -246,7 +260,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		const creator = new UeClangdCreator(creationCmdLine, projectInfo, defaultCfgSettings, clangdExtFiles);
 		await creator?.create();
 
-		await resetOverwriteSetting(mainWorkspaceFolder);
+		//await resetOverwriteSetting(mainWorkspaceFolder);
 
 		console.log(tr.END_CREATE_UE_CLANGD_PROJECT);
 
@@ -1352,7 +1366,7 @@ async function doesUriExist(uri: vscode.Uri | undefined): Promise<boolean> {
 
 	return true;
 }
-
+/*
 async function resetOverwriteSetting(workspaceFolder: vscode.WorkspaceFolder) {
 	const ueClangdConfig = getUnrealClangdConfig( workspaceFolder);
 
@@ -1362,7 +1376,7 @@ async function resetOverwriteSetting(workspaceFolder: vscode.WorkspaceFolder) {
 		await ueClangdConfig.update(consts.settingNames.unrealClangd.settings['creation.overwrite'], consts.OVERWRITE_STRICT, vscode.ConfigurationTarget.WorkspaceFolder);
 	}
 }
-
+*/
 
 async function onUnrealCompileCommandsCreatedOrChanged(uri: vscode.Uri, copyTarget: vscode.Uri) {
 	const projectWorkspace = await getProjectWorkspaceFolder();
@@ -1984,7 +1998,6 @@ async function handleCreateProjectIfSet(mainWorkspaceFolder: vscode.WorkspaceFol
 	const isCreateProject = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
 
 	if(isCreateProject === true){
-		await unrealClangdConfig.update(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup'], false);
 		await vscode.commands.executeCommand(consts.EXT_CMD_CREATE_CLANGD_PROJECT);
 	}
 }

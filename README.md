@@ -168,7 +168,7 @@
 
 This extension creates the files and config settings needed to get clangd working with Unreal Engine 5.2+
 
-This doesn't run automatically. You must run a command to create the configs. It also, by default, won't overwrite any current clangd files.
+This doesn't run automatically. You must run a command to create the configs.
 
 Windows and Unreal 5.2+(`non Full Source`) have been tested with:
 - First Person template (Windows/Ubuntu 22.04)
@@ -228,8 +228,8 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 #### Windows clang
 - Windows users should use the Linux clang version requirement
 - Download clang/clangd from https://github.com/llvm/llvm-project/releases/
-  - Filename will be LLVM-(version)-win64.exe (e.g. for UE5.3.0, the filename will be LLVM-16.0.6-win64.exe)
-- `note:` With UE 5.3 unfortunately Unreal Build Tools requires updated libraries so needs to see new clang builds. This means you must install clang/clangd in the default directory.
+  - Filename will be LLVM-(version)-win64.exe (e.g. for UE 5.3.0, the filename will be LLVM-16.0.6-win64.exe)
+- `note:` With UE 5.3 unfortunately Unreal Build Tool requires updated libraries so needs to see new clang builds. This means you must install clang/clangd in the default directory.
 
 ### Other requirements
 #### Windows Requirements
@@ -252,11 +252,11 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 
     3. Scroll down to all the listings for **MSVC v143 - VS 2022 C++ x64/x86 build tools**
     
-       `For Unreal 5.2 you want to enable v14.34`:
+       For `Unreal 5.2` you want to enable `v14.34`:
 
        ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b5d8f068-8e77-43f0-b68d-7f390f007d4c)
 
-       `For Unreal 5.3 you want to enable v14.36`:
+       For `Unreal 5.3` you want to enable `v14.36`:
 
        ![image](https://github.com/boocs/unreal-clangd/assets/62588629/aec88536-557e-4171-96c3-c73d8dc15766)
     
@@ -282,8 +282,8 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
        - Your VSCode config files will probably be using older Build Tools 2022 versions
        - Doing the above will let Unreal choose the best Build Tools version from the versions you have installed
        - `note:` You'll have to reinstall the project that this extension creates because `Generating Visual Studio project files` will overwrite your project's VSCode workspace file which has all the clangd project settings
+       - `Doing a partial reinstall is very easy to do!` See [here](#reinstall-without-overwrite)
        - Reinstalling the project that this extension creates will also run the command specified in Step 5
-       - Check [this](#reinstall-without-overwrite) section about reinstalling without overwriting
 
 #### Ubuntu 22.04 Requirements
 - dotnet-runtime-6.0
@@ -335,9 +335,8 @@ The other reason was a Unreal design change. 5.0.0 uses compile commands while 5
 * `unreal-clangd.compileCommands.architecture`: **Most users can leave this blank**
   - Mac M1/M2 users should set this to arm64 (not tested)
 #### Creation
-* `unreal-clangd.creation.overwrite`: Allows overwriting of project. **note: Always resets to strict when creation is run**
-  - "strict": Never overwrite
-  - "lazy": Never overwrite but create files/settings that haven't been created
+* `unreal-clangd.creation.overwrite`: Allows overwriting of project. **note: You don't need to set this manually**
+  - "partial": Never overwrite but create files/settings that haven't been created
   - "full": Overwrite everything
 * `unreal-clangd.creation.completionHelper`: true(default) Needed to make code completion functional. Creates a completionHelper.cpp and adds it to compile_commands.json
 * `unreal-clangd.creation.completionHelperMP`: true(default) Also add UnrealNetwork.h(multiplayer) to completionHelper.cpp
@@ -472,18 +471,15 @@ If you noticed above, in the Creating a Unreal Clangd Project section, the comma
   2. Add these settings to the settings.json file
      
      ```
-     "unreal-clangd.creation.tidy": true,
-     "unreal-clangd.creation.overwrite": "lazy"
+     "unreal-clangd.creation.tidy": true
      ```
-
-     **note:** Because the `overwrite` setting is set to `lazy` it'll now be automatically changed to the `strict` setting, in the settings.json file, after you've created the tidy cfg file.
   3. Press F1 and run the Create Unreal Clangd Project command again
 
        ![](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
 
-  4. Go through the creation process again
+  4. Go through the creation process again but choose the 'Partial' install option
 
-      Note: Because the creation `overwrite` setting was set to `lazy` it shouldn't overwrite any other files and settings.
+      Note: If you choose the `Partial` install option it shouldn't overwrite any other files and settings.
 
   5. `The clang tidy linter should now work!`
 
@@ -559,7 +555,7 @@ You can change these from the default if you like.
 
 The file is located in your project's parent folder.
 
-`Warning`: Using the Unreal Engine's 'Refresh Visual Studio Project` command will overwrite this file. See [this](#refresh-visual-studio-project) section.
+`Warning`: Using the Unreal Engine's `Refresh Visual Studio Project` or `Generate Visual Studio Project files` command will overwrite this file. See [this](#refresh-visual-studio-project) section.
 
 ```
 ```
@@ -1059,26 +1055,13 @@ Note: I don't know what performance impact this has.
 
 ## Reinstall Without Overwrite
 
-You may need to reinstall if a config file gets overwritten or deleted. Here's how to do it:
+This is now easier than early extension versions.
 
-1. First open your project's .vscode/settings.json file
-  
-      ![](https://user-images.githubusercontent.com/62588629/225807084-4c18b6a8-671d-4cb4-9df4-e35a80028f8b.png)
+Just run the Create Unreal Clangd Project command again using the `Partial` option when prompted
 
-  2. Add or change this setting in the settings.json file
-     
-     ```
-     "unreal-clangd.creation.overwrite": "lazy"
-     ```
+  ![](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
 
-     **note:** Because the `overwrite` setting is set to `lazy` it'll now be automatically changed to the `strict` setting, in the settings.json file, after you've reinstalled.
-  3. Press F1 and run the Create Unreal Clangd Project command again
-
-       ![](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
-
-  4. Go through the creation process again
-
-      Note: Because the creation `overwrite` setting was set to `lazy` it shouldn't overwrite any other files and settings.
+Because we chose the `Partial` options it shouldn't overwrite any other files and settings.
 
 
 ```
@@ -1226,11 +1209,11 @@ Just like the Microsoft C++ extension, parameter code completion for UPROPERTY(a
 ```
 ```
 ### Refresh Visual Studio Project
-`Warning`: Using the Unreal Engine feature to Refresh Visual Studio Project will overwrite your *.code-workspace file.
+`Warning`: Using the Unreal Engine feature to `Refresh Visual Studio Project` or `Generate Visual Studio Project files` will overwrite your *.code-workspace file.
 
 This file contains your project's clangd settings!
 
-See [this](#reinstall-without-overwrite) section on how to reinstall without overwriting other settings.
+See [this](#reinstall-without-overwrite) section on how to easily reinstall without overwriting other settings.
 
 ```
 ```

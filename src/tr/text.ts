@@ -15,6 +15,8 @@ export const BTTN_SKIP = "Skip";
 export const BTTN_ALL = "All";
 export const BTTN_PROJECT ="Project Only";
 export const BTTN_CHOOSE_CLANGD = "Choose clangd executable";
+export const BTTN_FULL = "Full";
+export const BTTN_PARTIAL = "Partial";
 
 // Question
 export const QST_DO_YOU_WISH_TO_CONTINUE = "Do you wish to continue?";
@@ -215,3 +217,6 @@ export const START_CREATION_path = "Start creation:"; /** CONTEXT: file path */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const END_CREATION_path = "End creation:"; /** CONTEXT: file path */
 export const ADD_FILES_TO_PROJ_SRC_TO_CORRECT_ERR = "Once you add files to your project's Source folder the above error will correct itself.";
+
+export const WHAT_INSTALL_TYPE = "Choose a project install type.";
+export const FULL_OR_PARTIAL = "Full : Overwrite any file and setting.\nPartial : Setup anything not already set or created.";
