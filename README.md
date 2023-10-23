@@ -1,11 +1,11 @@
 
 # Unreal 5 Clangd extension for VSCode (Intellisense+)
 
-## Releases (`Updated Sept 22, 2023`)
-### v2.1.0 for Unreal **5.2+**
-   * Supports all Unreal versions >= 5.2
-   * Definitive fix for Ubuntu 22.04
-   * See Changelog for more info
+## Releases (`Updated Oct 22, 2023`)
+
+- It will prompt you when running the creation command on whether you want a full or partial install.
+- You no longer have to change the creation.overwrite setting manually
+- Extension is now bundled using esbuild. Smaller size and faster start.
  
 
 # Table of Contents
@@ -40,10 +40,15 @@
 ## Documentation
 ### Unreal 5.2+
 `Note:` Make sure to read requirements! Different Unreal version usually require different `clang/clangd` and `XCode` versions
+
+`Windows Users:` The requirements sections has `easy` instructions on how to install different Build Tools 2022 versions. These are required because other versions may cause `fake red error squiggles`.
+
 ### [**Extension Documentation**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
 
 ---
 ## Upgrading Projects
+`Current extension version:` Has no file changes so projects do not  need to be reinstalled
+
 It's best to use this extension's uninstall and reinstall commands when upgrading to a new extension version. This is because different files could need to be upgraded.
 
 ---
