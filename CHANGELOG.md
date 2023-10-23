@@ -5,10 +5,12 @@
 - Create command that shows clang and clangd version in terminal
 - Add a way to add skeleton support for UE5 source intellisense (wont work but people will have a compile_flags.txt and a UE5 .clangd file to try to get it to work)
 
-## [2.2.0] - 2023-10-20
+## [2.2.1] - 2023-10-21
 ### Changed
 - It will prompt you when running the creation command on whether you want a full or partial install.
 - You no longer have to change the creation.overwrite setting manually
+### Added
+- Extension is now bundled. Smaller size and faster start.
 
 ## [2.1.0] - 2023-9-22
 ### Removed

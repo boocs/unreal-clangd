@@ -142,9 +142,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 
 		const ueClangdConfig = getUnrealClangdConfig(mainWorkspaceFolder);
-
+		
 		const creatingProjectAfterReload = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
-		if (!creatingProjectAfterReload) {
+		if (!creatingProjectAfterReload && !isWantingToCreate) {
 			const installTypeResult = await vscode.window.showWarningMessage(tr.WHAT_INSTALL_TYPE, { detail: tr.FULL_OR_PARTIAL, modal: true }, tr.BTTN_FULL, tr.BTTN_PARTIAL);
 		
 			if(!installTypeResult){
@@ -178,6 +178,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		
 		const gcdRelativePattern = new vscode.RelativePattern(mainWorkspaceFolder, consts.GLOB_GCD_FILES);
 
+		if(isWantingToCreate) {
+			isWantingToCreate = false;
+		}	
 		const hasFoundIntellisense = await checkForIntellisenseFilesAndAskToCreate(
 			compileCommandsUri,
 			gcdRelativePattern,
@@ -1415,7 +1418,7 @@ async function onUnrealCompileCommandsCreatedOrChanged(uri: vscode.Uri, copyTarg
 
 	
 	if (isWantingToCreate) {
-		isWantingToCreate = false;
+		//isWantingToCreate = false;
 		await vscode.commands.executeCommand(consts.EXT_CMD_CREATE_CLANGD_PROJECT);
 	}
 
