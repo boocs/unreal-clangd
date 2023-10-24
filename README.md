@@ -49,7 +49,7 @@
 ## Upgrading Projects
 `Current extension version:` Has no file changes so projects do not  need to be reinstalled
 
-It's best to use this extension's uninstall and reinstall commands when upgrading to a new extension version. This is because different files could need to be upgraded.
+It's best to use this extension's uninstall and create commands when upgrading to a new extension version. This is because different files could need to be upgraded.
 
 ---
 ## Mac support
