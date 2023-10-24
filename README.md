@@ -1,5 +1,5 @@
 
-# Unreal 5 Clangd extension for VSCode (Intellisense+)
+# Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
 ## Releases (`Updated Oct 22, 2023`)
 
