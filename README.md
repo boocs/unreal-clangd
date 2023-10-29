@@ -287,7 +287,12 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 
 #### Ubuntu 22.04 Requirements
 - dotnet-runtime-6.0
-- dotnet-sdk-6.0 (I think this was only needed for seeing UBT logs when updating compile commands)
+- dotnet-sdk-6.0 (Only needed for seeing UBT logs when updating compile commands)
+
+#### Arch Linux Requirements
+- dotnet-runtime-6.0
+- clang
+- dotnet-sdk-6.0 (Only needed for seeing UBT logs when updating compile commands)
 
 ```
 ```
@@ -429,6 +434,9 @@ https://user-images.githubusercontent.com/62588629/235394029-1319054d-9224-4ac0-
 
     On `Ubuntu` it was found at: 
     **/usr/lib/llvm-16/bin/clangd**  (If installing for `Unreal 5.3`)
+
+    On `Arch Linux` installing the `clang` package it was found at:
+     /usr/sbin/clangd
 
     `Ubuntu/Linux:` Your file dialogue might spawn behind the VSCode window:
 
