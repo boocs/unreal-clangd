@@ -425,10 +425,10 @@ https://user-images.githubusercontent.com/62588629/235394029-1319054d-9224-4ac0-
 1. After a file dialogue will appear so you can select your clangd executable.
   
     For example, on `Windows`, my clangd executable is found at:
-    C:\Program Files\LLVM\bin\clangd.exe
+    **C:\Program Files\LLVM\bin\clangd.exe**
 
-    On `Ubuntu` it was found at:
-    /usr/lib/llvm-13/bin/clangd
+    On `Ubuntu` it was found at: 
+    **/usr/lib/llvm-16/bin/clangd**  (If installing for `Unreal 5.3`)
 
     `Ubuntu/Linux:` Your file dialogue might spawn behind the VSCode window:
 
