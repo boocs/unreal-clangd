@@ -3,7 +3,7 @@
 
 [Table of Contents](#table-of-contents)
 
-## Releases (`Updated Jan 20, 2024`)
+## Releases (`Updated Jan 20, 2024: v2.3.0`)
 
 ### Added
 - clang-format: added "NamespaceIndentation: All" to default config when created
