@@ -1,18 +1,32 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-## Releases (`Updated Oct 22, 2023`)
+[Table of Contents](#table-of-contents)
 
-- It will prompt you when running the creation command on whether you want a full or partial install.
-- You no longer have to change the creation.overwrite setting manually
-- Extension is now bundled using esbuild. Smaller size and faster start.
+## Releases (`Updated Jan 20, 2024`)
+
+### Added
+- clang-format: added "NamespaceIndentation: All" to default config when created
+- Docs: Added Quick Start Guide section
+### Changed
+- Intellisense now uses DebugGame instead of Development. 
+    - You should still use Development most of the time when Building or Running your project. (You will still get Intellisense)
+    - This prevents having to Rebuild when Running your project using Development
+    - Fixes fake red squiggles after Building your project
+- When creating a project, we now put the compile commands path in the .clangd file instead of the workspace cfg file.
+    - This will set the stage, for the future, for using a different .clangd file and compile commands/flags file for the Unreal Engine source files.
+- Docs: Requirements section is less of a mess
+- Docs: Changed Tidy Guide to a link to a separate updated Clang Tidy Guide
+### Removed
+- clang-tidy: removed -readability-static-accessed-through-instance to default config when created. Added because of Tidy crash in Lyra that's fix in UE5.3. It was also the wrong way to fix the Check that caused the crash.
  
 
 # Table of Contents
 - [Info](#info)
 - [Recommends Extensions](#other-recommended-extensions)
+- [Quick Start Guide](#quick-start-guide-ue-52)
 - [Documentation](#documentation)
-- [Upgrading Projects](#upgrading-projects)
+- [Upgrading Older Projects](#upgrading-older-projects)
 - [Mac Support](#mac-support)
 - [Future](#future)
 
@@ -28,13 +42,71 @@
 
   `Note:` Windows users can use clang/clangd for Intellisense and still build with Microsoft's compiler
 
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
 ---
 ## Other Recommended Extensions
-* [Microsoft C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) (Still useful for `debugging`)
  
 * [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension) `Updated Sept 2023`
 
 * [Unreal Reflection Function Parameters](https://github.com/boocs/UE-Reflection-Func-Params) (my extension) `Updated Sept 2023`
+
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
+## Quick Start Guide (UE 5.2+)
+This is generally correct, when using  non-full source, but your situation could be different.
+
+1. Read the [Requirements](https://github.com/boocs/unreal-clangd/tree/v2#readme) section of the full Documentation
+    - Different Unreal Engine versions require different LLVM versions(Unreal 5.3 requires LLVM 16.0.6)
+
+  ---
+
+2. Install the vsix file from this github
+
+    ![](https://user-images.githubusercontent.com/62588629/225083466-39ca4a93-e06a-4a04-83ba-82d60b548513.png)
+
+- Click the extensions icon
+- Click the ellipsis (3 dots)
+- Choose Install from VSIX...
+
+---
+
+
+3. Ignore any VSCode warning messages (should go away after creating a project)
+    
+  ---
+
+4. Run the "Creating Unreal clangd project" on your Unreal project
+    - Example:
+
+      ![image](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
+
+  ---
+5. Use the `Editor` suffix and `Development` config when Building/Running
+    - Build
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/fbada348-a3a5-42ed-ad2f-d02255d70c3d)
+
+      ---
+    - Run/Debug
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b651f4e3-0fab-43da-b5e7-02fb8cec24e7)
+
+  ---
+
+6. Use `DebugGame` when you have to Debug something
+    - Debugging
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/72ef61c0-bf11-48cb-9d3b-fd03253689d7)
+
+  ---
+
+7. Run extension command 'Update Compile Commands' manually to fix fake red squiggles that may rarely happen.
+
+    ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
+
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 ## Documentation
@@ -45,24 +117,73 @@
 
 ### [**Extension Documentation**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
 
----
-## Upgrading Projects
-`Current extension version:` Has no file changes so projects do not  need to be reinstalled
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
-It's best to use this extension's uninstall and create commands when upgrading to a new extension version. This is because different files could need to be upgraded.
+---
+## Upgrading Older Projects
+Current extension version: `2.3.0`
+
+`This version had some changes!`
+
+If you want to manually update your project, skip to the Manually Update section.
+
+### Uninstalling and Reinstalling
+You can use this extension's `uninstall` and `create` commands when upgrading to a new extension version. 
+
+### Manually Update
+#### .clang-format 
+- `Add` this line
+  ```
+  NamespaceIndentation: All
+
+  # Make sure to leave blank line at end of file
+  ```
+
+---
+#### projectname.code-workspace
+
+- `Remove` this line
+
+  Found in setting: clangd.arguments
+  ```
+  "-compile-commands-dir=e:\\Users\\ME\\Documents\\Unreal Projects\\CleanLyra_5_3\\.vscode\\unreal-clangd"
+  ```
+---
+#### .clangd
+- `Add` this line
+
+- Add the path found in your projectname.code-workspace
+
+- `Windows` users: Use one `forward` slash for paths
+  ```
+  CompileFlags: CompilationDatabase: e:/Users/ME/Documents/Unreal Projects/CleanLyra_5_3/.vscode/unreal-clangd
+  ```
+
 
 ---
 ## Mac support
+
 This hasn't been proven to work yet`(let me know!)`. The ubuntu fix might help people trying to fix the Mac version so a section of .clangd is provided below.
 
-`Note:` Mac doesn't use this directory any more so any 'fix helpers' should try the Xcode equivalent to this directory. Of course maybe Mac does work without anything to fix. 
+
+
+`Note:` Mac doesn't use this directory any more so any 'fix helpers' should try the Xcode equivalent to this directory. 
+
+Of course maybe Mac doesn't need this Ubuntu type fix. 
 ```
+# Rest of file above
+
 CompileFlags:
   Add:
     - -D__INTELLISENSE__
     - -isystem/usr/include
+
+# Rest of file below
 ```
-`Note:` In previous extension versions, I wrongly used -I instead of -isystem for this include (it took awhile to figure that out)
+
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
 
 ## Future
 I'd be nice to have these things:
@@ -72,4 +193,4 @@ I'd be nice to have these things:
 3. Complete rewrite. What I should have done was make a generalized clangd helper extension instead of the Unreal/clangd version we have now. Would maybe need to have another lightweight Unreal extension to complement this extension but maybe not if designed correctly!
 
 ---
-[Back to Top](#unreal-5-clangd-extension-for-vscode-intellisense)
+[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
