@@ -3,7 +3,7 @@
 
 [Table of Contents](#table-of-contents)
 
-## Releases (`Updated Jan 20, 2024: v2.3.0`)
+## Releases (`Updated Jan 21, 2024: v2.3.0`)
 
 ### Added
 - clang-format: added "NamespaceIndentation: All" to default config when created
@@ -125,7 +125,6 @@ This is generally correct, when using  non-full source, but your situation could
 
 ---
 ## Upgrading Older Projects
-Current extension version: `2.3.0`
 
 `This version had some changes!`
 
