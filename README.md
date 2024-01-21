@@ -77,13 +77,17 @@ This is generally correct, when using  non-full source, but your situation could
     
   ---
 
-4. Run the "Creating Unreal clangd project" on your Unreal project
+4. `Linux:` In the next step(project creation), File Dialogues will spawn behind VSCode(known bug)
+
+  ---
+
+5. Run extension command "Create Unreal clangd project" on your Unreal project
     - Example:
 
       ![image](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
 
   ---
-5. Use the `Editor` suffix and `Development` config when Building/Running
+6. Use the `Editor` suffix and `Development` config when Building/Running
     - Build
     
       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/fbada348-a3a5-42ed-ad2f-d02255d70c3d)
@@ -95,14 +99,14 @@ This is generally correct, when using  non-full source, but your situation could
 
   ---
 
-6. Use `DebugGame` when you have to Debug something
+7. Use `DebugGame` when you have to Debug something
     - Debugging
     
       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/72ef61c0-bf11-48cb-9d3b-fd03253689d7)
 
   ---
 
-7. Run extension command 'Update Compile Commands' manually to fix fake red squiggles that may rarely happen.
+8. Run extension command 'Update Compile Commands' to fix fake red squiggles that may rarely happen.
 
     ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
 
