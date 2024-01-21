@@ -17,8 +17,6 @@ export function addDynamicDefaultSettingsToConfig(mainWorkspace: vscode.Workspac
 		return true;
 	}
 
-	const vscodeFolderPath = compileCommandsDirUri.fsPath;
-
 	if(configSettings.clangd?.settings.path?.value !== undefined){
 		configSettings.clangd.settings.path.value = clangdPath;
 	}
@@ -27,17 +25,6 @@ export function addDynamicDefaultSettingsToConfig(mainWorkspace: vscode.Workspac
 		return true;
 	}
 	
-	const args = configSettings.clangd?.settings.arguments?.value;
-	if (args instanceof Array) {
-		args.push(`-compile-commands-dir=${vscodeFolderPath}`);
-	}
-	else{
-		console.error("Couldn't get clangd settings args!");
-		return true;
-	}
-
-	addSettingsToClangdCfg(mainWorkspace);
-
 	return false;
 }
 
@@ -70,14 +57,15 @@ function addToClangdAdd(clangdExtYamlFiles: ExtensionYamlFiles, addition: string
 	}
 }
 
-function addSettingsToClangdCfg(mainWorkspace: vscode.WorkspaceFolder) {
+export function addSettingsToClangdCfg(mainWorkspace: vscode.WorkspaceFolder, defaultClangdCfgSettings: ClangdCfgFileSettings, ccPath: string) {
 	
+	defaultClangdCfgSettings.CompileFlags.CompilationDatabase = ccPath.replaceAll("\\", '/');  // Only foward slashes allowed
+
 	const unrealClangdCfg = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, mainWorkspace);
 	const compilerPath = unrealClangdCfg.get<string>(consts.settingNames.unrealClangd.settings["creation.compilerPath"]);
 
-	if(!compilerPath){
-		return;
+	if(compilerPath){
+		defaultClangdCfgSettings.CompileFlags.Compiler = compilerPath.replaceAll("\\", '/');  // Only foward slashes allowed
 	}
-
-	consts.defaultGeneralClangdCfgSettings.CompileFlags.Compiler = compilerPath;
+	
 }

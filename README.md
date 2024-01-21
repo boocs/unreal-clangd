@@ -7,6 +7,7 @@
 [https://github.com/boocs/unreal-clangd](https://github.com/boocs/unreal-clangd)
 
 ### Table of Contents
+- [Quick Start Guide](#quick-start-guide-ue-52)
 - [Warnings Before Use](#warnings-before-use)
   - [General](#warnings-before-use)
   - [Linux/Ubuntu](#linuxubuntu)
@@ -15,11 +16,6 @@
   - [General](#about)
   - [Benefits](#benefits)
 - [Requirements](#requirements)
-  - [General](#requirements)
-  - [Windows](#windows-requirements)
-  - [Ubuntu 22.04](#ubuntu-2204-requirements)
-  - [Mac](#mac-requirements)
-  - [IOS](#ios-requirements)
 - [Older Unreal Versions](#older-unreal-versions)
 - [Extension](#extension)
   - [Commands](#commands)
@@ -62,12 +58,6 @@
   - [Disable](#disable-inlay-hints)
   - [View Options](#view-options)
 - [Clang Tidy](#clang-tidy)
-  - [General](#clang-tidy)
-  - [Disable Warnings in .clangd-tidy File](#how-to-disable-tidy-warnings-in-a-clang-tidy-file)
-  - [Disable Warnings in Code](#how-to-disable-tidy-warnings-in-code)
-  - [Refreshing a Source File](#refreshing-a-source-file)
-  - [Testing a .clang-tidy file](#testing-clang-tidy)
-  - [Running Clang Tidy on Multiple Files](#running-clang-tidy-on-multiple-files)
 - [Go to Symbol in Workspace](#go-to-symbol-in-workspace)
 - [Reinstall Without Overwrite](#reinstall-without-overwrite)
 - [Uninstalling](#uninstalling)
@@ -96,11 +86,69 @@
 ```
 ```
 
+## Quick Start Guide (UE 5.2+)
+This is generally correct, when using  non-full source, but your situation could be different.
+
+1. Read the [Requirements](https://github.com/boocs/unreal-clangd/tree/v2#readme) section of the full Documentation
+    - Different Unreal Engine versions require different LLVM versions(Unreal 5.3 requires LLVM 16.0.6)
+
+  ---
+
+2. Install the vsix file from this github
+
+    ![](https://user-images.githubusercontent.com/62588629/225083466-39ca4a93-e06a-4a04-83ba-82d60b548513.png)
+
+- Click the extensions icon
+- Click the ellipsis (3 dots)
+- Choose Install from VSIX...
+
+---
+
+
+3. Ignore any VSCode warning messages (should go away after creating a project)
+    
+  ---
+
+4. `Linux:` In the next step(project creation), File Dialogues will spawn behind VSCode(known bug)
+
+  ---
+
+5. Run extension command "Create Unreal clangd project" on your Unreal project
+    - Example:
+
+      ![image](https://user-images.githubusercontent.com/62588629/225809141-01e39abf-0928-4cc4-a5e9-f5e3c2a82c52.png)
+
+  ---
+6. Use the `Editor` suffix and `Development` config when Building/Running
+    - Build
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/fbada348-a3a5-42ed-ad2f-d02255d70c3d)
+
+      ---
+    - Run/Debug
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b651f4e3-0fab-43da-b5e7-02fb8cec24e7)
+
+  ---
+
+7. Use `DebugGame` when you have to Debug something
+    - Debugging
+    
+      ![image](https://github.com/boocs/unreal-clangd/assets/62588629/72ef61c0-bf11-48cb-9d3b-fd03253689d7)
+
+  ---
+
+8. Run extension command 'Update Compile Commands' to fix fake red squiggles that may rarely happen.
+
+    ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
+
+
 ---
 ## Warnings Before Use
 
 1. Code Completion/completionHelper.cpp is the heart of the extension. It's how you get Unreal symbols into code completion. [See Section](#code-completion)
 1. Like other Intellisense, you must wait for a file to load before using code completion [See Info Bar section](#bottom-info-bar)
+    - Still pretty fast!
 1. Weird Virtual function code completion behavior [See Section](#adding-virtual-functions-quirk)
 1. This version `does have brace initialization` completion!
 
@@ -126,7 +174,7 @@
 7. Popup dialogs use systems sounds. Most Operating Systems allow you to adjust System(OS) sounds without affecting overall sound volume.
 8. Just like Microsoft's C++ extension, with clangd the UPROPERTY type macros don't work with code completion for their parameters.
 
-   **note: I think I can do this with a new extension. Coming Soon™**
+   
 9. clangd's Intellisense cache will be stored in your project's .vscode/unreal-clangd/cache folder
 10. With both clangd extension and Microsoft's C++ extension installed you might get this window pop up. 
 
@@ -134,7 +182,7 @@
 
     ![](https://user-images.githubusercontent.com/62588629/224883775-e7548187-d12d-4787-b143-19f31ec2fa8f.jpg)
 
-    `note: You can keep Microsoft's C++ extension installed for it's debugging ability`
+    `note:` You should still use Microsoft's C++ extension for it's Building/Debugging ability
 
 ```
 ```
@@ -207,29 +255,39 @@ Windows and Unreal 5.2+(`non Full Source`) have been tested with:
 ---
 ## Requirements
 
-`note:` Microsoft C++ [extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) is not required but you should still use it.
-Keep it enabled for its `debugging` capability
-
+#### General Requirements
 
 - Unreal Engine 5.2+
-- Requires specific LLVM/clang/clangd versions! (**see plaform categories below**)
+- Requires specific LLVM/clang/clangd versions!
+  - https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
+  - Make sure to select correct Unreal Engine version (the link goes to UE 5.3)
+  - Requirements are only posted after a full release of UE. For Beta/Preview releases you'll have to test clang versions
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let clangd extension auto install LLVM)
+- Microsoft C++ [extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) for its `Building/Debugging` capability
 
+`Note:` Read below for specific Windows, Mac, and Linux requirements
 
-### Clang/XCode versions
+#### Mac (XCode/LLVM)
 `note:` Versions for these are usually different for each release.
+
 https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
 
-
 - Make sure to choose the correct Engine version in the documentation (the link above is for UE 5.3)
-- Requirements are only posted after a full release of UE. For Beta/Preview releases you'll have to test clang versions
+- You still need XCode for it's libraries(See link above)
+- Does XCode come with clang++,clangd,clang-tidy, and clang-format? Use that version
+  - Else download the clang(LLVM) version specified in the `Linux` section of the above link
+  - For Unreal 5.3 it would be LLVM 16.0.6
 
 
-#### Windows clang
-- Windows users should use the Linux clang version requirement
+#### Windows (LLVM)
+- Windows users should use the Linux clang(LLVM) version requirement
+  - Make sure you select the correct Unreal Version for the Docs
+  - Different Unreal versions require different LLVM versions
+  - https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
 - Download clang/clangd from https://github.com/llvm/llvm-project/releases/
-  - Filename will be LLVM-(version)-win64.exe (e.g. for UE 5.3.0, the filename will be LLVM-16.0.6-win64.exe)
-- `note:` With UE 5.3 unfortunately Unreal Build Tool requires updated libraries so needs to see new clang builds. This means you must install clang/clangd in the default directory.
+  - Filename will be LLVM-(version)-win64.exe (e.g. for UE 5.3.#, the filename will be LLVM-16.0.6-win64.exe)
+  - Remember if not using UE 5.3.# the LLVM version will be different
+- `note:` With UE 5.3 unfortunately Unreal Build Tool requires updated libraries so needs to see required LLVM builds. This means you must install LLVM in the default directory.
 
 ### Other requirements
 #### Windows Requirements
@@ -261,29 +319,15 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
        ![image](https://github.com/boocs/unreal-clangd/assets/62588629/aec88536-557e-4171-96c3-c73d8dc15766)
     
     4. If you haven't created your Unreal project yet you can skip steps 5/6
-    5. If you know your project is already using the 'correct' Visual Studio Build Tools version, then you can skip Step 6 and just run this extension's '`Update Compile Commands`' command:
+    5. For existing Unreal projects, first Refresh your project (this will overwrite your workspace file which we fix in step 6)
 
-       ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
+        - You can **Generate Visual Studio Project files** by right clicking on your project's *.uproject file in your project's parent folder.
 
-        - An easy way to check which Build Tools version your project is using is to open any compileCommands_*.json file in your project's .vscode folder.
-
-        - Check any 'arguments' property and it will have the path of the Build Tool which also has the version number.
-        For my Unreal 5.3 project this is how it looks:
-        ![image](https://github.com/boocs/unreal-clangd/assets/62588629/32c9b4f5-b67d-4d24-bea8-8645246c5c7d)
-
-          `note:` The Build Tools version in the compileCommands_*.json has nothing to do with the clang/clangd or intellisense. It's just an indicator of which Build Tools version Unreal saw when creating your Unreal project.
+        - You can also **Refresh Visual Studio Project** inside UE5's Tools menu
     
-    6. Once installed, if you already have your Unreal project created you should probably Refresh your Unreal project by `Generating Visual Studio project files`
+    6.  You'll have to reinstall the project that this extension creates because `Generating Visual Studio project files` will overwrite your project's VSCode workspace file which has all the clangd project settings
 
-       You can **Generate Visual Studio Project files** by right clicking on your project's *.uproject file in your project's parent folder.
-
-       You can also **Refresh Visual Studio Project** inside UE5's Tools menu
-
-       - Your VSCode config files will probably be using older Build Tools 2022 versions
-       - Doing the above will let Unreal choose the best Build Tools version from the versions you have installed
-       - `note:` You'll have to reinstall the project that this extension creates because `Generating Visual Studio project files` will overwrite your project's VSCode workspace file which has all the clangd project settings
-       - `Doing a partial reinstall is very easy to do!` See [here](#reinstall-without-overwrite)
-       - Reinstalling the project that this extension creates will also run the command specified in Step 5
+        - [Doing a partial install](#reinstall-without-overwrite)
 
 #### Ubuntu 22.04 Requirements
 - dotnet-runtime-6.0
@@ -697,6 +741,11 @@ It should auto detect when:
 
 `Note`: If you add a plugin to your *.build.cs file, you'll need to run the command manually.
 
+#### Manually
+Run extension command 'Update Compile Commands' manually to fix fake red squiggles that may rarely happen.
+
+![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
+
 ```
 ```
 
@@ -940,8 +989,7 @@ This setting isn't in the *.code-workspace file but you can add and adjust it to
   "editor.inlayHints.fontSize": 12
   ```
 
-```
-```
+
 
 [Top](#table-of-contents)
 
@@ -950,89 +998,11 @@ This setting isn't in the *.code-workspace file but you can add and adjust it to
 
 Clang Tidy is off by default. This is because there's a lot of ambiguity that applies to what clang tidy code Checks to enable/disable. 
 
-1. There are warnings that will tell you to fix something which you **shouldn't** fix because of how Unreal works.
-   Even obvious things could be wrong to fix!
-2. There are warning inside Unreal macros(e.g. GENERATED_BODY()) and other Unreal functions(e.g. check()). But should you turn the warnings off globally or should you disable clang tidy for just that line of code?
+I've created a separate guide to clang tidy:
 
-For these reasons, if you turn on Clang Tidy the extension blanket enables all relevant code checks so you can decide what Checks to turn off. **This will mean your code might have 100s of warnings all of a sudden!**
+https://github.com/boocs/Unreal-clang-tidy-guide
 
-**note:** There is one Readibility setting I do disable because it did cause clangd to crash when it read some code from Lyra. You can read more about it in the [Lyra](#lyra) section at the bottom of this readme.
-
-```
-```
-### **How to Disable Tidy Warnings In A .clang-tidy File**
-For an easy example lets look at this warning:
-
-- ![](https://user-images.githubusercontent.com/62588629/226078048-3494c1a9-13aa-48aa-a128-34771ac17c2e.png)
-
-- **Clicking the warning will highlight it, like above, and take you to the file/line where the warning is**
-
-- ![](https://user-images.githubusercontent.com/62588629/226077923-4d024291-a433-4a5e-b51a-ed619d8d9cb6.png)
-
-  - **This Tidy warning is opinion based**
-  - **It thinks the capital `F` is more readable than the lower case `f` and wants to change it**
-  - **We make no opinion on this and just use it as an example on how to disable warnings**
-
-- **To disable this warning, hover your mouse cursor over the code that has the squiggly line**
-
-- ![](https://user-images.githubusercontent.com/62588629/226078423-8efdc5f7-6837-45ab-b937-5362683adf08.png)
-
-  - A window will appear that has the name of the warning
-  - You can click and drag your mouse, over the warning name, to highlight it.
-  - Copy the warning name
-
-- In VSCode, open your `.clangd-tidy` file. It should be in your project's parent directory
-- Paste the warning name prepended with a `'-'` like so:
-
-- ![](https://user-images.githubusercontent.com/62588629/226079270-0d25730a-0488-4193-90a3-844d1707ad66.png)
-  - The line added is highlighted just for readability
-  - Notice the prepended `-`
-  - Remember the comma `','` at the end of the line
-  - The error will `not` go away after modifying the .clang-tidy file
-  - See [Refreshing a Source File](#refreshing-a-source-file) section below
-
-```
-```
-### **How To Disable Tidy Warnings In Code**
-- Go to the code with the warning
-- Make sure your typing cursor is at the end of the line
-- ![](https://user-images.githubusercontent.com/62588629/226083227-522b4b65-fbcc-4004-8570-e91e8b35e76e.png)
-- Right click on the typing cursor to open the context menu:
-- ![](https://user-images.githubusercontent.com/62588629/226083374-5285f493-3aaf-4259-acce-d90c0375ed2d.png)
-- Choose Tidy: Remove linting(Current)
-- ![](https://user-images.githubusercontent.com/62588629/226083440-5f5e0d50-bde1-4dd3-8601-d945d95b0b49.png)
-- **Your Tidy warning should be gone!**
-- `Alternative:`
-  - Use Tidy: Remove linting(Next) with typing cursor above warning line
-  - ![](https://user-images.githubusercontent.com/62588629/226083538-473c021d-f264-494d-b8ac-c78a7257d206.png)
-
-
-```
-```
-### **Refreshing a Source File**
-Changing the .clang-tidy file will not update the warnings list.
-You can refresh a source file by:
- - Typing a space in the source file
- - Waiting half a second
- - Deleting the space
- - Alternatives are:
-   1. Press F1 and use the Reload Window command
-   2. Or just restart VSCode
-
-```
-```
-### **Testing .clang-tidy**
-I've created a Tidy test to test the cfg file in case of errors. e.g. Not using a comma could prevent Tidy from working.
-
-Just right click, in a Source file, where you want the line to be pasted and choose Tidy: Test warning
-  - It's near the bottom of the context menu
-  - I've tried to include different warnings, on one line, in case you've disabled some of the warnings this tests.
-
-```
-```
-### **Running Clang Tidy on Multiple Files**
-  - Just keep double clicking on all the files you want to check
-  - All the files, opened by double clicking, will now process Intellisense and Clang Tidy in parallel
+`Note`: In the settings of this extension you can enable a Tidy setting so that whenever you create a project it will automatically create a .clang-tidy file.
 
 ```
 ```
@@ -1116,15 +1086,19 @@ If you change the Exec Type setting to `debug` you'll need to install the [Micro
 ```
 ### C# Intellisense Errors
 
-After installing the C# extension you may start getting C# Intellisense errors. To get rid of the errors:
+After installing the C# extension you may get this window.
 
-* In VSCode press F1 to run a command
-* Type: `OmniSharp: Select Project`
-* Choose a project that doesn't cause errors
-  * I chose the Lua.sln project
+When this windows pops up choose "Do not load any":
 
-```
-```
+![image](https://github.com/boocs/unreal-clangd/assets/62588629/0739a3c0-2427-40c2-be1c-a4817b30acb0)
+
+`Note:` If you already set a default, then the setting should be found in your project's *.code-workspace file
+
+You can remove it if it's not working correctly.
+
+    "dotnet.defaultSolution": "UE5/Engine/Plugins/ScriptPlugin/Source/Lua/Lua.sln"
+
+---
 ### clangd indexing 
 
 Because we're using Full Source clangd indexing took longer:
@@ -1213,7 +1187,9 @@ https://github.com/boocs/unreal-clangd/issues
 ### Parameters for UPROPERTY
 Just like the Microsoft C++ extension, parameter code completion for UPROPERTY(and others) macro doesn't work.
 
-**note:** I think I can create an extension that can fix this
+I created an extension for this:
+
+https://github.com/boocs/UE-Reflection-Func-Params
 ```
 ```
 ### Refresh Visual Studio Project
@@ -1275,12 +1251,6 @@ Some might not know you can do this. With how function name code completions wor
 
 ## Release Notes
 See [CHANGLELOG](/CHANGELOG.md)
-
-### Latest Release
-- Fixed Ubuntu support
-- Updated completionHelper.h
-- Updated Requirements
-- Now supports UE versons >= 5.2
 
 ```
 ```

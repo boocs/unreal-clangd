@@ -3,7 +3,22 @@
 ## [Unreleased]
 
 - Create command that shows clang and clangd version in terminal
-- Add a way to add skeleton support for UE5 source intellisense (wont work but people will have a compile_flags.txt and a UE5 .clangd file to try to get it to work)
+
+## [2.3.0] 2024-01-21
+### Added
+- clang-format: added "NamespaceIndentation: All" to default config when created
+- Docs: Added Quick Start Guide section
+### Changed
+- Intellisense now uses DebugGame instead of Development. 
+    - You should still use Development most of the time when Building or Running your project. (You will still get Intellisense)
+    - This prevents having to Rebuild when Running your project using Development
+    - Fixes fake red squiggles after Building your project
+- When a Creating Project we now put the compile commands path in the .clangd file instead of the workspace cfg file.
+    - This will set the stage, for the future, for using a different .clangd file and compile commands/flags file for the Unreal Engine source files.
+- Docs: Requirements section is less of a mess
+- Docs: Changed Tidy Guide to a link to a separate Clang Tidy Guide
+### Removed
+- clang-tidy: removed -readability-static-accessed-through-instance to default config when created. Added because of Tidy crash in Lyra that's fixed in UE5.3. It was also the wrong way to fix the Check that caused the crash.
 
 ## [2.2.1] - 2023-10-21
 ### Changed

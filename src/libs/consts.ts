@@ -6,7 +6,7 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.2.1";
+export const EXTENSION_VERSION = "2.3.0";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
@@ -150,7 +150,7 @@ export const CLANGD_STRINGIFY_OPTIONS = {directives: true};
 export const CLANG_FORMAT_STRINGIFY_OPTIONS = {directives: true};
 export const CLANG_TIDY_STRINGIFY_OPTIONS = {directives: true};
 
-export const UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT = "Development";
+export const UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT = "DebugGame";
 export const UPDATE_COMPILE_COMMANDS_ARG_GEN_CLANGDB = "-mode=GenerateClangDataBase";
 export const UPDATE_COMPILE_COMMANDS_ARG_ARCHITECTURE_EMPTY = "-architecture=";
 //export const UPDATE_COMPILE_COMMANDS_DBGCFG_ARG
@@ -256,7 +256,8 @@ export const defaultConfigSettings: AllDefaultSettings = {
 export const defaultCompilerFlags: CompileFlags = {
     "Add": [
         "-D__INTELLISENSE__"
-    ]
+    ],
+    "CompilationDatabase" : ""
 };
 
 const defaultInlayHints: InlayHintsFlags = {
@@ -273,7 +274,7 @@ export const defaultGeneralClangdCfgSettings: ClangdCfgFileSettings = {
 };
 
 export const defaultGeneralClangTidySettings: ClangTidyFileSettings = {
-    Checks: "-*,\nreadability-*,\n-readability-static-accessed-through-instance,\ncppcoreguidelines-*,\nbugprone-*,\nmodernize-*,\nperformance-*,\nmisc-*",
+    Checks: "-*,\nreadability-*,\ncppcoreguidelines-*,\nbugprone-*,\nmodernize-*,\nperformance-*,\nmisc-*",
     CheckOptions: [{key: "readability-function-cognitive-complexity.Threshold", value: 25}],
     FormatStyle: "file"
 };
@@ -285,7 +286,9 @@ export const defaultGeneralClangFormatFile: ClangFormatFileSettings = {
     ColumnLimit: 120,
     IndentWidth: 4,
     SortIncludes: "false",
-    AccessModifierOffset: -4
+    AccessModifierOffset: -4,
+    NamespaceIndentation: "All"
+
 };
 
 export const completionHelperCppContent = "/*\n" +

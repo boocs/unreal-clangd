@@ -162,12 +162,14 @@ export interface ClangTidyFileSettings {
 
 export interface ClangFormatFileSettings {
 	"BasedOnStyle": "LLVM",
-    "UseTab": "Never"
-    "IndentWidth": 2 | 4
-    "ColumnLimit": 80 | 100 | 120
-    "SortIncludes": "false" | "true" 
-    "BreakBeforeBraces": "Allman"
-	"AccessModifierOffset": -4
+    "UseTab": "Never",
+    "IndentWidth": 2 | 4,
+    "ColumnLimit": 80 | 100 | 120,
+    "SortIncludes": "false" | "true", 
+    "BreakBeforeBraces": "Allman",
+	"AccessModifierOffset": -4,
+	"NamespaceIndentation": "All"
+
 }
 
 export interface CompileCommands {
@@ -209,7 +211,7 @@ export type VSCodeSettingValues = string | string[] | ClangArgWithValue[] | bool
 // 	[settingName: string]: { value: VSCodeSettingValues, configTarget: ConfigurationTarget | undefined }
 // };
 
-export type ClangArgs = "-compile-commands-dir" | "-header-insertion" | "-all-scopes-completion" | "-limit-results"
+export type ClangArgs = "-header-insertion" | "-all-scopes-completion" | "-limit-results"
 	| "-header-insertion-decorators" | "-completion-style" | "-background-index" | "-limit-references"
 	| "-function-arg-placeholders";
 export type ClangArgWithValue = `${ClangArgs}=${string}`;

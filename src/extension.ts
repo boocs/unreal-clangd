@@ -235,7 +235,11 @@ export async function activate(context: vscode.ExtensionContext) {
 			console.error(tr.COULDNT_GET_CLANG_TIDY_SETTINGS);
 			return;
 		}
-		const clangdExtYamlFiles: typ.ExtensionYamlFiles = getDefaultClangdExtYamlFiles(projectInfo, isClangTidyEnabled);
+		
+		const defaultClangdCfgSettings = consts.defaultGeneralClangdCfgSettings;
+		dyn.addSettingsToClangdCfg(mainWorkspaceFolder, defaultClangdCfgSettings, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName: false}).fsPath);
+
+		const clangdExtYamlFiles: typ.ExtensionYamlFiles = getDefaultClangdExtYamlFiles(projectInfo, defaultClangdCfgSettings, isClangTidyEnabled);
 
 		const defaultCfgSettings: typ.AllDefaultSettings = consts.defaultConfigSettings;
 
@@ -1464,7 +1468,7 @@ async function isUnrealProject(): Promise<boolean> {
 }
 
 
-function getDefaultClangdExtYamlFiles(projectInfo: typ.ProjectInfoVars, isTidyEnabled: boolean): typ.ExtensionYamlFiles {
+function getDefaultClangdExtYamlFiles(projectInfo: typ.ProjectInfoVars, defaultClangdCfgSettings: typ.ClangdCfgFileSettings, isTidyEnabled: boolean): typ.ExtensionYamlFiles {
 
 	let pathMatch : string[] = [consts.CLANGD_PATHMATCH_COMPLETION_HELPER_PATH];  // Add completionHelper.cpp to .clangd file
 
@@ -1476,12 +1480,13 @@ function getDefaultClangdExtYamlFiles(projectInfo: typ.ProjectInfoVars, isTidyEn
 		}
 		
 	}
-	consts.defaultGeneralClangdCfgSettings.If.PathMatch = pathMatch;
+
+	defaultClangdCfgSettings.If.PathMatch = pathMatch;
 
 	const installFolders = [projectInfo.mainWorkspaceFolder.uri];
 
 	const clangdCfgFile: typ.YamlFile = {
-		docObjects: [consts.defaultGeneralClangdCfgSettings],
+		docObjects: [defaultClangdCfgSettings],
 		stringifyOptions: consts.CLANGD_STRINGIFY_OPTIONS,
 		installFolders: installFolders,
 		topComment: "",
