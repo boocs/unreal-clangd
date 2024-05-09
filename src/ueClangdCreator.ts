@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { TextEncoder } from 'util';
 
 import * as consts from './libs/consts';
-import type { ProjectInfoVars, CreationCmdLineArgs, CreationCmdLineValue, ClangdExtensionFile, AllDefaultSettings, KeysOfAllDefaultSettings, ValuesOfAllDefaultSettings, CfgSettings, CfgSettingValue, AllSettingNamesKeys } from './libs/types';
+import type { ProjectInfoVars, CreationCmdLineArgs, CreationCmdLineValue, ClangdExtensionFile, AllDefaultSettings, KeysOfAllDefaultSettings, ValuesOfAllDefaultSettings, CfgSettings, CfgSettingValue } from './libs/types';
 
 import * as tr from './tr/text';
 

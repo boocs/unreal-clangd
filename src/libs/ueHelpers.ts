@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import * as console from './console';
 import { FOLDER_NAME_SOURCE, UNREAL_BUILD_TARGET_FILE_EXTENSION } from './consts';
 import { TextDecoder } from 'util';
+import * as pPath from 'path';
 
 
 const WORKSPACE_FOLDER_NAME_UE4 = "UE4";
@@ -95,13 +96,40 @@ export function getUnrealWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
 }
 
 
-export async function getProjectWorkspaceFolder(): Promise<vscode.WorkspaceFolder | undefined> {
-    if (!vscode.workspace.workspaceFolders) {
+export function getProjectWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
+    const workspaceFileUri = vscode.workspace.workspaceFile;
+    
+    if (!workspaceFileUri || !vscode.workspace.workspaceFolders) {
         console.error("No workspace folders found!");
         return undefined;
     }
 
+    const workspaceFileFolderPath = pPath.parse(workspaceFileUri.fsPath).dir;
+
     for (const folder of vscode.workspace.workspaceFolders) {
+                
+        if(workspaceFileFolderPath === folder.uri.fsPath){
+            return folder;
+        }
+        
+    }
+
+    return undefined;
+}
+
+
+export async function isUnrealProject(): Promise<boolean> {
+    const workspaceUri = vscode.workspace.workspaceFile;
+    
+
+    if (!workspaceUri || !vscode.workspace.workspaceFolders) {
+        console.error("No workspace folders found!");
+        return false;
+    }
+
+    for (const folder of vscode.workspace.workspaceFolders) {
+        
+        
         if (folder.name === WORKSPACE_FOLDER_NAME_UE5 || folder.name === WORKSPACE_FOLDER_NAME_UE4) { // Skip the Unreal Engine folder
             continue;
         }
@@ -110,12 +138,12 @@ export async function getProjectWorkspaceFolder(): Promise<vscode.WorkspaceFolde
 
         for (const file of folderFiles) {
             if (file[0].includes(PROJECT_UPROJECT_FILE_EXT)) {
-                return folder;
+                return true;
             }
         }
     }
 
-    return undefined;
+    return false;
 }
 
 
@@ -143,7 +171,7 @@ export async function getUProjectFileName(projectWorkspaceFolder:vscode.Workspac
 }
 
 export async function getMainSourceFolderUri(folderName: string = FOLDER_NAME_SOURCE) {
-    const mainWorkspaceFolderUri = (await getProjectWorkspaceFolder())?.uri;
+    const mainWorkspaceFolderUri = getProjectWorkspaceFolder()?.uri;
 
     if(!mainWorkspaceFolderUri){
         console.error("Couldn't get mainProjectWorkspace!");
@@ -154,11 +182,11 @@ export async function getMainSourceFolderUri(folderName: string = FOLDER_NAME_SO
 }
 
 export async function getUprojectUri(): Promise<vscode.Uri | undefined> {
-    const projectWorkspaceFolder = await getProjectWorkspaceFolder();
+    const projectWorkspaceFolder = getProjectWorkspaceFolder();
     const uprojectFilename = await getUProjectFileName(projectWorkspaceFolder);
 
     if(!projectWorkspaceFolder || !uprojectFilename){
-        console.error(`Couldn't get uproject vars!: ${projectWorkspaceFolder?.uri.fsPath}, ${uprojectFilename}`);
+        console.error(`Couldn't get uproject vars!`);
         return;
     }
 
@@ -196,7 +224,7 @@ export async function getModuleNames(uprojectUri: vscode.Uri | undefined): Promi
         return;
     }
 
-    let moduleNames = [];
+    const moduleNames = [];
 
     for (const module of uprojectFile.Modules) {
         moduleNames.push(module.Name);
@@ -216,7 +244,7 @@ export async function getBuildTargetNames(topItemContains: string | undefined = 
 
     const soureFileType =  await vscode.workspace.fs.readDirectory(mainSourceFolderUri);
 
-    let targetNames = [];
+    const targetNames = [];
     for (const ft of soureFileType) {
         if(ft[1] !== vscode.FileType.File){
             continue;

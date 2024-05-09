@@ -4,6 +4,23 @@
 
 - Create command that shows clang and clangd version in terminal
 
+## [2.5.0] 2024-05-05
+### Changed
+- Moved to using a project's Native Intellisense files instead of using UBT's mode=GenerateClangDataBase
+    - mode=GenerateClangDataBase was overwriting build files causing you to have to rebuild
+- In .clangd, CompilationDatabase is now a relative path(set during creation process)
+### Added
+- Native - Removed PCH header from Intellisense files. Not needed and increases intellisense loading greatly.
+- Native - Setting: unreal-clangd.IntellisenseType. This is always set to 'Native' even if switched.
+- Native - Setting: unreal-clangd.native.minutesTillIntellisenseFilesAreOld
+    - Can cause circular run of Update Compile Commands if set too low. You can also run Update Compile Commands manually if you run into trouble with it being too high.
+- Native - Setting: unreal-clangd.native.code-workspaceFileBackupSettings
+    - Array so you can specify which settings to backup in your *.code-workspace file when the native `Update Compile Commands` is run. This runs UBT's 'refresh project files' command that will overwrite your *code.workspace file. Some settings will automatically be backed up and are listed in your settings.
+### Removed
+- -D\_\_INTELLISENSE\_\_ from .clangd (always muddled on if I should include it). 5.4 forced me to remove it since it caused a error if enabled.
+### Fixed
+- Code that added compiler flags to eventually go in .clangd
+
 ## [2.3.0] 2024-01-21
 ### Added
 - clang-format: added "NamespaceIndentation: All" to default config when created

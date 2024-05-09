@@ -3,10 +3,10 @@ import * as vscode from "vscode";
 import * as ueHelpers from "./ueHelpers";
 
 import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNames, ClangdDefaultSettings, ClangdSettingNames, ClangFormatFileSettings, ClangTidyFileSettings, CreationCmdLineSettings, CreationCmdLineValue, InlayHintsFlags, UeClangdSettingNames, VSCodeDefaultSettings, VSCodeSettingNames} from "./types";
-import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue } from "./types";
+import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue, GlobPatterns, BackupGlobDirectories } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.3.0";
+export const EXTENSION_VERSION = "2.5.0";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
@@ -17,7 +17,7 @@ export const UPROJECT_FILE_EXTENSION_WITH_DOT = ".uproject";
 export const LINUX_CLANGD_CFG_ADD_USR_INCLUDE = "-isystem/usr/include"; 
 
 export const EXT_CMD_UPDATE_COMPILE_COMMANDS = "unreal-clangd.updateCompileCommands";
-export const EXT_CMD_FIX_RESPONSE_QUOTED_PATHS = "unreal-clangd.fixQuotesResponseFiles";
+export const EXT_CMD_FIX_INTELLISENSE_FILES = "unreal-clangd.fixIntellisenseFiles";
 export const EXT_CMD_CREATE_CLANGD_PROJECT = "unreal-clangd.createUnrealClangdProject";
 export const VSCODE_CMD_RELOAD_WINDOW = "workbench.action.reloadWindow";
 export const VSCODE_INSERT_SNIPPET = "editor.action.insertSnippet";
@@ -36,6 +36,147 @@ export const CONFIG_SECTION_UNREAL_CLANGD = "unreal-clangd";
 export const SETTING_CLANGD_PATH = "path";
 export const SETTING_DISABLED = "disabled";
 
+export const FILE_BACKUP_EXTENSION = ".bkup";
+export const FILE_NAME_DEFINITIONS = "Definitions.h";
+export const FILE_NAME_GCD_DEFINITIONS = "Definitions.gcd.h";
+
+export const POWERSHELL_FILE_NAME = "PowerShell.exe";
+export const NATIVE_COMPILE_COMMANDS_NAME = "compileCommands_Default.json";
+
+export const NATIVE_COMPILE_COMMANDS_TOO_OLD_IN_MINUTES = 5;
+
+export const NATIVE_WIN_CLANGD_ADD_STD_CPP20 = "/std:c++20";
+export const NATIVE_WIN_CLANGD_ADD_STD_CPP17 = "/std:c++17";
+export const NATIVE_WIN_CLANGD_ADD_STD_CPP14 = "/std:c++14";
+
+export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP20 = "-std=c++20";
+export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP17 = "-std=c++17";
+export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP14 = "-std=c++14";
+
+export const FOLDER_NATIVE_COMPILE_COMMANDS_DEFAULT_FOLDER_NAME = "compileCommands_Default";
+
+export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=@).*.rsp";
+
+export const NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS = [
+    "clangd.arguments", "clangd.path", "clangd.detectExtensionConflicts", "files.associations", "workbench.colorCustomizations", "editor.suggestFontSize", "dotnet.defaultSolution"
+];
+
+export const WIN_COMPILER_FLAGS_TO_ADD = [
+    "/TP",
+    "-mwaitpkg",
+	"/we4668",
+    "/wd4244",
+    "/wd4838",
+    "/W4",
+    "/wd5054",
+    "-Werror",
+    "-Wdelete-non-virtual-dtor",
+    "-Wenum-conversion",
+    "-Wbitfield-enum-conversion",
+    "-Wno-enum-enum-conversion",
+    "-Wno-enum-float-conversion",
+    "-Wno-ambiguous-reversed-operator",
+    "-Wno-deprecated-anon-enum-enum-conversion",
+    "-Wno-deprecated-volatile",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-but-set-parameter",
+    "-Wno-ordered-compare-function-pointers",
+    "-Wno-bitwise-instead-of-logical",
+    "-Wno-gnu-string-literal-operator-template",
+    "-Wno-inconsistent-missing-override",
+    "-Wno-invalid-offsetof",
+    "-Wno-switch",
+    "-Wno-tautological-compare",
+    "-Wno-unknown-pragmas",
+    "-Wno-unused-function",
+    "-Wno-unused-lambda-capture",
+    "-Wno-unused-local-typedef",
+    "-Wno-unused-private-field",
+    "-Wno-unused-variable",
+    "-Wno-undefined-var-template",
+    "-Wshadow",
+    "-Wundef",
+    "-Wno-float-conversion",
+    "-Wno-implicit-float-conversion",
+    "-Wno-implicit-int-conversion",
+    "-Wno-c++11-narrowing",
+    "-Wno-microsoft",
+    "-Wno-msvc-include",
+    "-Wno-pragma-pack",
+    "-Wno-inline-new-delete",
+    "-Wno-implicit-exception-spec-mismatch",
+    "-Wno-undefined-bool-conversion",
+    "-Wno-deprecated-writable-strings",
+    "-Wno-deprecated-register",
+    "-Wno-switch-enum",
+    "-Wno-logical-op-parentheses",
+    "-Wno-null-arithmetic",
+    "-Wno-deprecated-declarations",
+    "-Wno-return-type-c-linkage",
+    "-Wno-ignored-attributes",
+    "-Wno-uninitialized",
+    "-Wno-return-type",
+    "-Wno-unused-parameter",
+    "-Wno-ignored-qualifiers",
+    "-Wno-expansion-to-defined",
+    "-Wno-sign-compare",
+    "-Wno-missing-field-initializers",
+    "-Wno-nonportable-include-path",
+    "-Wno-invalid-token-paste",
+    "-Wno-null-pointer-arithmetic",
+    "-Wno-constant-logical-operand",
+    "-Wno-unused-value",
+    "-Wno-bitfield-enum-conversion"
+];
+
+export const LINUX_COMPILER_FLAGS_TO_ADD = [
+    //"#- -isystem/usr/include",
+    "-xc++",
+    //"#- -nostdinc++",
+    //"#- -isystemThirdParty/Unix/LibCxx/include",
+    //"- -isystemThirdParty/Unix/LibCxx/include/c++/v1",
+    "-Wall",
+    "-Werror",
+    "-Wdelete-non-virtual-dtor",
+    "-Wenum-conversion",
+    "-Wbitfield-enum-conversion",
+    "-Wno-enum-enum-conversion",
+    "-Wno-enum-float-conversion",
+    "-Wno-ambiguous-reversed-operator",
+    "-Wno-deprecated-anon-enum-enum-conversion",
+    "-Wno-deprecated-volatile",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-but-set-parameter",
+    "-Wno-ordered-compare-function-pointers",
+    "-Wno-bitwise-instead-of-logical",
+    "-Wno-deprecated-copy",
+    "-Wno-deprecated-copy-with-user-provided-copy",
+    "-Wno-gnu-string-literal-operator-template",
+    "-Wno-inconsistent-missing-override",
+    "-Wno-invalid-offsetof",
+    "-Wno-switch",
+    "-Wno-tautological-compare",
+    "-Wno-unknown-pragmas",
+    "-Wno-unused-function",
+    "-Wno-unused-lambda-capture",
+    "-Wno-unused-local-typedef",
+    "-Wno-unused-private-field",
+    "-Wno-unused-variable",
+    "-Wno-undefined-var-template",
+    "-Wshadow",
+    "-Wundef",
+    "-Wno-float-conversion",
+    "-Wno-implicit-float-conversion",
+    "-Wno-implicit-int-conversion",
+    "-Wno-c++11-narrowing",
+    "-fdiagnostics-absolute-paths",
+    "-fdiagnostics-color",
+    "-Wno-undefined-bool-conversion"
+
+];
+
+export const CLANG_CL_FILE_NAME = "clang-cl.exe";
+
 const ueClangdSettingNames: UeClangdSettingNames = {
     extensionSection: "unreal-clangd",
     settings: {
@@ -45,7 +186,7 @@ const ueClangdSettingNames: UeClangdSettingNames = {
         "creation.overwrite": "creation.overwrite",
         "creation.tidy": "creation.tidy",
         "creation.bypassUnrealVersionCheck": "creation.bypassUnrealVersionCheck",
-        "fixes.responseFilesQuotedPaths": "fixes.responseFilesQuotedPaths",
+        "fixes.intellisenseFiles": "fixes.intellisenseFiles",
         "fixes.delegateFuncCompletions": "fixes.delegateFuncCompletions",
         "fixes.autoIncludeSourceOnly": "fixes.autoIncludeSourceOnly",
         "utility.checkForIntellisenseFilesOnStartup": "utility.checkForIntellisenseFilesOnStartup",
@@ -132,7 +273,7 @@ export const GLOB_ALL_HEADERS = "**/*.h";
 export const UPDATE_COMPILE_COMMANDS_DBGCFG_NAME = "unreal-clangd: Update Compile Commands";
 export const UPDATE_COMPILE_COMMANDS_DBGCFG_TYPE = "coreclr";
 export const UPDATE_COMPILE_COMMANDS_DBGCFG_REQUEST = "launch";
-export const UPDATE_COMPILE_COMMANDS_DBGCFG_CONSOLE = "externalTerminal";
+export const UPDATE_COMPILE_COMMANDS_DBGCFG_CONSOLE = "integratedTerminal";
 export const UPDATE_COMPILE_COMMANDS_DBGCFG_STOPATENTRY = false;
 export const UPDATE_COMPILE_COMMANDS_COMPILER_CLANG = "-Compiler=Clang";
 export const UPDATE_COMPILE_COMMANDS_PROJECT_NAME_EDITOR_SUFFIX = "Editor";
@@ -150,7 +291,7 @@ export const CLANGD_STRINGIFY_OPTIONS = {directives: true};
 export const CLANG_FORMAT_STRINGIFY_OPTIONS = {directives: true};
 export const CLANG_TIDY_STRINGIFY_OPTIONS = {directives: true};
 
-export const UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT = "DebugGame";
+export const UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT = "Development";
 export const UPDATE_COMPILE_COMMANDS_ARG_GEN_CLANGDB = "-mode=GenerateClangDataBase";
 export const UPDATE_COMPILE_COMMANDS_ARG_ARCHITECTURE_EMPTY = "-architecture=";
 //export const UPDATE_COMPILE_COMMANDS_DBGCFG_ARG
@@ -175,9 +316,11 @@ export const RE_CREATE_ARGS = /(?<=[-=])\w+/gm;
 export const RE_STRING_SOURCE_FOLDERS_SUFFIX = `[\\\\\\/]+[\\w\\s-]+`;
 export const RE_STRING_FOLDER_NAME = `[\\w\\s-]+`;
 
-export const GLOB_GCD_FILES = `Intermediate/Build/**/${UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT}/**/*.gcd`;
+export const GLOB_GCD_FILES = `Intermediate/Build/**/UnrealEditor/**/${UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT}/**/*.gcd`;
 export const GLOB_SOURCE_FILES_SUFFIX = "/**/*.{cpp,h}";
 export const GLOB_SIMPLE_CHECK_CLANGD_PROJECT_FILES = `**/*.{clangd,clang-format}`;
+
+export const LINUX_SYS_INCLUDE_CPP_V1 = "-isystemThirdParty/Unix/LibCxx/include/c++/v1";
 
 export const defaultCreationCmdLine: [CreationCmdLineSettings, CreationCmdLineValue][] = [
     [CREATION_ARG_SETTING_UNREAL_PLATFORM, ""],
@@ -185,6 +328,21 @@ export const defaultCreationCmdLine: [CreationCmdLineSettings, CreationCmdLineVa
     [CREATION_ARG_SETTING_TIDY, false]
 ];
 
+export const backupGlobDirs: BackupGlobDirectories = {
+    ModuleRules: "Intermediate/Build/BuildRules/**",
+    SourceFileCache: "Intermediate/Build",
+    //DefaultEngineGame: "Config",
+    LiveCodingInfo: "Intermediate/Build/**",
+    RspH: "Intermediate/Build/**/UnrealEditor/**"
+};
+
+export const backupGlobPatterns: GlobPatterns = {
+    [`${backupGlobDirs.ModuleRules}/*{ModuleRulesManifest.json,ModuleRules.dll,ModuleRules.pdb}`]: {MaxResults: 3},
+    [`${backupGlobDirs.SourceFileCache}/SourceFileCache.bin`]: {MaxResults: 1},
+    //[`${backupGlobDirs.DefaultEngineGame}/Default{Engine,Game}.ini`]: {MaxResults: 2},
+    [`${backupGlobDirs.LiveCodingInfo}/LiveCodingInfo.json`]: {MaxResults: undefined},
+    [`${backupGlobDirs.RspH}/*.{rsp,h}`]: {MaxResults: undefined}
+};
 
 const defaultVSCodeSettings: VSCodeDefaultSettings = {
     extensionSection: "",
@@ -216,7 +374,7 @@ const defaultVSCodeSettings: VSCodeDefaultSettings = {
 };
 
 
-const defaultCppToolsSettings: CCppDefaultSettings = {
+export const defaultCppToolsSettings: CCppDefaultSettings = {
     extensionSection: "C_Cpp",
     settings: {
         "intelliSenseEngine": { value: "disabled", configTarget: vscode.ConfigurationTarget.WorkspaceFolder },
@@ -234,7 +392,8 @@ const defaultClangdArguments: ClangArgWithValue[] = [
     "-background-index=true",
     "-limit-references=2000",
     "-completion-style=detailed",
-    "-function-arg-placeholders=true"
+    "-function-arg-placeholders=true",
+    "-log=info"
 ];
 
 const defaultClangDSettings: ClangdDefaultSettings = {
@@ -254,10 +413,7 @@ export const defaultConfigSettings: AllDefaultSettings = {
 };
 
 export const defaultCompilerFlags: CompileFlags = {
-    "Add": [
-        "-D__INTELLISENSE__"
-    ],
-    "CompilationDatabase" : ""
+    "CompilationDatabase" : `${FOLDER_NAME_VSCODE}/${FOLDER_NAME_UNREAL_CLANGD}`
 };
 
 const defaultInlayHints: InlayHintsFlags = {

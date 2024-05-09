@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */ // TODO...
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { ConfigurationTarget, Uri, WorkspaceFolder } from 'vscode';
@@ -13,14 +14,15 @@ export type CreationCmdLineArgs = Map<CreationCmdLineSettings, CreationCmdLineVa
 
 export interface CompileCommand {
 	"file": string,
-	"command": string,
-	"directory": string
+	"command"?: string,
+	"directory": string,
+	"arguments"?: string[]
 }
 
 export type CompileCommandFile = CompileCommand[];
 
 export type UeClangdSettingNamesKeys = 
-	"fixes.responseFilesQuotedPaths" |
+	"fixes.intellisenseFiles" |
 	"fixes.delegateFuncCompletions" |
 	"fixes.autoIncludeSourceOnly" |
 	"utility.checkForIntellisenseFilesOnStartup" |
@@ -70,11 +72,11 @@ export interface CCppSettingNames extends CfgSetting<"C_Cpp", CfgSettings<CCppSe
 export interface CfgSettingValue  {
 	configTarget: ConfigurationTarget,
 	value: VSCodeSettingValues
-};
+}
 type VSCodeDefaultSettingValues = Partial<CfgSettings<VSCodeSettingNamesKeys, CfgSettingValue>>;
 type UeClangdDefaultSettingValues = Partial<CfgSettings<UeClangdSettingNamesKeys, CfgSettingValue>>;
 type ClangdDefaultSettingValues = Partial<CfgSettings<ClangdSettingNamesKeys, CfgSettingValue>>;
-type CCppDefaultSettingValues = Partial<CfgSettings<CCppSettingNamesKeys, CfgSettingValue>>;
+export type CCppDefaultSettingValues = Partial<CfgSettings<CCppSettingNamesKeys, CfgSettingValue>>;
 
 export interface VSCodeDefaultSettings extends CfgSetting<"", VSCodeDefaultSettingValues> {}
 export interface UeClangdDefaultSettings extends CfgSetting<"unreal-clangd", UeClangdDefaultSettingValues> {}
@@ -87,14 +89,14 @@ export interface AllSettingNames  {
 	"clangd": ClangdSettingNames,
 	"cCpp": CCppSettingNames,
 	"vscode": VSCodeSettingNames
-};
+}
 
 export interface AllDefaultSettings {
 	"unrealClangd"?: UeClangdDefaultSettings,
 	"clangd"?: ClangdDefaultSettings,
 	"cCpp"?: CCppDefaultSettings,
 	"vscode"?: VSCodeDefaultSettings
-};
+}
 
 
 /**
@@ -137,7 +139,7 @@ export interface ClangdCfgFileSettings {
 
 export interface CompileFlags {
 	"Remove"?: string[],
-	"Add": string[],
+	"Add"?: string[],
 	"CompilationDatabase"?: string,
 	"Compiler"?: string
 }
@@ -149,9 +151,9 @@ export interface IfVars {
 
 export interface InlayHintsFlags {
 	"Designators": "Yes",
-  	"Enabled": "Yes"
-  	"ParameterNames": "Yes",
-  	"DeducedTypes": "Yes"
+	"Enabled": "Yes"
+	"ParameterNames": "Yes",
+	"DeducedTypes": "Yes"
 }
 
 export interface ClangTidyFileSettings {
@@ -172,11 +174,6 @@ export interface ClangFormatFileSettings {
 
 }
 
-export interface CompileCommands {
-	"file": string,
-	"command": string,
-	"directory": string
-}
 
 
 export enum ValidateUnrealResults {
@@ -188,12 +185,12 @@ export enum ValidateUnrealResults {
 
 export interface ProjectInfoVars {
 	mainWorkspaceFolder: WorkspaceFolder,
-	compileCommands: CompileCommands[],
+	compileCommands: CompileCommand[],
 	firstChildUrisWithSource: Uri[]
 }
 
 
-export interface ResponseFile {
+export interface File {
 	uri: Uri,
 	fileString: string | undefined
 }
@@ -201,7 +198,7 @@ export interface ResponseFile {
 export type CppWorkspaceFolderSettingsKeys = "intelliSenseEngine" | "autocomplete" | "formatting" | "errorSquiggles";
 export type ClangdGlobalSettingKeys = "arguments" | "path" | "detectExtensionConflicts";
 
-export type VSCodeSettingValues = string | string[] | ClangArgWithValue[] | boolean | {};
+export type VSCodeSettingValues = string | string[] | ClangArgWithValue[] | boolean | Record<string, unknown> | number;
 
 // export type VSCodeSettings = {
 // 	[sectionName: string]: VSCodeSectionSettings;
@@ -213,7 +210,7 @@ export type VSCodeSettingValues = string | string[] | ClangArgWithValue[] | bool
 
 export type ClangArgs = "-header-insertion" | "-all-scopes-completion" | "-limit-results"
 	| "-header-insertion-decorators" | "-completion-style" | "-background-index" | "-limit-references"
-	| "-function-arg-placeholders";
+	| "-function-arg-placeholders" | "-log";
 export type ClangArgWithValue = `${ClangArgs}=${string}`;
 
 export type SectionSettings = "C_Cpp" | "clangd";
@@ -237,3 +234,23 @@ export interface ProjectFiles {
 	intellisenseFiles: Uri[],
 	compileCommandsDirFiles: Uri[]
 }
+
+export interface GlobParams {
+	"Exclude"?: string[] | undefined | null,
+	"MaxResults": number | undefined
+}
+export type GlobPatterns = Record<string, GlobParams>;
+
+export type UriBackup = {original: Uri, backup: Uri};
+
+export interface BackupGlobDirectories {
+	"ModuleRules": string,
+    "SourceFileCache": string,
+    //"DefaultEngineGame": string,
+    "LiveCodingInfo": string,
+    "RspH": string
+}
+
+export type ExtensionIntellisenseType = "Native" | "GenerateClangDataBase";
+
+

@@ -2,7 +2,7 @@
 ```
 
 # Unreal 5.2+ clangd extension for VSCode
-#### `(Supports any Unreal version >= 5.2)`
+#### `(Supports any Unreal version >= 5.2)` This version has been updated for 5.4+ support
 
 [https://github.com/boocs/unreal-clangd](https://github.com/boocs/unreal-clangd)
 
@@ -310,13 +310,16 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 
     3. Scroll down to all the listings for **MSVC v143 - VS 2022 C++ x64/x86 build tools**
     
-       For `Unreal 5.2` you want to enable `v14.34`:
+       * For `Unreal 5.2` you want to enable `v14.34`:
 
-       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b5d8f068-8e77-43f0-b68d-7f390f007d4c)
+          ![image](https://github.com/boocs/unreal-clangd/assets/62588629/b5d8f068-8e77-43f0-b68d-7f390f007d4c)
 
-       For `Unreal 5.3` you want to enable `v14.36`:
+       * For `Unreal 5.3` you want to enable `v14.36`:
 
-       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/aec88536-557e-4171-96c3-c73d8dc15766)
+          ![image](https://github.com/boocs/unreal-clangd/assets/62588629/aec88536-557e-4171-96c3-c73d8dc15766)
+
+       * For `Unreal 5.4` you want to enable `v14.38`
+          - (Pic not shown)
     
     4. If you haven't created your Unreal project yet you can skip steps 5/6
     5. For existing Unreal projects, first Refresh your project (this will overwrite your workspace file which we fix in step 6)
@@ -362,7 +365,7 @@ The other reason was a Unreal design change. 5.0.0 uses compile commands while 5
 * `unreal-clangd.createUnrealClangdProject`: Creates all files and settings for clangd to work with an Unreal project
 * `unreal-clangd.updateCompileCommands`: Creates/Updates the compile commands file which clangd uses for Intellisense. Created in project/.vscode folder. **(Extension will, in most cases, prompt you to update automatically)**
 * `unreal-clangd.uninstall`: Uninstalls Unreal-clangd files and settings **(It will prompt you before deletion)**
-* `unreal-clangd.fixQuotesResponseFiles`: Runs the quote fix for paths in response files **(Will auto run if setting is true)**
+* `unreal-clangd.fixIntellisenseFiles`: Runs the quote fix for paths in response files **(Will auto run if setting is true)**
 * `unreal-clangd.tidyNoLintCurrentLine`: Removes clang Tidy linting on current line
   - **Modifies code**
   - **Also found in context menu**
@@ -377,6 +380,13 @@ The other reason was a Unreal design change. 5.0.0 uses compile commands while 5
 ```
 
 ### Settings
+
+* `unreal-clangd.IntellisenseType`: This is always set to 'Native' even if switched (for now)
+#### Native
+* `unreal-clangd.native.minutesTillIntellisenseFilesAreOld`:
+    - Can cause circular run of Update Compile Commands if set too low. You can also run Update Compile Commands manually if you run into trouble with it being too high.
+* `unreal-clangd.native.code-workspaceFileBackupSettings`:
+    - Array so you can specify which settings to backup in your *.code-workspace file when the native `Update Compile Commands` is run. This runs UBT's 'refresh project files' command that will overwrite your *code.workspace file. Some settings will automatically be backed up and are listed in your settings.
 #### Compile Commands
 * `unreal-clangd.compileCommands.execType`: Task | Debug
     - **Debug requires Microsoft C# extension which lets you see UBT logs**
@@ -399,7 +409,7 @@ The other reason was a Unreal design change. 5.0.0 uses compile commands while 5
      - Also activates when copying and pasting a function
 
 #### Fixes
-* `unreal-clangd.fixes.responseFilesQuotedPaths`: Enables/disables fix that automatically puts quotes around paths in all response files used by Intellisense. **(This will auto fix whenever it detects compile command changes)**
+* `unreal-clangd.fixes.intellisenseFiles`: Enables/disables Change or fix intellisense files when needed. **(This will auto fix whenever it detects compile command changes)**
 * `unreal-clangd.fixes.delegateFunctionCompletions`: Some delegate functions completions aren't correct because of macro expansion. This will fix the completion when detected.
   - See [this](#delegate-function-name-completions) section for more info
 * `unreal-clangd.fixes.focusSuggestionDelay`: Fixes code completion selection not happening with parameter hints. Default 350 [see section](#function-parameter-completions)
@@ -555,14 +565,15 @@ Click the console 'OUTPUT' tab and change the top right drop down to 'unreal cla
 * ![](https://user-images.githubusercontent.com/62588629/233814109-2ff37ccf-faaa-4fc0-bf77-e9e85bfa6120.png)
 ```
 ```
+### Clangd Project Files
+
 ### **.clangd file**
 Lets you Add/Remove Intellisense compile flags that clang uses, among other things. See [clangd docs.](https://clangd.llvm.org/config)
 
 **note:** A lot of functionality was added with clangd-14 so won't work wth earlier versions
 
 
-```
-```
+
 ### **.clang-format file**
 
 The clangd extension will take over formatting of your C++ documents.
@@ -575,8 +586,7 @@ This extension creates a bare minimum format file that makes code look pretty go
 
 For more format settings info: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
-```
-```
+
 ### **.clang-tidy file**
 Used for the C++ linter. You can see the docs [here](https://clang.llvm.org/extra/clang-tidy/)
 
@@ -608,6 +618,7 @@ You can change these from the default if you like.
 The file is located in your project's parent folder.
 
 `Warning`: Using the Unreal Engine's `Refresh Visual Studio Project` or `Generate Visual Studio Project files` command will overwrite this file. See [this](#refresh-visual-studio-project) section.
+
 
 ```
 ```
@@ -793,9 +804,7 @@ Thanks to Mark at [stackoverflow](https://stackoverflow.com/a/76096050/13950944)
 ```
 ### Linux Fixes
 
-Simple fix is to include /usr/include using -isystem
-
-   -  This is `automatically fixed` in the .clangd file that is created for your project.
+Check the .clangd project file 'Add' section for all the fixes applied.
 
 ```
 ```
@@ -1225,17 +1234,8 @@ https://github.com/electron/electron/issues/32857
 ```
 ```
 ### Installing Microsoft C++ Extension After Install
-It's faster not to recreate a project of this extension, with the 'lazy' setting, and just set the correct settings manually.
 
-1. Go to your project's .vscode directory
-2. Open settings.json
-3. Paste these settings in:
-```
-  "C_Cpp.autocomplete": "disabled",
-  "C_Cpp.errorSquiggles": "disabled",
-  "C_Cpp.formatting": "disabled",
-  "C_Cpp.intelliSenseEngine": "disabled"
-```
+The extension `now detects` that the Microsoft C++ extension is installed and will auto set correct settings on startup or reload.
 
 ```
 ```

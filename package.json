@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "clangd helper for UE 5.2+",
-  "version": "2.3.0",
+  "version": "2.5.0",
   "engines": {
     "vscode": "^1.77.3"
   },
@@ -37,9 +37,8 @@
         "category": "unreal clangd"
       },
       {
-        "command": "unreal-clangd.fixQuotesResponseFiles",
-        "title": "Fix paths in response files by surrounding them with quotes",
-        "shortTitle": "Fix paths in response files",
+        "command": "unreal-clangd.fixIntellisenseFiles",
+        "title": "Fix quotes in gcd(Intellisense) files.",
         "category": "unreal clangd"
       },
       {
@@ -72,10 +71,39 @@
       {
         "title": "Unreal Clangd",
         "properties": {
-          "unreal-clangd.fixes.responseFilesQuotedPaths": {
+          "unreal-clangd.IntellisenseType": {
+            "type": "string",
+            "default": "Native",
+            "readOnly": true,
+            "enum": [
+              "Native",
+              "GenerateClangDataBase"
+            ],
+            "markdownEnumDescriptions": [
+              "Uses your project's native Intellisense files",
+              "Uses GenerateClangDataBase for Intellisense `(currently unavailable)`"
+            ],
+            "description": "Which Intellisense files to use for your project.",
+            "scope": "resource",
+            "order": 0
+          },
+          "unreal-clangd.native.code-workspaceFileBackupSettings": {
+            "type": "array",
+            "markdownDescription": "Any setting you want backed up when running the Native \"Update Intellisense Files\" command.\nRunning this `Unreal Build Tool's` command refreshes your project causing the project's `*.code-workspace` file to be overwritten.\n These settings will automatically be backed up: `clangd.arguments`, `clangd.path`, `clangd.detectExtensionConflicts`, `files.associations`, `workbench.colorCustomizations`, `editor.suggestFontSize`, `dotnet.defaultSolution`\n* `note:` Do not set in a config that Unreal overwrites!",
+            "scope": "resource",
+            "order": 1
+          },
+          "unreal-clangd.native.minutesTillIntellisenseFilesAreOld": {
+            "type": "number",
+            "default": 5,
+            "markdownDescription": "Minutes till intellisense files are considered old.\n* Doesn't affect manually running `Update Compile Commands` command.\n* When adding multiple Source files the 'auto-detect and run' `Update Compile Commands` command might not run so run command manually.",
+            "scope": "resource",
+            "order": 1
+          },
+          "unreal-clangd.fixes.intellisenseFiles": {
             "type": "boolean",
             "default": true,
-            "description": "In reponse files, surrounds paths with quotes.",
+            "description": "Fixes Intellisense files when they have errors or need changes.",
             "scope": "resource"
           },
           "unreal-clangd.fixes.delegateFuncCompletions": {

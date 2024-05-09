@@ -1,5 +1,5 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 
 import * as vscode from 'vscode';
 
@@ -27,32 +27,37 @@ import delay = require('delay');
 import * as onTextChange from './codeCompletionFix';
 import * as dyn from './dynamic';
 import { RelativePattern } from 'vscode';
+import { EOL } from 'os';
 
 
 type UnrealPlatform = import('./libs/indexTypes').UnrealPlatform;
-//type Platform = import('./libs/indexTypes').Platform;
-type Overwrite = import('./libs/indexTypes').Overwrite;
 
-//let gcdDeleteDetectionFileWatcher: vscode.FileSystemWatcher | null = null;
 let newSourceFilesDetectionFileWatcher: vscode.FileSystemWatcher | null = null;
-//let ueCCFileWatcher: vscode.FileSystemWatcher | null = null;
 
 let isWantingToCreate = false;
-let isUninstallingUeClangdProject = false;
 
-//let hasGCDFilesBeenDeleted = false;  // prevents multiple calls asking to update cc
+let isUninstallingUeClangdProject = false;
 let hasCreatedNewSourceFile = false;  // prevents multiple calls asking to update cc
 let isUpdatingCompileCommands = false;
 let isUnrealBuildingRebuildingTask = false;
 let isUnrealCleaningTask = false;
 
+// https://www.eliostruyf.com/cancel-progress-programmatically-visual-studio-code-extensions/
+//let customCancellationToken: vscode.CancellationTokenSource | null = null;
+
+// eslint-disable-next-line prefer-const 
+let intellisenseType: typ.ExtensionIntellisenseType = "Native";  // In future this could be change via setting
+let _codeWorkspaceSettingsBackup: Record<string, unknown> | undefined = undefined;
+
 
 export async function activate(context: vscode.ExtensionContext) {
-
-	context.subscriptions.push(vscode.debug.onDidTerminateDebugSession(async (e: vscode.DebugSession) => {
-        console.log("Terminated Debug Session!");
-    }));
-
+	
+	if(!(await isUnrealProject())){
+		console.warning("This isn't an Unreal Project. Extensions will not activate.");
+		return;
+	}
+	await preActivate();
+	
 	if (!await isUnrealProject()) {
 		console.log(tr.NOT_UNREAL_PROJECT);
 		return;
@@ -64,59 +69,80 @@ export async function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('unreal-clangd.updateCompileCommands', async () => {
 
 		console.log(tr.RUNNING_UPDATE_CC);
-
-		const targetNames: string[] | undefined = await ueHelpers.getBuildTargetNames(consts.BUILD_TARGET_EDITOR_SUFFIX);
-
-		if (!targetNames || targetNames.length === 0) {
-			console.error(`targetNames length was: ${targetNames?.length}`);
-			return;
-		}
-
-		let buildTargetName: string;
-		if (targetNames.length > 1) {
-
-			const target = await vscode.window.showQuickPick(targetNames, {
-				ignoreFocusOut: true,
-				title: tr.CHOOSE_BUILD_TARGET
-			});
-
-			if (!target) {
-				return;
-			}
-			buildTargetName = target;
-		}
-		else {
-			buildTargetName = targetNames[0];
-		}
-
+		
 		const unrealWorkspaceFolder = ueHelpers.getUnrealWorkspaceFolder();
-		const projectWorkspaceFolder = await getProjectWorkspaceFolder();
-
-		if(!projectWorkspaceFolder || !unrealWorkspaceFolder){
+		const projectWorkspaceFolder = getProjectWorkspaceFolder();
+		if (!projectWorkspaceFolder || !unrealWorkspaceFolder) {
 			console.error(`${tr.COULDNT_GET_WORKSPACE_FOLDERS} ${projectWorkspaceFolder}, ${unrealWorkspaceFolder} `);
-			return;
-		}
-
-		// Delete old compile commands from unreal directory allows us to know for sure that new one was created
-		if(!(await permDeleteUri(getUnrealCompileCommandsUriForProject(unrealWorkspaceFolder.uri)))){
 			return;
 		}
 
 		const ueClangdConfig = getUnrealClangdConfig(projectWorkspaceFolder);
 		const execType = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['compileCommands.execType']);
-		
-		const platform: string | undefined = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['compileCommands.platform']);
-		const architecture: string | undefined = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['compileCommands.architecture']);
+		let args: string[] | undefined = undefined;
 
+		if (intellisenseType !== "Native") {
+			const targetNames: string[] | undefined = await ueHelpers.getBuildTargetNames(consts.BUILD_TARGET_EDITOR_SUFFIX);
 
-		const command = await getUbtPath(unrealWorkspaceFolder.uri);
-		const args = await getUpdateCCArgs(buildTargetName, platform, architecture);
+			if (!targetNames || targetNames.length === 0) {
+				console.error(`targetNames length was: ${targetNames?.length}`);
+				return;
+			}
+
+			let buildTargetName: string;
+			if (targetNames.length > 1) {
+
+				const target = await vscode.window.showQuickPick(targetNames, {
+					ignoreFocusOut: true,
+					title: tr.CHOOSE_BUILD_TARGET
+				});
+
+				if (!target) {
+					return;
+				}
+				buildTargetName = target;
+			}
+			else {
+				buildTargetName = targetNames[0];
+			}
+
+			// Delete old compile commands from unreal directory allows us to know for sure that new one was created
+			if (!(await permDeleteUri(getUnrealCompileCommandsUriForProject(unrealWorkspaceFolder.uri)))) {
+				return;
+			}
+
+			const platform: string | undefined = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['compileCommands.platform']);
+			const architecture: string | undefined = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['compileCommands.architecture']);
+
+			args = await getUpdateCCArgs(buildTargetName, platform, architecture);
+		}
+		else {
+			const uprojectUri = await ueHelpers.getUprojectUri();
+			if(!uprojectUri){
+				console.error("Project's uproject file not found!");
+				return;
+			}
+
+			args = [
+				"-projectfiles",
+				"-vscode",
+				`-project=${uprojectUri.fsPath}`,
+				"-game",
+				"-engine",
+				"-dotnet"
+			];
+		}
+
+		let command = await getUbtPath(unrealWorkspaceFolder.uri);	
 
 		if(!command || !args || args.length === 0){
 			return;
 		}
 
-		const ubtCommand = {command, args};
+		command = `.${path.sep}${path.relative(unrealWorkspaceFolder.uri.fsPath, command)}`;
+
+		const ubtCommand = {command: command, args: args };
+		//const ubtCommand: {command: vscode.ShellQuotedString | string, args: (vscode.ShellQuotedString | string)[]} = getShellQuoting(command, args);
 		if (execType === consts.COMPILE_COMMANDS_EXEC_TYPE_TASK) {
 			await runUpdateCompileCommandsWithTask(projectWorkspaceFolder ,unrealWorkspaceFolder, ubtCommand);
 		}
@@ -126,7 +152,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		else {
 			console.error(tr.EXEC_TYPE_NOT_FOUND);
 		}
-		
+
 	});
 	context.subscriptions.push(disposable);
 
@@ -135,7 +161,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		console.log(tr.RUNNING_COMMAND_CREATE_UECLANGD_PROJECT);
 
-		const mainWorkspaceFolder = await getProjectWorkspaceFolder();
+		const mainWorkspaceFolder = getProjectWorkspaceFolder();
 		if (!mainWorkspaceFolder) {
 			console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
 			return;
@@ -143,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const ueClangdConfig = getUnrealClangdConfig(mainWorkspaceFolder);
 		
-		const creatingProjectAfterReload = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
+		const creatingProjectAfterReload = ueClangdConfig.get<string>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
 		if (!creatingProjectAfterReload && !isWantingToCreate) {
 			const installTypeResult = await vscode.window.showWarningMessage(tr.WHAT_INSTALL_TYPE, { detail: tr.FULL_OR_PARTIAL, modal: true }, tr.BTTN_FULL, tr.BTTN_PARTIAL);
 		
@@ -235,22 +261,33 @@ export async function activate(context: vscode.ExtensionContext) {
 			console.error(tr.COULDNT_GET_CLANG_TIDY_SETTINGS);
 			return;
 		}
+
+		let forcedCompiler: vscode.Uri | undefined = undefined;
+		if(process.platform === "win32"){
+			const clangdDirPath =  path.parse(newClangdUri.fsPath).dir;
+			forcedCompiler = vscode.Uri.joinPath(vscode.Uri.file(clangdDirPath), consts.CLANG_CL_FILE_NAME);
+		}
+
+		if(forcedCompiler){
+			await setCompilerSetting( mainWorkspaceFolder, forcedCompiler);
+		}
 		
 		const defaultClangdCfgSettings = consts.defaultGeneralClangdCfgSettings;
-		dyn.addSettingsToClangdCfg(mainWorkspaceFolder, defaultClangdCfgSettings, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName: false}).fsPath);
+		dyn.addSettingsToClangdCfg(mainWorkspaceFolder, defaultClangdCfgSettings);
 
 		const clangdExtYamlFiles: typ.ExtensionYamlFiles = getDefaultClangdExtYamlFiles(projectInfo, defaultClangdCfgSettings, isClangTidyEnabled);
 
 		const defaultCfgSettings: typ.AllDefaultSettings = consts.defaultConfigSettings;
-
-		const isError = dyn.addDynamicDefaultSettingsToConfig(mainWorkspaceFolder, defaultCfgSettings, newClangdUri.fsPath, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName:false}));
+		
+		const ueVersion: ueHelpers.UnrealVersion | undefined = await getUnrealVersion();
+		const isError = dyn.addDynamicDefaultSettingsToConfig(ueVersion, clangdExtYamlFiles, defaultCfgSettings, newClangdUri.fsPath, getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName:false}));
 		
 		if(isError){
 			console.error(tr.ERROR_ADDING_DYNAMIC_SETTINGS);
 			return;
 		}
-
-		dyn.addPlatformSpecificChanges(uePlatform, clangdExtYamlFiles);
+		
+		dyn.addPlatformSpecificChanges( intellisenseType, uePlatform, clangdExtYamlFiles);
 
 		const clangdExtFiles = await getClangdExtFiles(clangdExtYamlFiles);
 
@@ -285,34 +322,23 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
-	disposable = vscode.commands.registerCommand('unreal-clangd.fixQuotesResponseFiles', async (uri: vscode.Uri | undefined) => {
-		console.log(tr.FIXING_RSP_FILES_QUOTED_PATHS);
+	disposable = vscode.commands.registerCommand('unreal-clangd.fixIntellisenseFiles', async (uri: vscode.Uri | undefined) => {
+		console.log("Fixing intellisense files...");
+		
 
-		let compileCommandsUri = uri;
-
-		if (!compileCommandsUri) {
-			const mainWorkspace: vscode.WorkspaceFolder | undefined = await ueHelpers.getProjectWorkspaceFolder();
-			if (!mainWorkspace) {
-				console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
-				return;
-			}
-
-			compileCommandsUri = getCompileCommandsPath(mainWorkspace.uri, {withFileName:true});
-			if (!compileCommandsUri) {
-				console.error( tr.COULDNT_GET_CC_URI );
-				return;
-			}
-		}
-
-		console.log(`${tr.GETTING_RSP_FILES_FROM} ${compileCommandsUri.fsPath}`);
-
-		const compileCommandsFileString = await getFileString(compileCommandsUri);
-		if (!compileCommandsFileString) {
-			console.error(`${tr.COULDNT_GET_FILE_STR_FROM} ${compileCommandsUri.fsPath}`);
+		const mainWorkspace: vscode.WorkspaceFolder | undefined = ueHelpers.getProjectWorkspaceFolder();
+		if(!mainWorkspace){
 			return;
 		}
 
-		const responseFiles = getResponseFileUris(compileCommandsFileString);
+		if(intellisenseType === "Native"){
+			console.log("Running Native update Fix Intellisense files...");
+			return;
+		}
+
+		const gcdRelativePattern = new vscode.RelativePattern(mainWorkspace, consts.GLOB_GCD_FILES);
+
+		const responseFiles = await getResponseFileUris(gcdRelativePattern);
 		if (!responseFiles) {
 			console.error(tr.COULDNT_CREATE_RSP_FILES);
 			return;
@@ -358,7 +384,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
-	context.subscriptions.push(vscode.tasks.onDidStartTask((e: vscode.TaskStartEvent) => {
+	context.subscriptions.push(vscode.tasks.onDidStartTask(async (e: vscode.TaskStartEvent) => {
 		
 		if ([" Rebuild", " Build"].some((value: string) => {
 			return e.execution.task.name.includes(value);
@@ -370,10 +396,27 @@ export async function activate(context: vscode.ExtensionContext) {
 			console.log("Starting Unreal Clean task");
 			isUnrealCleaningTask = true;
 		}
+		else if(e.execution.task.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME){
+			console.log("Update CC Task has started...");
+
+			//await onStartTaskUpdateCompileCommands();
+			
+		}
 
 	}));
 
 	context.subscriptions.push(vscode.tasks.onDidEndTask(async (e: vscode.TaskEndEvent) => {
+		if(intellisenseType === "Native"){
+			console.log("Running Native onDidEndTask.");
+
+			if(e.execution.task.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME){
+			
+				await onEndUpdateCompileCommands();
+	
+				console.log(`End Task: ${consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME}`);
+			}
+			return;
+		}
 		
 		if ([" Rebuild", " Build"].some((value: string) => {
 			return e.execution.task.name.includes(value);
@@ -406,12 +449,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 		else if(e.execution.task.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME){
 			
-			await delay(2000);
+			await onEndUpdateCompileCommands();
 
-			await setupAndRunOnUnrealCompileCommandsCreatedOrChanged();
-			
-
-			isUpdatingCompileCommands = false;
 			console.log(`End Task: ${consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME}`);
 		}
 
@@ -420,12 +459,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	
 	context.subscriptions.push(vscode.debug.onDidTerminateDebugSession(async (e: vscode.DebugSession) => {
 		if (e.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME) {
+			
+			await onEndUpdateCompileCommands();
 
-			await delay(2000);
-
-			await setupAndRunOnUnrealCompileCommandsCreatedOrChanged();
-
-			isUpdatingCompileCommands = false;
 			console.log(`End Debug Task: ${consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME}`);
 		}
 	}));
@@ -441,7 +477,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('unreal-clangd.uninstall', async () => {
 		isUninstallingUeClangdProject = true;
 
-		const projectWorkspaceFolder = await getProjectWorkspaceFolder();
+		const projectWorkspaceFolder = getProjectWorkspaceFolder();
 		if (!projectWorkspaceFolder) {
 			console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
 			return;
@@ -506,7 +542,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('unreal-clangd.addToCompletionHelper', addToCompletionHelper);
 	context.subscriptions.push(disposable);
 
-	const mainWorkspaceFolder = await getProjectWorkspaceFolder();
+	const mainWorkspaceFolder = getProjectWorkspaceFolder();
 	if(!mainWorkspaceFolder){
 		console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
 		return;
@@ -519,34 +555,39 @@ export async function activate(context: vscode.ExtensionContext) {
 	if (isStartupIntellisenseCheckEnabled) {
 
 		console.log(tr.START_INTELLISENSE_CHECK_ENABLED_AND_CHECKING);
-
-		const mainWorkspaceFolder = await getProjectWorkspaceFolder();
-		if (!mainWorkspaceFolder) {
-			console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
-			return;
+		if(intellisenseType === "Native"){
+			console.log("Running Native check for Intellisense files on startup...");
 		}
+		else {
 
-		const compileCommandsUri = getCompileCommandsPath(mainWorkspaceFolder.uri, {withFileName: true});
-		if (!compileCommandsUri) {
-			console.error(tr.COULDNT_GET_CC_URI);
-			return;
+
+			const mainWorkspaceFolder = getProjectWorkspaceFolder();
+			if (!mainWorkspaceFolder) {
+				console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
+				return;
+			}
+
+			const compileCommandsUri = getCompileCommandsPath(mainWorkspaceFolder.uri, { withFileName: true });
+			if (!compileCommandsUri) {
+				console.error(tr.COULDNT_GET_CC_URI);
+				return;
+			}
+			const gcdRelativePattern = new vscode.RelativePattern(mainWorkspaceFolder, consts.GLOB_GCD_FILES);
+
+			await checkForIntellisenseFilesAndAskToCreate(
+				compileCommandsUri,
+				gcdRelativePattern,
+				async () => {
+					return await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_INTELLISENSE_FILES_NOT_FOUND_ON_STARTUP, tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE);
+				});
 		}
-		const gcdRelativePattern = new vscode.RelativePattern(mainWorkspaceFolder, consts.GLOB_GCD_FILES);
-
-		await checkForIntellisenseFilesAndAskToCreate(
-			compileCommandsUri,
-			gcdRelativePattern,
-			async () => {
-				return await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_INTELLISENSE_FILES_NOT_FOUND_ON_STARTUP, tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE);
-			});
-
 	}
 	else {
 		console.log(tr.STARTUP_INTELLISENSE_CHECK_DISABLED);
 	}
 
 	if (!newSourceFilesDetectionFileWatcher) {
-		const projectWorkspace = await getProjectWorkspaceFolder();
+		const projectWorkspace = getProjectWorkspaceFolder();
 		if(projectWorkspace){
 			const compileCommandsUri = getCompileCommandsPath(projectWorkspace?.uri, {withFileName: true});
 			await setupNewSourceFileDetection(projectWorkspace, compileCommandsUri);
@@ -569,10 +610,66 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
-	
+		
 	newSourceFilesDetectionFileWatcher?.dispose();
 	console.outputChannel.dispose();
 }
+
+async function preActivate() {
+	
+	const projectWorkspace = getProjectWorkspaceFolder();
+
+	if(!projectWorkspace){
+		console.error("Couldn't get project workspace in preactivate!");
+		return;
+	}
+
+	if(await hasClangdProjectFiles(projectWorkspace)){
+		await addMSCppExtensionSettings();
+	}
+	
+}
+
+async function addMSCppExtensionSettings() {
+
+	const projectWorkspace = getProjectWorkspaceFolder();
+	if(!projectWorkspace){
+		return;
+	}
+
+	const cppConfig = vscode.workspace.getConfiguration(consts.defaultCppToolsSettings.extensionSection, projectWorkspace);
+
+	for (const setting in consts.defaultCppToolsSettings.settings) {
+		if (Object.prototype.hasOwnProperty.call(consts.defaultCppToolsSettings.settings, setting)) {
+			const element = consts.defaultCppToolsSettings.settings[setting as keyof typ.CCppDefaultSettingValues];
+			if(!element){
+				continue;
+			}
+
+			if(cppConfig.has(setting)){
+				const currentValue = cppConfig.get<string>(setting);
+				if(!currentValue){
+					continue;
+				}
+
+				if(currentValue !== element.value){
+					try {
+						await cppConfig.update(setting, element.value, element.configTarget);
+					} catch (error) {
+						console.warning("Microsoft Cpp Extensions isn't enabled.");
+						return;
+					}
+				}
+			}
+			else {
+				console.warning("Microsoft Cpp Extensions isn't enabled.");
+			}
+			
+		}
+	}
+	
+}
+
 
 const addToCompletionHelper = async () => {
 	const result = await vscode.window.showInformationMessage(
@@ -613,7 +710,7 @@ const addToCompletionHelper = async () => {
 		return;
 	}
 
-	const workspaceUri = (await getProjectWorkspaceFolder())?.uri;
+	const workspaceUri = getProjectWorkspaceFolder()?.uri;
 
 	if(!workspaceUri){
 		console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
@@ -629,8 +726,9 @@ const addToCompletionHelper = async () => {
 	
 };
 
+
 const onDidChangeConfiguration = async (e: vscode.ConfigurationChangeEvent | undefined, setAll=false) => {
-	const projectWorkspace = await getProjectWorkspaceFolder();
+	const projectWorkspace = getProjectWorkspaceFolder();
 	if(!projectWorkspace){
 		console.error(tr.COULDNT_GET_PROJ_WS_WILL_STILL_GET_SET_VARS);
 	}
@@ -653,7 +751,7 @@ const onDidChangeConfiguration = async (e: vscode.ConfigurationChangeEvent | und
 		const setting = vscode.workspace.getConfiguration(consts.settingNames.unrealClangd.extensionSection, projectWorkspace).get<boolean>(consts.settingNames.unrealClangd.settings["fixes.delegateFuncCompletions"]);
 		
 		if(setting !== undefined){
-			console.log(`${tr.DELEGATE_FUNC_COMPLETIONS_FIX_SET_TO} ${setting}`);
+			console.log(`${tr.DELEGATE_FUNC_COMPLETIONS_FIX_SET_TO} ${String(setting)}`);
 			onTextChange.setDelegateFuncCompletionsFix(setting);
 		}
 
@@ -666,7 +764,7 @@ const onDidChangeConfiguration = async (e: vscode.ConfigurationChangeEvent | und
 		const setting = vscode.workspace.getConfiguration(consts.settingNames.unrealClangd.extensionSection, projectWorkspace).get<boolean>(consts.settingNames.unrealClangd.settings["fixes.autoIncludeSourceOnly"]);
 		
 		if(setting !== undefined){
-			console.log(`${tr.AUTO_INCLUDE_SOURCE_ONLY_SET_TO} ${setting}`);
+			console.log(`${tr.AUTO_INCLUDE_SOURCE_ONLY_SET_TO} ${String(setting)}`);
 			onTextChange.setAutoIncludeHeaders(setting);
 		}
 
@@ -770,7 +868,7 @@ function isValidUnrealVersion(userVersion: ueHelpers.UnrealVersion | null, exten
 }
 
 
-async function isOkWithWarning(text: string, detail: string, modal: boolean = true): Promise<boolean> {
+async function isOkWithWarning(text: string, detail: string, modal = true): Promise<boolean> {
 	const results = await vscode.window.showWarningMessage(
 		text,
 		{ detail: detail, modal: modal },
@@ -784,7 +882,7 @@ async function isOkWithWarning(text: string, detail: string, modal: boolean = tr
 }
 
 async function getClangDPathFromUser(currentClangdPath: string | undefined, platform: NodeJS.Platform) {
-
+	
 	let currentClangdUri;
 	
 	try {
@@ -924,20 +1022,22 @@ async function getUpdateCCArgs(buildTargetName: string, platform: string | undef
 		}
 	}
 
-	const uprojectFileName = await ueHelpers.getUProjectFileName(await ueHelpers.getProjectWorkspaceFolder());
+	const uprojectFileName = await ueHelpers.getUProjectFileName(ueHelpers.getProjectWorkspaceFolder());
 	if (!uprojectFileName) {
 		console.error(tr.COULDNT_GET_UPROJECT_FILE_NAME);
 		return undefined;
 	}
 
-	const projectWorkspaceFolderUri = (await ueHelpers.getProjectWorkspaceFolder())?.uri;
+	const projectWorkspaceFolderUri = ueHelpers.getProjectWorkspaceFolder()?.uri;
 	if (!projectWorkspaceFolderUri) {
 		console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
 		return undefined;
 	}
 	const uprojectFilePath = vscode.Uri.joinPath(projectWorkspaceFolderUri, uprojectFileName).fsPath;
 
-	const args: string[] = [
+	let args: string[] = [];
+	
+	args = [
 		buildTargetName,
 		unrealPlatform,
 		consts.UPDATE_COMPILE_COMMANDS_ARG_DEVELOPMENT,
@@ -945,8 +1045,9 @@ async function getUpdateCCArgs(buildTargetName: string, platform: string | undef
 		consts.UPDATE_COMPILE_COMMANDS_COMPILER_CLANG,
 		consts.UPDATE_COMPILE_COMMANDS_ARG_GEN_CLANGDB
 	];
-
-	if (architecture) {
+	
+	
+	if (architecture && intellisenseType !== "Native") {
 		args.push(`${consts.UPDATE_COMPILE_COMMANDS_ARG_ARCHITECTURE_EMPTY}${architecture}`);
 	}
 
@@ -971,13 +1072,6 @@ function getUnrealPlatform(platform: NodeJS.Platform): UnrealPlatform | undefine
 	}
 }
 
-/* 
-function getCompileCommandsFileWatcher(workspaceFolder: vscode.WorkspaceFolder, relativePattern: string) {
-	return vscode.workspace.createFileSystemWatcher(
-		new vscode.RelativePattern(workspaceFolder, relativePattern), false, false, true
-	);
-}
- */
 
 async function copyCompileCommands(compileCommandsUri: vscode.Uri, target: vscode.Uri) {
 	try {
@@ -1025,37 +1119,8 @@ async function getProjectInfo(mainWorkspaceFolder: vscode.WorkspaceFolder | unde
 
 }
 
-/*
-function getUriFrom(prefix: vscode.WorkspaceFolder | vscode.Uri | undefined, ...suffix: string[]): vscode.Uri | undefined {
-	if (!prefix) {
-		console.error("prefix was undefined for getUriFrom!");
-		return undefined;
-	}
 
-	let currentUri;
-	if (prefix instanceof vscode.Uri) {
-		currentUri = prefix;
-	}
-	else {
-		currentUri = prefix.uri;
-	}
-
-	let joinedUri;
-	try {
-		joinedUri = vscode.Uri.joinPath(currentUri, ...suffix);
-	} catch (error) {
-		console.error(`Couldn't get uri for ${suffix}!`);
-		if (error instanceof Error) {
-			console.error(`${error.message}`);
-		}
-		return undefined;
-	}
-
-	return joinedUri;
-}
-*/
-
-async function getCompileCommandObjectsFromJson(compileCommandUri: vscode.Uri | undefined): Promise<typ.CompileCommands[] | undefined> {
+async function getCompileCommandObjectsFromJson(compileCommandUri: vscode.Uri | undefined): Promise<typ.CompileCommand[] | undefined> {
 	if (!compileCommandUri) {
 		console.error(tr.CC_URI_UNDEFINED_IN_GET_CC_OBJ_FROM_JSON);
 		return undefined;
@@ -1103,30 +1168,20 @@ function parseJson(jsonString: string) {
 }
 
 
-function getResponseFileUris(compileCommandsFile: string): typ.ResponseFile[] | null {
-	const re = /(?<=@\\*\"*)[\w/][\w:\\\s./]+.gcd/gm;
-	const responsePaths = compileCommandsFile.match(re);
+async function getResponseFileUris(relativePattern: vscode.RelativePattern): Promise<typ.File[] | null> {
 
-	if (!responsePaths || responsePaths.length === 0) {
-		console.error(`${tr.NO_RSP_PATHS_FOUND_IN_CC_WITH_REGEX_restring} ${re.source}`);
+	const gcdFileUris = await vscode.workspace.findFiles(relativePattern);
+
+	if (!gcdFileUris || gcdFileUris.length < 1) {
+		console.error("No GCD files found!");
 		return null;
 	}
 
-	const responseFiles: typ.ResponseFile[] = [];
-	for (const responsePath of responsePaths) {
-		let responseUri = undefined;
-		try {
-			responseUri = vscode.Uri.file(responsePath);
-		} catch (error) {
-			console.error(`${tr.ERR_CREATING_URI_WITH_RSP_PATH_path} ${path}`);
-			if (error instanceof Error) {
-				console.error(`${error.message}`);
-			}
-			continue;
-		}
-
+	const responseFiles: typ.File[] = [];
+	for (const gcdUri of gcdFileUris) {
+		
 		responseFiles.push({
-			uri: responseUri,
+			uri: gcdUri,
 			fileString: ""
 		});
 	}
@@ -1135,7 +1190,7 @@ function getResponseFileUris(compileCommandsFile: string): typ.ResponseFile[] | 
 }
 
 
-async function createResponseFileStrings(responseFiles: typ.ResponseFile[]) {
+async function createResponseFileStrings(responseFiles: typ.File[]) {
 	for (const responseFile of responseFiles) {
 
 		let file;
@@ -1160,13 +1215,19 @@ async function createResponseFileStrings(responseFiles: typ.ResponseFile[]) {
 }
 
 
-function fixResponseStrings(responseFiles: typ.ResponseFile[]) {
+function fixResponseStrings(responseFiles: typ.File[]) {
 
 	const re = /(?<=(?:\/I|\/imsvc|-I|-isystem)\s*)(?:(?:\w|\/)(?:[\w:/\s\-.]+?))(?=[\r\n|\r|\n])/gm;
 	for (const responseFile of responseFiles) {
-		const replacementString = responseFile.fileString?.replace(re, substring => {
+		let replacementString = responseFile.fileString?.replace(/""/gm, `"`); // Fix double quote (UE 5.4) // TODO Check not escaping ""
+
+		replacementString = replacementString?.replace(re, substring => {  // Fix no quotes around paths
 			return `"${substring}"`;  // Adding quotes
 		});
+
+		replacementString = replacementString?.replace(/Shared.rsp"/gm, "Shared.rsp.gcd\""); // Fix wrong shared file in gcd files
+
+		replacementString = replacementString?.replace(/Definitions.h"/gm, `${consts.FILE_NAME_GCD_DEFINITIONS}"`);  // Fix wrong shared file in gcd files
 
 		if (replacementString && responseFile.fileString !== replacementString) {
 			responseFile.fileString = replacementString;
@@ -1183,7 +1244,7 @@ function fixResponseStrings(responseFiles: typ.ResponseFile[]) {
 }
 
 
-async function saveFixedResponseStrings(responseFiles: typ.ResponseFile[]) {
+async function saveFixedResponseStrings(responseFiles: typ.File[]) {
 	for (const responseFile of responseFiles) {
 		if (!responseFile.fileString) {
 			// console.log(`Skipping fix for ${responseFile.uri.fsPath}, file is most likely already fixed.`); // Disabled because too much noise in logs
@@ -1221,7 +1282,7 @@ async function saveFixedResponseStrings(responseFiles: typ.ResponseFile[]) {
 }
 
 
-async function fixResponseFiles(responseFiles: typ.ResponseFile[]) {
+async function fixResponseFiles(responseFiles: typ.File[]) {
 	await createResponseFileStrings(responseFiles);
 
 	fixResponseStrings(responseFiles);
@@ -1229,7 +1290,7 @@ async function fixResponseFiles(responseFiles: typ.ResponseFile[]) {
 	await saveFixedResponseStrings(responseFiles);
 }
 
-function getSourceFilesFirstChildFolderNames(baseUri: vscode.Uri | undefined, compileCommands: typ.CompileCommands[] | undefined) {
+function getSourceFilesFirstChildFolderNames(baseUri: vscode.Uri | undefined, compileCommands: typ.CompileCommand[] | undefined) {
 	if (!compileCommands || !baseUri) {
 		console.error(`${tr.BAD_PARAMS_GET_SRC_FILES_FIRST_CHILD_FOLDERS_vars} ${compileCommands}, ${baseUri}`);
 		return;
@@ -1255,7 +1316,7 @@ function getSourceFilesFirstChildFolderNames(baseUri: vscode.Uri | undefined, co
 }
 
 
-function getSourceFilesFirstChildFolderUris(baseUri: vscode.Uri | undefined, compileCommands: typ.CompileCommands[] | undefined) {
+function getSourceFilesFirstChildFolderUris(baseUri: vscode.Uri | undefined, compileCommands: typ.CompileCommand[] | undefined) {
 
 	if (!baseUri) {
 		console.error(`${tr.BAD_PARAMS_GET_SRC_FILES_FIRST_CHILD_FOLDERS_URIS_vars} ${compileCommands}, ${baseUri}`);
@@ -1309,6 +1370,44 @@ async function checkForIntellisenseFilesAndAskToCreate(compileCommandsUri: vscod
 
 	const doesCompilesCommandExist = await doesUriExist(compileCommandsUri);
 
+	if(intellisenseType === "Native"){
+		if(!doesCompilesCommandExist) {
+			await askCreate();
+			return tr.BTTN_NO;
+		}
+		
+		let fileStat: vscode.FileStat;
+		try {
+			fileStat = await vscode.workspace.fs.stat(compileCommandsUri);
+		} catch (error) {
+			console.error("Error getting compile commands file info!");
+			return tr.BTTN_YES;
+		}
+		
+		const fileDate = new Date(fileStat.ctime);
+		
+		const ccFileMinutesOld = getMinutesDifference(fileDate, new Date());
+
+		const projectWorkspace = getProjectWorkspaceFolder();
+		if(!projectWorkspace){
+			console.error("Couldn't get project workspace!");
+			return tr.BTTN_YES;
+		}
+		const compileCommandsIsTooOldInMinutes: number | undefined = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, projectWorkspace).get<number>("native.minutesTillIntellisenseFilesAreOld");
+
+		if(compileCommandsIsTooOldInMinutes === undefined){
+			console.error("Couldn't get Compile Commands too old minutes!");
+			return tr.BTTN_YES;
+		}
+
+		if(ccFileMinutesOld > consts.NATIVE_COMPILE_COMMANDS_TOO_OLD_IN_MINUTES){
+			await askCreate();
+			return tr.BTTN_NO;
+		}
+
+		return tr.BTTN_YES;
+	}
+
 	// weak check
 	const gcdFiles = await vscode.workspace.findFiles(gcdRelativePattern, undefined, 1);
 
@@ -1322,6 +1421,12 @@ async function checkForIntellisenseFilesAndAskToCreate(compileCommandsUri: vscod
 	}
 
 }
+
+function getMinutesDifference(date1: Date, date2: Date): number {
+	const millisecondsDifference = date2.getTime() - date1.getTime();
+	const minutesDifference = millisecondsDifference / (1000 * 60);
+	return Math.abs(minutesDifference);
+  }
 
 
 async function setupNewSourceFileDetection(projectWorkspace: vscode.WorkspaceFolder | undefined, compileCommandsUri: vscode.Uri | undefined) {
@@ -1341,9 +1446,11 @@ async function setupNewSourceFileDetection(projectWorkspace: vscode.WorkspaceFol
 
 				newSourceFilesDetectionFileWatcher.onDidCreate(async (uri) => {
 
+					const detailMessage = intellisenseType === "Native" ? "Would you like to update compile command/Intellisense files now?" : tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE;
+
 					if (!hasCreatedNewSourceFile && !isUnrealBuildingRebuildingTask && !isUpdatingCompileCommands) {
 						hasCreatedNewSourceFile = true;
-						await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_NEW_SOURCE_FILE_DETECTED, tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE);
+						await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_NEW_SOURCE_FILE_DETECTED, detailMessage);
 						hasCreatedNewSourceFile = false;
 					}
 
@@ -1373,43 +1480,33 @@ async function doesUriExist(uri: vscode.Uri | undefined): Promise<boolean> {
 
 	return true;
 }
-/*
-async function resetOverwriteSetting(workspaceFolder: vscode.WorkspaceFolder) {
-	const ueClangdConfig = getUnrealClangdConfig( workspaceFolder);
 
-	const overwriteSetting = ueClangdConfig.get(consts.settingNames.unrealClangd.settings['creation.overwrite']);
 
-	if (overwriteSetting !== consts.OVERWRITE_STRICT) {
-		await ueClangdConfig.update(consts.settingNames.unrealClangd.settings['creation.overwrite'], consts.OVERWRITE_STRICT, vscode.ConfigurationTarget.WorkspaceFolder);
-	}
-}
-*/
-
-async function onUnrealCompileCommandsCreatedOrChanged(uri: vscode.Uri, copyTarget: vscode.Uri) {
-	const projectWorkspace = await getProjectWorkspaceFolder();
+async function onUnrealCompileCommandsCreatedOrChanged() {
+	const projectWorkspace = getProjectWorkspaceFolder();
 	if(!projectWorkspace){
 		console.error(tr.COULDNT_GET_PROJECT_WORKSPACE);
 		return;
 	}
 
-	if(!(await copyCompileCommands(uri, copyTarget))){
-		console.error(tr.ERR_COPYING_CC);
-		return;
-	}
-
-	await handleCompletionHelper(projectWorkspace, copyTarget);
-
-	const isResponseFixEnabled = getUnrealClangdConfig(projectWorkspace).get(consts.settingNames.unrealClangd.settings['fixes.responseFilesQuotedPaths']);
+	const isResponseFixEnabled = getUnrealClangdConfig(projectWorkspace).get(consts.settingNames.unrealClangd.settings['fixes.intellisenseFiles']);
 	if (isResponseFixEnabled) {
 		console.log(tr.RSP_FILE_QUOTE_FIX_IS_ENABLED_ATTEMPTING_FIX);
-		await vscode.commands.executeCommand(consts.EXT_CMD_FIX_RESPONSE_QUOTED_PATHS, copyTarget);
+		
+		//await vscode.commands.executeCommand(consts.EXT_CMD_FIX_INTELLISENSE_FILES, copyTarget); // TODO We never did anything with this copyTarget???
+		await vscode.commands.executeCommand(consts.EXT_CMD_FIX_INTELLISENSE_FILES);
 	}
-
+	
 	
 	if (!newSourceFilesDetectionFileWatcher) {
 
 		const compileCommandsUri = getCompileCommandsPath(projectWorkspace.uri, { withFileName: true });
 		await setupNewSourceFileDetection(projectWorkspace, compileCommandsUri);
+	}
+
+	if (isWantingToCreate) {
+		//isWantingToCreate = false;
+		await vscode.commands.executeCommand(consts.EXT_CMD_CREATE_CLANGD_PROJECT);
 	}
 
 	if (await hasClangdProjectFiles(projectWorkspace)) {  // We don't reload window when no project because after creating project it'll ask to reload
@@ -1418,12 +1515,6 @@ async function onUnrealCompileCommandsCreatedOrChanged(uri: vscode.Uri, copyTarg
 		if (reloadAfterCCUpdateResult === tr.BTTN_YES) {
 			await vscode.commands.executeCommand(consts.VSCODE_CMD_RELOAD_WINDOW);
 		}
-	}
-
-	
-	if (isWantingToCreate) {
-		//isWantingToCreate = false;
-		await vscode.commands.executeCommand(consts.EXT_CMD_CREATE_CLANGD_PROJECT);
 	}
 
 }
@@ -1470,10 +1561,10 @@ async function isUnrealProject(): Promise<boolean> {
 
 function getDefaultClangdExtYamlFiles(projectInfo: typ.ProjectInfoVars, defaultClangdCfgSettings: typ.ClangdCfgFileSettings, isTidyEnabled: boolean): typ.ExtensionYamlFiles {
 
-	let pathMatch : string[] = [consts.CLANGD_PATHMATCH_COMPLETION_HELPER_PATH];  // Add completionHelper.cpp to .clangd file
+	const pathMatch : string[] = [consts.CLANGD_PATHMATCH_COMPLETION_HELPER_PATH];  // Add completionHelper.cpp to .clangd file
 
 	for (const firstChildSourceFolderUri of projectInfo.firstChildUrisWithSource) {
-		const lastFolderName = firstChildSourceFolderUri.fsPath.match(/[\w\s\-\.]+$/gm);
+		const lastFolderName = firstChildSourceFolderUri.fsPath.match(/[\w\s\-.]+$/gm);  // TODO Check not escaping .
 
 		if(lastFolderName && lastFolderName.length > 0){
 			pathMatch.push(`${lastFolderName}/.*\\.${consts.UECPP_SOURCE_FILE_EXTENSIONS_REGEX}`);
@@ -1584,28 +1675,59 @@ async function getClangdExtFiles(clangdYamlFiles: typ.ExtensionYamlFiles): Promi
 	return clangdExtFiles;
 }
 
-async function runUpdateCompileCommandsWithTask(projectWorkspace: vscode.WorkspaceFolder, unrealWorkspace: vscode.WorkspaceFolder, ubtCommand: {command: string, args: string[]}) {
+function getShellQuoting(command: string, args: string[]): {command: vscode.ShellQuotedString | string, args: (vscode.ShellQuotedString | string)[]}{
 	
-	const updateCCTask: vscode.Task = new vscode.Task({ type: consts.TASK_TYPE }, unrealWorkspace, consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME, consts.TASK_TYPE);
-	
-	updateCCTask.execution = new vscode.ShellExecution(
-		ubtCommand.command,
-		ubtCommand.args
-	);
+	let modArgs: (string | vscode.ShellQuotedString)[] = [];
+	if(process.platform === "win32"){
+		for (const arg of args) {
+			modArgs.push({value: arg, quoting: vscode.ShellQuoting.Strong});
+		}
+	}
+	else {
+		modArgs = args;
+	}
 
-	//setupCompileCommandsCopyWatcher(projectWorkspace, unrealWorkspace);
+	const modCommand = process.platform === "win32" ? { value: command, quoting: vscode.ShellQuoting.Strong } : { value: command, quoting: vscode.ShellQuoting.Weak };
+	
+	return {command: modCommand, args: modArgs};
+}
+
+async function runUpdateCompileCommandsWithTask(projectWorkspace: vscode.WorkspaceFolder, unrealWorkspace: vscode.WorkspaceFolder, ubtCommand: {command: string, args:string[]}) {
+	
+	if(intellisenseType !== "Native") {
+		console.error("NonNative runUpdateCompileCommandsWithTask needs testing...");
+		return;
+	}
+
+	const modUbtCommand = getShellQuoting(ubtCommand.command, ubtCommand.args);
+
+	const source = consts.CONFIG_SECTION_UNREAL_CLANGD;
+
+	const updateCCTask: vscode.Task = new vscode.Task({ type: consts.TASK_TYPE }, unrealWorkspace, consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME, source, vscode.ShellExecution);
+	
+	updateCCTask.group = vscode.TaskGroup.Build;
+	updateCCTask.problemMatchers = ["$msCompile"];
+	
+	const shellExec = process.platform === "win32"? consts.POWERSHELL_FILE_NAME : undefined;
+
+	updateCCTask.execution = new vscode.ShellExecution(
+		modUbtCommand.command,
+		modUbtCommand.args,
+		{cwd: unrealWorkspace.uri.fsPath, executable: shellExec} 
+	);
 
 	if (isUpdatingCompileCommands === false) {
 		isUpdatingCompileCommands = true;
 		try {
 			console.log(`${tr.CREATING_CC_FILE_IN_path} ${unrealWorkspace.uri.fsPath}\n`);
+			backupWorkspaceSettings();
 			await vscode.tasks.executeTask(updateCCTask);
 		} catch (error) {
 			console.error(tr.ERR_WITH_EXEC_TASK);
 			if (error instanceof Error) {
 				console.error(`${error.message}`);
 			}
-			//ueCCFileWatcher?.dispose();
+			_codeWorkspaceSettingsBackup = undefined;
 			isUpdatingCompileCommands = false;
 			return;
 		}
@@ -1616,12 +1738,26 @@ async function runUpdateCompileCommandsWithTask(projectWorkspace: vscode.Workspa
 	}
 }
 
-async function runUpdateCompileCommandsWithDebug(projectWorkspace: vscode.WorkspaceFolder, unrealWorkspace: vscode.WorkspaceFolder, ubtCommand: {command: string, args:string[]}) {
+async function runUpdateCompileCommandsWithDebug(
+	projectWorkspace: vscode.WorkspaceFolder,
+	unrealWorkspace: vscode.WorkspaceFolder,
+	ubtCommand: {command: string, args: string[]}) {
+	
+	if(intellisenseType !== "Native") {
+		console.error("NonNative runUpdateCompileCommandsWithTask needs testing...");
+		return;
+	}
+
+	const newCommand = `${ubtCommand.command}`;
+	const newArgs: string[] = [];
+	ubtCommand.args.forEach((value: string, index: number, array: string[]) => {
+		newArgs.push(`${value}`);
+	});
 
 	const dbgConfig: vscode.DebugConfiguration | null = await getUpdateCompileCommandsDbgCfg(
 		unrealWorkspace.uri,
-		ubtCommand.command,
-		ubtCommand.args
+		newCommand,
+		newArgs
 	);
 
 	if (!dbgConfig) {
@@ -1629,19 +1765,19 @@ async function runUpdateCompileCommandsWithDebug(projectWorkspace: vscode.Worksp
 		return;
 	}
 
-	//await setupCompileCommandsCopyWatcher(projectWorkspace, unrealWorkspace);
-
 	if (isUpdatingCompileCommands === false) {
 		isUpdatingCompileCommands = true;
 		try {
 			console.log(`${tr.CREATING_CC_FILE_IN_path} ${unrealWorkspace.uri.fsPath}\n`);
+			backupWorkspaceSettings();
 			await vscode.debug.startDebugging(unrealWorkspace, dbgConfig);
 		} catch (error) {
 			console.error(tr.EXCEPT_WHEN_UPDATING_CC);
 			if (error instanceof Error) {
 				console.error(`${error.message}`);
 			}
-			//ueCCFileWatcher?.dispose();
+
+			_codeWorkspaceSettingsBackup = undefined;
 			isUpdatingCompileCommands = false;
 			return;
 		}
@@ -1739,7 +1875,14 @@ function getCompletionHelperPath(baseUri: vscode.Uri, options: {withFileName: bo
 }
 
 
-async function handleCompletionHelper( projectWorkspace: vscode.WorkspaceFolder, compileCommandsUri: vscode.Uri) {
+async function handleCompletionHelper() {
+
+	const projectWorkspace = getProjectWorkspaceFolder();
+	if(!projectWorkspace){
+		return;
+	}
+
+	const compileCommandsUri = getCompileCommandsPath(projectWorkspace.uri, {withFileName:true});
 	
 	const completionHelperPathUri = getCompletionHelperPath(projectWorkspace.uri,{withFileName: true} );
 	const fileContent = getCompletionHelperFileContent(projectWorkspace);
@@ -1763,8 +1906,39 @@ async function handleCompletionHelper( projectWorkspace: vscode.WorkspaceFolder,
 		return;
 	}
 
+	const ccFileString = await getFileString(compileCommandsUri);
+	if(!ccFileString){
+		return;
+	}
+
+	const responsePaths = await getUniqueResponseFilePathsFromCompileCommands(ccFileString);
+	if(!responsePaths){
+		return;
+	}
+	
+	let responsePathMostEntries;
+	
+	responsePathMostEntries = Object.keys(responsePaths).reduce((previous, current, i, pathsArray) => {	
+		return responsePaths[current] > responsePaths[previous] ? current : previous; 
+	});
+
+	if(!responsePathMostEntries){
+		return;
+	}
+		
+	const winResponsePathMostEntries = responsePathMostEntries.replaceAll(`\\\\`, `\\`);
 	const sourceFolderCC = ccFile.find((value: typ.CompileCommand, index: number, obj: typ.CompileCommand[]) => {
-		return value.file.toLowerCase().startsWith(mainSourceFolderPathLower);
+		let hasResponsePathMostEntries = value.command?.includes(responsePathMostEntries) || value.arguments?.some((v) => {
+			return v.includes(responsePathMostEntries);
+		});
+
+		if(!hasResponsePathMostEntries && process.platform === "win32"){
+			hasResponsePathMostEntries = value.command?.includes(winResponsePathMostEntries) || value.arguments?.some((v) => {
+				return v.includes(winResponsePathMostEntries);
+			});
+		}
+
+		return value.file.toLowerCase().startsWith(mainSourceFolderPathLower) && hasResponsePathMostEntries;
 	});
 
 	if(!sourceFolderCC){
@@ -1788,7 +1962,7 @@ async function handleCompletionHelper( projectWorkspace: vscode.WorkspaceFolder,
  */
 async function createCompletionHelper(filePathUri: vscode.Uri, content: string) {
 
-	let doesPathExist = await doesUriExist(filePathUri);
+	const doesPathExist = await doesUriExist(filePathUri);
 	
 	if(doesPathExist){
 		console.log(tr.COMPLETION_HELPER_EXISTS_WONT_OVERWRITE);
@@ -1865,11 +2039,12 @@ async function getNonEmptyCompileCommandFile(uri: vscode.Uri): Promise<typ.Compi
 }
 
 function getCompletionHelperCC(compileCommand: typ.CompileCommand, completionHelperUri: vscode.Uri): typ.CompileCommand{
-
+	
 	return  {
 		command: compileCommand.command,
 		directory: compileCommand.directory,
-		file: completionHelperUri.fsPath
+		file: completionHelperUri.fsPath,
+		arguments: compileCommand.arguments
 	};
 }
 
@@ -1899,8 +2074,8 @@ async function handleCompletionHelperOpening(projectWorkspace: vscode.WorkspaceF
 
 	const unrealClangdConfig = getUnrealClangdConfig(projectWorkspace);
 
-	const isCompletionHelperOpen = unrealClangdConfig.get(consts.settingNames.unrealClangd.settings['completion.openCompletionHelperOnStartup']);
-	const isInfoCompletionHelper = unrealClangdConfig.get(consts.settingNames.unrealClangd.settings['completion.completionHelperInfoOnStartup']);
+	const isCompletionHelperOpen = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['completion.openCompletionHelperOnStartup']);
+	const isInfoCompletionHelper = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['completion.completionHelperInfoOnStartup']);
 
 	if(!isCompletionHelperOpen){
 		console.warning(tr.COMPLETION_HELPER_WONT_BE_OPENED);
@@ -2139,6 +2314,7 @@ async function appendToFile(uri: vscode.Uri, text: string) {
 
 }
 
+
 async function checkValidUri(uri: vscode.Uri){
 	try {
 		await vscode.workspace.fs.stat(uri);
@@ -2171,35 +2347,52 @@ async function permDeleteUri(uri: vscode.Uri){
 	return true;
 }
 
+
 function getUnrealCompileCommandsUriForProject(uri: vscode.Uri){
 	return vscode.Uri.joinPath(uri, consts.FILE_NAME_COMPILE_COMMANDS);
 }
 
-async function setupAndRunOnUnrealCompileCommandsCreatedOrChanged() {
+async function copyNewlyCreatedCompileCommandToCCFolder() {
 	const unrealWorkspaceUri = ueHelpers.getUnrealWorkspaceFolder()?.uri;
-	const mainWorkspaceUri = (await getProjectWorkspaceFolder())?.uri;
+	const mainWorkspaceUri = getProjectWorkspaceFolder()?.uri;
 
 	if (!unrealWorkspaceUri || !mainWorkspaceUri) {
 		console.error(tr.CLDNT_GET_URIS_FOR_CPY_CC);
 		return;
 	}
 
-	const unrealCCUri = getUnrealCompileCommandsUriForProject(unrealWorkspaceUri);
+	let ccUriToCopy: vscode.Uri | undefined = undefined;
+
+	if(intellisenseType === "Native"){
+		ccUriToCopy = vscode.Uri.joinPath(mainWorkspaceUri, consts.FOLDER_NAME_VSCODE, consts.NATIVE_COMPILE_COMMANDS_NAME);
+	}
+	else {
+		ccUriToCopy = getUnrealCompileCommandsUriForProject(unrealWorkspaceUri);
+	}
+	
 	const projectCCUri = getCompileCommandsPath(mainWorkspaceUri, { withFileName: true });
 
-	if (await doesUriExist(unrealCCUri)) {
-		await onUnrealCompileCommandsCreatedOrChanged(unrealCCUri, projectCCUri);
+	if (await doesUriExist(ccUriToCopy)) {
+		if(!(await copyCompileCommands(ccUriToCopy, projectCCUri))){
+			console.error(tr.ERR_COPYING_CC);
+			return;}
 	}
 	else{
 		console.error(tr.UE_CC_DOESNT_EXISTS_CANT_CONTINUE_UDPATE_CC);
 	}
+
 }
+async function setupAndRunOnUnrealCompileCommandsCreatedOrChanged() {
+	
+	//await onUnrealCompileCommandsCreatedOrChanged(ccUriToCopy, projectCCUri);
+	
+}
+
 
 function getUnrealVersionBypass(workspace: vscode.WorkspaceFolder){
 	return vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, workspace).
 		get<boolean>(consts.settingNames.unrealClangd.settings['creation.bypassUnrealVersionCheck']);
 }
-
 
 
 async function handleUnrealVersionCheck(unrealVersion: ueHelpers.UnrealVersion | undefined, isUnrealVersionBypass: boolean | undefined) {
@@ -2236,3 +2429,546 @@ async function handleUnrealVersionCheck(unrealVersion: ueHelpers.UnrealVersion |
 	return true;
 }
 
+
+async function findMultipleFiles(workspace: vscode.WorkspaceFolder, fileGlobs: typ.GlobPatterns) {
+
+	let uriResults: vscode.Uri[] = [];
+	for (const glob in fileGlobs) {
+		if (Object.prototype.hasOwnProperty.call(fileGlobs, glob)) {
+			const maxResults = fileGlobs[glob].MaxResults;
+			
+			const relPat = new RelativePattern(workspace, glob);
+			const results = await vscode.workspace.findFiles( relPat, undefined, maxResults);
+
+			if(results && results.length > 0){
+				uriResults = uriResults.concat(results);
+			}
+		}
+	}
+	
+	return uriResults;
+}
+
+
+async function isFile(uri: vscode.Uri) {
+	let uriStat;
+	try {
+		uriStat = await vscode.workspace.fs.stat(uri);
+	} catch (error) {
+		return false;
+	}
+
+	if(uriStat.type === vscode.FileType.File){
+		return true;
+	}
+
+	false;
+}
+
+
+async function onEndUpdateCompileCommands() {
+	await restoreWorkspaceSettings();
+
+	await delay(2000);
+
+	//customCancellationToken?.cancel();
+	await copyNewlyCreatedCompileCommandToCCFolder();
+
+	await handleCompletionHelper();
+
+	if(intellisenseType === "Native"){
+		await modifyResponseFiles();
+	}
+	
+
+	await onUnrealCompileCommandsCreatedOrChanged();
+				
+	isUpdatingCompileCommands = false;
+
+}
+
+
+async function changeFileNames(uris: vscode.Uri[], newName: (fileNameNoExt?: string, dotExtension?: string) => string): Promise<vscode.Uri[]> {
+	const newUris: vscode.Uri[] = [];
+
+	for (const uri of uris) {
+		if(!(await isFile(uri))) {
+			console.error(`Non-file uri sent to changeFileNames! ${uri.fsPath}`);
+			continue;
+		}
+
+		const parsedPath = path.parse(uri.fsPath);
+		const newNameUri = vscode.Uri.joinPath(vscode.Uri.file(parsedPath.dir), newName(parsedPath.name, parsedPath.ext));
+
+		try {
+			await vscode.workspace.fs.rename(uri, newNameUri, { overwrite: true });
+		} catch (error) {
+			console.error(`Couldn't rename file: ${uri.fsPath}\n${newNameUri.fsPath}`);
+			continue;
+		}
+
+		newUris.push(newNameUri);
+
+	}
+
+	return newUris;
+
+}
+
+
+async function removeExtensionFromUris(uris: vscode.Uri[], extension: string) {
+	for (const uri of uris) {
+		const parsedPath = path.parse(uri.fsPath);
+		
+		if(parsedPath.ext !== extension){
+			continue;
+		}
+
+		const restoredUri = vscode.Uri.joinPath(vscode.Uri.file(parsedPath.dir), parsedPath.name);
+		try {
+			await vscode.workspace.fs.rename(uri, restoredUri, {overwrite:true});
+		} catch (error) {
+			console.error(`Couldn't retore backup file: ${uri.fsPath}\n${restoredUri.fsPath}`);
+			continue;
+		}
+		
+	}
+}
+
+
+async function onStartTaskUpdateCompileCommands() {
+	/*await vscode.window.withProgress({
+		title: 'Updating Compile Commands...',
+		location: vscode.ProgressLocation.Notification,
+		cancellable: false
+	},
+		async (progress, token) => {
+			// eslint-disable-next-line no-async-promise-executor
+			return new Promise((async (resolve) => {  // TODO: check if using async here is ok
+				// You code to process the progress
+
+				customCancellationToken = new vscode.CancellationTokenSource();
+
+				customCancellationToken.token.onCancellationRequested(() => {
+					customCancellationToken?.dispose();
+					customCancellationToken = null;
+
+					resolve(null);
+					return;
+				});
+
+				const seconds = 300;
+				for (let i = 0; i < seconds; i++) {
+					await delay(1000);
+				}
+
+				resolve(null);
+			}));
+		});
+*/
+}
+
+
+async function setCompilerSetting(mainWorkspace: vscode.WorkspaceFolder, forcedCompiler: vscode.Uri) {
+	const unrealClangdCfg = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, mainWorkspace);
+	await unrealClangdCfg.update(consts.settingNames.unrealClangd.settings["creation.compilerPath"], forcedCompiler.fsPath);
+}
+
+
+function backupWorkspaceSettings() {
+	
+	if(_codeWorkspaceSettingsBackup !== undefined){
+		console.error("Backup settings have already been set!");
+		return;
+	}
+	
+	const workspace = getProjectWorkspaceFolder();	
+	const globalConfig = vscode.workspace.getConfiguration(undefined, workspace);
+	
+
+	let settings: string[] = globalConfig.get<string[]>("unreal-clangd.native.code-workspaceFileBackupSettings", []);
+
+	settings = settings.concat(consts.NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS);
+
+	_codeWorkspaceSettingsBackup = {};
+	for (const setting of settings) {
+
+		let value: unknown = undefined;
+		try {
+			value = globalConfig.inspect(setting)?.workspaceValue;
+		} catch (error) {
+			console.warning(`Error trying to backup setting: ${setting} (might not be a bug)`);
+			continue;
+		}
+		
+		if(value === undefined){
+			console.warning(`Error trying to backup setting: ${setting} (might not be a bug)`);
+			continue;
+		}
+
+		_codeWorkspaceSettingsBackup[setting] = value;
+	}
+
+}
+
+
+async function restoreWorkspaceSettings() {
+	if(_codeWorkspaceSettingsBackup === undefined){
+		console.error("Trying to restore workspace settings but there are none!");
+		return;
+	}
+
+	const workspace = getProjectWorkspaceFolder();	
+	const globalConfig = vscode.workspace.getConfiguration(undefined, workspace);
+
+	for (const key in _codeWorkspaceSettingsBackup) {
+		if (!Object.prototype.hasOwnProperty.call(_codeWorkspaceSettingsBackup, key)) {
+			continue;
+		}
+
+		const value = _codeWorkspaceSettingsBackup[key];
+
+		try {
+			await globalConfig.update(key, value, vscode.ConfigurationTarget.Workspace);
+		} 
+		catch (error) {
+			console.warning(`Error trying to backup workspace setting: ${key} (might not be a bug)`);
+			continue;
+		}
+		
+	}
+
+}
+
+
+async function removePchHeadersFromResponseFiles(rspFiles: typ.File[]){
+	console.log("Removing PCH header files from Intellisense...");
+		
+	for (const rspFile of rspFiles) {
+		const fileString = rspFile.fileString;
+		if(!fileString){
+			continue;
+		}
+
+		const reSharedPCH = new RegExp("^(?:(\/FI|-include).*SharedPCH.*(\r\n|\n))", "m");
+		const newFileString = fileString.replace(reSharedPCH, "");
+
+		if(fileString === newFileString){
+			console.warning(`Didn't replace PCH header file in rsp file: ${rspFile.uri.fsPath}`);
+			continue;
+		}
+
+		rspFile.fileString = newFileString;
+		console.log(`Removed pch header from intellisense file: ${rspFile.uri.fsPath}`);
+	}
+	
+	return;
+}
+
+
+async function convertFilePathsToUris(paths: Iterable<string>) {
+	let rspUris: vscode.Uri[] = [];  
+	for (const _path of paths) {
+		const uri = vscode.Uri.file(_path);
+
+		if((await isFile(uri))){
+			rspUris.push(uri);
+		}
+	}
+
+	return rspUris;
+}
+
+async function getUniqueResponseFilePathsFromCompileCommands(ccFileString: string): Promise<Record<string, number> | undefined> {
+		
+	const reResponseFlag = new RegExp(consts.REGEX_RESPONSE_COMPILER_FLAG, "gm");
+	const rspPathStrings = ccFileString.matchAll(reResponseFlag);
+
+	const rspPaths: Record<string, number> = {};
+	for (const pathString of rspPathStrings) {
+
+
+		if (pathString[0] in rspPaths) {
+			rspPaths[pathString[0]] += 1;
+		}
+		else {
+			rspPaths[pathString[0]] = 1;
+		}
+
+	}
+
+	return rspPaths;  // Check modified function
+}
+
+
+async function addMissingSharedResponseFlagsToResponse(intellisenseRspFiles: typ.File[]) {
+	console.log("addMissingSharedResponseFlagsToResponse...");
+
+	const projectUri = getProjectWorkspaceFolder()?.uri;
+	if(!projectUri){
+		return;
+	}
+	const compileCommands = await getCompileCommandObjectsFromJson(getCompileCommandsPath(projectUri,{withFileName:true}));
+	if(!compileCommands){
+		return;
+	}
+
+	const moduleFolderNameAndUris = await getFolderNameAndUris(vscode.Uri.joinPath(projectUri, "Source"));
+	
+	const moduleNameAndResponse: {moduleName: string, path: string}[] = [];
+
+	for (const compileCommand of compileCommands) {
+		const found = moduleFolderNameAndUris.find((value: { name: string; uri: vscode.Uri; }, index: number, obj: { name: string; uri: vscode.Uri; }[]) => {
+			const modulePath = value.uri.fsPath;
+			const ccModulePath = compileCommand.file.slice(undefined, modulePath.length);  // TODO length can be problem?
+						return path.relative(modulePath, ccModulePath) === "";  // arePathsEqual
+		});
+
+		if(!found){
+			continue;
+		}
+
+		const responsePath = getResponsePathFromCompileCommand(compileCommand);
+		if(!responsePath){
+			continue;
+		}
+
+		const alreadyHasModuleName = moduleNameAndResponse.some((value: { moduleName: string; path: string; }, index: number, array: { moduleName: string; path: string; }[]) => {
+			return value.moduleName === found.name;
+		});
+
+		if(alreadyHasModuleName){
+			continue;
+		}
+
+		moduleNameAndResponse.push({moduleName:found.name, path:responsePath});
+		
+	}
+
+	
+	for (const modAndRsp of moduleNameAndResponse) {
+		const relPat = new vscode.RelativePattern(projectUri, `Intermediate/Build/**/UnrealEditor/**/Development/**/${modAndRsp.moduleName}/*.Shared.rsp`);
+		const sharedUri = await vscode.workspace.findFiles(relPat, undefined, 1);
+
+		if(!sharedUri || sharedUri.length === 0){
+			console.error(`Couldn't find Shared rsp for module: ${modAndRsp.moduleName}`);
+			continue;
+		}
+
+		for (const rspFile of intellisenseRspFiles) {
+			if(path.relative(rspFile.uri.fsPath, modAndRsp.path) !== ""){
+				continue;
+			}
+
+			const sharedFileStr = await getFileString(sharedUri[0]);
+			if(!sharedFileStr || !rspFile.fileString){
+				console.error(`Couldn't get file string!\n${sharedUri[0]}\n${rspFile.fileString}`);
+				break;
+			}
+
+			const missingPaths = await findMissingResponseFlags(rspFile.fileString, sharedFileStr);
+			if(!missingPaths || missingPaths.length < 1){
+				break;
+			}
+			
+			const missingIncludes = createIncludeFlagsFromPaths(missingPaths);
+
+			const newLine = rspFile.fileString.endsWith(`\n`) ? "" : EOL;
+			rspFile.fileString += `${newLine}${missingIncludes}`;
+
+			break;
+		}
+	}
+
+}
+
+async function getFolderNameAndUris(folder: vscode.Uri) {
+	let directory: [string, vscode.FileType][];
+	try {
+		directory = await vscode.workspace.fs.readDirectory(folder);
+	} catch (error) {
+		console.error(`Couldn't read directory! ${folder.fsPath}`);
+		return [];
+	}
+
+	let nameAndUris: {name: string, uri: vscode.Uri}[] = [];
+	for (const [name, fileType] of directory) {
+		if(fileType === vscode.FileType.Directory){
+			nameAndUris.push({name:name, uri:vscode.Uri.joinPath(folder, name)});
+		}
+	}
+
+	return nameAndUris;
+}
+
+function getResponsePathFromCompileCommand(compileCommand: typ.CompileCommand, regexStr=consts.REGEX_RESPONSE_COMPILER_FLAG){
+	
+	if(compileCommand.command){
+		return compileCommand.command.match(regexStr)?.[0];
+	}
+	else if(compileCommand.arguments){
+		for (const arg of compileCommand.arguments) {
+			const path = arg.match(regexStr)?.[0];
+			if(path){
+				return path;
+			}
+		}
+	}
+
+	return undefined;
+}
+
+async function modifyResponseFiles() {
+
+	const projectUri = getProjectWorkspaceFolder()?.uri;
+	if(!projectUri){
+		return;
+	}
+
+	const ccFileString = await getFileString(getCompileCommandsPath(projectUri, {withFileName:true}));
+	if(!ccFileString){
+		return;
+	}
+
+	const rspPaths = await getUniqueResponseFilePathsFromCompileCommands(ccFileString);
+	if(!rspPaths){
+		return;
+	}
+	let responseFiles: typ.File[] = [];
+	for (const rspPath of Object.keys(rspPaths)) {
+		
+		let rspUri;
+		let rspFileString;
+		try {
+			rspUri = vscode.Uri.file(rspPath);
+			rspFileString = await getFileString(rspUri);
+		} catch (error) {
+			console.error(`Couldn't get response file object: ${rspPath}`);
+			continue;
+		}
+
+		if(!rspFileString){
+			console.error(`Couldn't get response file string: ${rspPath}`);
+			continue;
+		}
+		responseFiles.push({uri: rspUri, fileString: rspFileString});
+	}
+
+	await removePchHeadersFromResponseFiles(responseFiles);
+	await addMissingSharedResponseFlagsToResponse(responseFiles);
+	
+
+	await saveFiles(responseFiles);
+
+
+	return;
+}
+
+async function saveFiles(files: typ.File[]) {
+
+	for (const file of files) {
+		const encFile = new TextEncoder().encode(file.fileString);
+		if(!encFile){
+			console.error(`Encoded file was empty. Will not save. ${file.uri.fsPath}`); // TODO what if someone wants to overwrite file as empty?
+			continue;
+		}
+
+		try {
+			await vscode.workspace.fs.writeFile(file.uri, encFile);
+		} catch (error) {
+			console.error(`Couldn't write file! ${file.uri.fsPath}`);
+			if(error instanceof Error){
+				console.error(error.message);
+			}
+			continue;
+		}
+	}
+	
+}
+
+
+async function findMissingResponseFlags(rspFileStr: string, sharedFileStr: string) {
+	
+	// Only include dirs for now
+	const reInclude = new RegExp(`(?<=[/-]I\\s?").*(?="\s?)`, "gm");
+	const rspIncludes = rspFileStr.matchAll(reInclude);
+	const test = rspFileStr.match(reInclude);
+	const sharedIncludes = sharedFileStr.matchAll(reInclude);
+
+	const ueUri = ueHelpers.getUnrealUri();
+	if(!ueUri){
+		return;
+	}
+
+	const ueWorkingUri = vscode.Uri.joinPath(ueUri, "Engine", "Source");
+	// Rsp incude should only be absolute paths. Shared can be either.
+	
+	let sharedCount = 0;
+	const missingIncludePaths: string[] = [];
+	for (const sharedInclude of sharedIncludes) {
+		sharedCount += 1;
+
+		const sharedIncludePath = sharedInclude[0];
+		let sharedAbsPath = "";
+		if (path.isAbsolute(sharedIncludePath)) {
+			sharedAbsPath = sharedIncludePath;
+
+		}
+		else {
+			
+			const absIncPath = path.resolve(ueWorkingUri.fsPath, sharedIncludePath);
+			if(!(await isFolder(vscode.Uri.file(absIncPath)))) {
+				console.error(`Path not a real folder in response: ${absIncPath}`);
+				continue;
+			}
+			sharedAbsPath = absIncPath;
+		}
+
+		let found = false;
+		
+		for (const rspInclude of rspIncludes) {
+			
+			if(path.relative(sharedAbsPath, rspInclude[0]) === ""){
+				found = true;
+				break;
+			}
+		}
+		
+		if(found){
+			continue;
+		}
+		
+		console.warning(`Found shared include not in Intellisense Response: ${sharedAbsPath}`);
+		missingIncludePaths.push(sharedAbsPath);
+
+	}
+	console.log(`Number of shared includes: ${String(sharedCount)}`);
+		
+	return missingIncludePaths;
+}
+
+async function isFolder(uri: vscode.Uri){
+
+	try {
+		return (await vscode.workspace.fs.stat(uri)).type === vscode.FileType.Directory;
+	} catch (error) {
+		return false;
+	}
+}
+
+function createIncludeFlagsFromPaths(missingPaths: string[]) {
+	const includeFlagOnlyWithSpace = process.platform === "win32" ? "/I " : "-I";
+
+	let i = 0;
+	let includeFlags = "";
+	for (const path of missingPaths) {
+		i += 1;
+		
+		const missingPath = process.platform !== "win32" ? path : `${path[0].toUpperCase()}${path.slice(1)}`;
+		const endOfLine = i !== missingPaths.length ? EOL : "";
+		includeFlags += `${includeFlagOnlyWithSpace}"${missingPath}" ${endOfLine}`;
+	}
+
+	return includeFlags;
+
+}

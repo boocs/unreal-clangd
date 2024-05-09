@@ -20,7 +20,7 @@ export const BTTN_PARTIAL = "Partial";
 
 // Question
 export const QST_DO_YOU_WISH_TO_CONTINUE = "Do you wish to continue?";
-export const QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE = "Would you like to update compile command/Intellisense files now?\n\n(note: It will ask what Build Target you want to use at the top of VSCode)";
+export const QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE = "Would you like to update compile command/Intellisense files now?\n";
 export const QST_ADD_HEADERS_TO_COMPLETION_HELP = "Would you like to add these to completionHelper.cpp\n\nnote: VSCode will reload after adding";
 export const QST_WLD_YOU_LIKE_TO_RELOAD = "Would you like to reload VSCode now?";
 
