@@ -1,7 +1,7 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-Extension v2.5.0: For 5.2 and newer releases 
+Extension v2.5.0: For 5.2 and newer releases (Including 5.4+)
 
 This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
 
