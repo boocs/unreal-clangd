@@ -1,25 +1,12 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-[Table of Contents](#table-of-contents)
+Extension v2.5.0: For 5.2 and newer releases 
 
-## Releases (`Updated Jan 21, 2024: v2.3.0`)
+This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
 
-### Added
-- clang-format: added "NamespaceIndentation: All" to default config when created
-- Docs: Added Quick Start Guide section
-### Changed
-- Intellisense now uses DebugGame instead of Development. 
-    - You should still use Development most of the time when Building or Running your project. (You will still get Intellisense)
-    - This prevents having to Rebuild when Running your project using Development
-    - Fixes fake red squiggles after Building your project
-- When creating a project, we now put the compile commands path in the .clangd file instead of the workspace cfg file.
-    - This will set the stage, for the future, for using a different .clangd file and compile commands/flags file for the Unreal Engine source files.
-- Docs: Requirements section is less of a mess
-- Docs: Changed Tidy Guide to a link to a separate updated Clang Tidy Guide
-### Removed
-- clang-tidy: removed -readability-static-accessed-through-instance to default config when created. Added because of Tidy crash in Lyra that's fix in UE5.3. It was also the wrong way to fix the Check that caused the crash.
- 
+For users who already have created a project, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
+
 
 # Table of Contents
 - [Info](#info)
@@ -28,7 +15,7 @@
 - [Documentation](#documentation)
 - [Upgrading Older Projects](#upgrading-older-projects)
 - [Mac Support](#mac-support)
-- [Future](#future)
+
 
 ## Info
 
@@ -46,6 +33,8 @@
 
 ---
 ## Other Recommended Extensions
+
+* [Microsoft's C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) `Needed for Building/Debugging`
  
 * [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension) `Updated Sept 2023`
 
@@ -128,72 +117,18 @@ This is generally correct, when using  non-full source, but your situation could
 
 `This version had some changes!`
 
-If you want to manually update your project, skip to the Manually Update section.
+This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
+
+For users who already have created a project, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
 
 ### Uninstalling and Reinstalling
 You can use this extension's `uninstall` and `create` commands when upgrading to a new extension version. 
-
-### Manually Update
-#### .clang-format 
-- `Add` this line
-  ```
-  NamespaceIndentation: All
-
-  # Make sure to leave blank line at end of file
-  ```
-
----
-#### projectname.code-workspace
-
-- `Remove` this line
-
-  Found in setting: clangd.arguments
-  ```
-  "-compile-commands-dir=e:\\Users\\ME\\Documents\\Unreal Projects\\CleanLyra_5_3\\.vscode\\unreal-clangd"
-  ```
----
-#### .clangd
-- `Add` this line
-
-- Add the path found in your projectname.code-workspace
-
-- `Windows` users: Use one `forward` slash for paths
-  ```
-  CompileFlags: CompilationDatabase: e:/Users/ME/Documents/Unreal Projects/CleanLyra_5_3/.vscode/unreal-clangd
-  ```
 
 
 ---
 ## Mac support
 
-This hasn't been proven to work yet`(let me know!)`. The ubuntu fix might help people trying to fix the Mac version so a section of .clangd is provided below.
-
-
-
-`Note:` Mac doesn't use this directory any more so any 'fix helpers' should try the Xcode equivalent to this directory. 
-
-Of course maybe Mac doesn't need this Ubuntu type fix. 
-```
-# Rest of file above
-
-CompileFlags:
-  Add:
-    - -D__INTELLISENSE__
-    - -isystem/usr/include
-
-# Rest of file below
-```
-
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
-
----
-
-## Future
-I'd be nice to have these things:
-
-1. Figure out a way to have Intellisense files created for the Unreal source code. I use the Unreal Build Tool's GenerateClangDatabase flag to generate the Intellisense files for your project. Problem is, when you switch to a Unreal source file, clangd will use a translation unit from your project to provide Intellisense for a Unreal source file. It may or may not work. Generating separate Intellisense files for the Unreal source code needs to be looked into.
-2. Provide a ready made ,unreal centric, config file for clang tidy. I currently don't use clang tidy but I want to try it! This extension provides a mostly blank clang tidy config file but does have decent guidance in the [**extension documentation.**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
-3. Complete rewrite. What I should have done was make a generalized clangd helper extension instead of the Unreal/clangd version we have now. Would maybe need to have another lightweight Unreal extension to complement this extension but maybe not if designed correctly!
+This hasn't been proven to work yet`(let me know!)`. 
 
 ---
 [Top](#unreal-52-clangd-extension-for-vscode-intellisense)
