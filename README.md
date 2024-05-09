@@ -7,6 +7,16 @@ This version now uses Native project Intellisense files instead of using the UBT
 
 For users who already have created a project, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
 
+## Important Info
+
+This extension now uses UBT to  `Refresh your project` to update Intellisense files(compile commands). So this runs when you run the `'Update Compile Commands'` command.
+Since this refreshes your project, your code-workspace will be refreshed removing your clangd settings and others! but...
+
+This extension will `automatically backup and restore` your clangd settings when you run the `Update Compile Commands` command.
+
+`Note:` I've added a setting that allows you to add additional settings to be backed up.
+See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHANGELOG.md#250-2024-05-05
+
 
 # Table of Contents
 - [Info](#info)
