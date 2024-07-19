@@ -55,7 +55,7 @@ export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP14 = "-std=c++14";
 
 export const FOLDER_NATIVE_COMPILE_COMMANDS_DEFAULT_FOLDER_NAME = "compileCommands_Default";
 
-export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=@).*.rsp";
+export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=[\"']@).*?\\.rsp(?=\"|')";
 
 export const NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS = [
     "clangd.arguments", "clangd.path", "clangd.detectExtensionConflicts", "files.associations", "workbench.colorCustomizations", "editor.suggestFontSize", "dotnet.defaultSolution"
@@ -279,6 +279,9 @@ export const UPDATE_COMPILE_COMMANDS_COMPILER_CLANG = "-Compiler=Clang";
 export const UPDATE_COMPILE_COMMANDS_PROJECT_NAME_EDITOR_SUFFIX = "Editor";
 export const END_DIRECTORY_NAMES_TO_UNREAL_BUILD_TOOL = [
     "Engine", "Binaries", "DotNET", "UnrealBuildTool"
+];
+export const END_UBT_SCRIPT_FILE_NAMES_UNIX = [
+    "Engine", "Build", "BatchFiles", "RunUBT.sh"
 ];
 
 export const CREATION_ARG_SETTING_UNREAL_PLATFORM = "platform";
