@@ -6,7 +6,7 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue, GlobPatterns, BackupGlobDirectories } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.5.0";
+export const EXTENSION_VERSION = "2.5.1";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 

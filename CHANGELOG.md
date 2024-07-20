@@ -4,6 +4,11 @@
 
 - Create command that shows clang and clangd version in terminal
 
+## [2.5.1] 2024-07-20 Update from user 94Bo
+### Added
+- Linux and Mac users will use RunUBT.sh instead of calling UBT directly if available
+- When choosing a compile commands entry for completionHelper.cpp, filter out non main source folders
+
 ## [2.5.0] 2024-05-05
 ### Changed
 - Moved to using a project's Native Intellisense files instead of using UBT's mode=GenerateClangDataBase
