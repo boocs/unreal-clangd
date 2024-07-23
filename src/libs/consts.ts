@@ -284,6 +284,11 @@ export const END_UBT_SCRIPT_FILE_NAMES_UNIX = [
     "Engine", "Build", "BatchFiles", "RunUBT.sh"
 ];
 
+export const END_UBT_SCRIPT_FILE_NAMES_WIN = [
+    "Engine", "Build", "BatchFiles", "RunUBT.bat"
+];
+
+
 export const CREATION_ARG_SETTING_UNREAL_PLATFORM = "platform";
 export const CREATION_ARG_SETTING_OVERWRITE = "overwrite";
 export const CREATION_ARG_SETTING_TIDY = "tidy";

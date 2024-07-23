@@ -4,10 +4,14 @@
 
 - Create command that shows clang and clangd version in terminal
 
-## [2.5.1] 2024-07-20 
+## [2.5.1] 2024-07-22 
 ### Added from user 94Bo
 - Linux and Mac users will use RunUBT.sh instead of calling UBT directly if available
 - When choosing a compile commands entry for completionHelper.cpp, filter out non main source folders
+### Added
+- Windows will use RunUBT.bat if available
+### Removed
+- removed -vscode flag when calling UBT (it gets ignored anyway)
 ### Fixed
 - npm audit fix
 

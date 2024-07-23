@@ -125,7 +125,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			args = [
 				"-projectfiles",
-				"-vscode",
 				`-project=${uprojectUri.fsPath}`,
 				"-game",
 				"-engine",
@@ -998,6 +997,13 @@ async function getUbtPath(ueUri: vscode.Uri | undefined) {
 		// We are in Unix, so call wrapper script of UBT to use dotnet from Unreal Engine.
 		// That's 'RunUBT.sh'.
 		return unixUBTWrapperScripUri.fsPath;
+	}
+
+	const winUBTWrapperScripUri = vscode.Uri.joinPath(ueUri, ...consts.END_UBT_SCRIPT_FILE_NAMES_WIN);
+	if(process.platform === "win32" && await doesUriExist(winUBTWrapperScripUri)) {
+		// We are in Windows, so call wrapper script of UBT to use dotnet from Unreal Engine.
+		// That's 'RunUBT.bat'.
+		return winUBTWrapperScripUri.fsPath;
 	}
 
 	const ubtDirUri = vscode.Uri.joinPath(ueUri, ...consts.END_DIRECTORY_NAMES_TO_UNREAL_BUILD_TOOL);
