@@ -6,7 +6,7 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue, GlobPatterns, BackupGlobDirectories } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.5.0";
+export const EXTENSION_VERSION = "2.5.1";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
@@ -55,7 +55,7 @@ export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP14 = "-std=c++14";
 
 export const FOLDER_NATIVE_COMPILE_COMMANDS_DEFAULT_FOLDER_NAME = "compileCommands_Default";
 
-export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=@).*.rsp";
+export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=[\"']@).*?\\.rsp(?=\"|')";
 
 export const NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS = [
     "clangd.arguments", "clangd.path", "clangd.detectExtensionConflicts", "files.associations", "workbench.colorCustomizations", "editor.suggestFontSize", "dotnet.defaultSolution"
@@ -280,6 +280,14 @@ export const UPDATE_COMPILE_COMMANDS_PROJECT_NAME_EDITOR_SUFFIX = "Editor";
 export const END_DIRECTORY_NAMES_TO_UNREAL_BUILD_TOOL = [
     "Engine", "Binaries", "DotNET", "UnrealBuildTool"
 ];
+export const END_UBT_SCRIPT_FILE_NAMES_UNIX = [
+    "Engine", "Build", "BatchFiles", "RunUBT.sh"
+];
+
+export const END_UBT_SCRIPT_FILE_NAMES_WIN = [
+    "Engine", "Build", "BatchFiles", "RunUBT.bat"
+];
+
 
 export const CREATION_ARG_SETTING_UNREAL_PLATFORM = "platform";
 export const CREATION_ARG_SETTING_OVERWRITE = "overwrite";

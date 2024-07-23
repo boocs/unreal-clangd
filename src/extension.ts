@@ -125,7 +125,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			args = [
 				"-projectfiles",
-				"-vscode",
 				`-project=${uprojectUri.fsPath}`,
 				"-game",
 				"-engine",
@@ -992,6 +991,21 @@ async function getUbtPath(ueUri: vscode.Uri | undefined) {
 		console.error(tr.URI_SEND_TO_GETUBTPATH_WAS_UNDEFINED);
 		return null;
 	}
+
+	const unixUBTWrapperScripUri = vscode.Uri.joinPath(ueUri, ...consts.END_UBT_SCRIPT_FILE_NAMES_UNIX);
+	if(process.platform.toLocaleLowerCase() !== "win32" && await doesUriExist(unixUBTWrapperScripUri)) {
+		// We are in Unix, so call wrapper script of UBT to use dotnet from Unreal Engine.
+		// That's 'RunUBT.sh'.
+		return unixUBTWrapperScripUri.fsPath;
+	}
+
+	const winUBTWrapperScripUri = vscode.Uri.joinPath(ueUri, ...consts.END_UBT_SCRIPT_FILE_NAMES_WIN);
+	if(process.platform === "win32" && await doesUriExist(winUBTWrapperScripUri)) {
+		// We are in Windows, so call wrapper script of UBT to use dotnet from Unreal Engine.
+		// That's 'RunUBT.bat'.
+		return winUBTWrapperScripUri.fsPath;
+	}
+
 	const ubtDirUri = vscode.Uri.joinPath(ueUri, ...consts.END_DIRECTORY_NAMES_TO_UNREAL_BUILD_TOOL);
 
 	if (!(await doesUriExist(ubtDirUri))) {
@@ -1906,19 +1920,13 @@ async function handleCompletionHelper() {
 		return;
 	}
 
-	const ccFileString = await getFileString(compileCommandsUri);
-	if(!ccFileString){
-		return;
-	}
-
-	const responsePaths = await getUniqueResponseFilePathsFromCompileCommands(ccFileString);
+	// Since we only intrested in the main source folder later, we should filter only the main source file.
+	const responsePaths = await getUniqueResponseFilePathsFromCompileCommandsWithFilter(ccFile, mainSourceFolderPathLower);
 	if(!responsePaths){
 		return;
 	}
-	
-	let responsePathMostEntries;
-	
-	responsePathMostEntries = Object.keys(responsePaths).reduce((previous, current, i, pathsArray) => {	
+
+	let responsePathMostEntries = Object.keys(responsePaths).reduce((previous, current, i, pathsArray) => {	
 		return responsePaths[current] > responsePaths[previous] ? current : previous; 
 	});
 
@@ -2679,8 +2687,14 @@ async function convertFilePathsToUris(paths: Iterable<string>) {
 	return rspUris;
 }
 
+function getUniqueResponseFilePathsFromCompileCommandsWithFilter(ccFile: typ.CompileCommandFile, filterFilePathPrefix?: string): Promise<Record<string, number> | undefined> {
+	return getUniqueResponseFilePathsFromCompileCommands(JSON.stringify(filterFilePathPrefix ?
+		ccFile.filter(ccFile => ccFile.file.toLowerCase().startsWith(filterFilePathPrefix))
+		: ccFile
+	));
+}
+
 async function getUniqueResponseFilePathsFromCompileCommands(ccFileString: string): Promise<Record<string, number> | undefined> {
-		
 	const reResponseFlag = new RegExp(consts.REGEX_RESPONSE_COMPILER_FLAG, "gm");
 	const rspPathStrings = ccFileString.matchAll(reResponseFlag);
 

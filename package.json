@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "clangd helper for UE 5.2+",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "engines": {
     "vscode": "^1.77.3"
   },
