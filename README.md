@@ -1,11 +1,13 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-Extension v2.5.0: For 5.2 and newer releases (Including 5.4+)
+`New update July 23rd, 2024`
+
+Extension v2.5.1: For Unreal 5.2 and newer releases (Including 5.4+)
 
 This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
 
-For users who already have created a project, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
+For users who already have created a project using extension versions previous to `v2.5.0`, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
 
 ## Important Info
 
@@ -57,7 +59,7 @@ See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHA
 This is generally correct, when using  non-full source, but your situation could be different.
 
 1. Read the [Requirements](https://github.com/boocs/unreal-clangd/tree/v2#readme) section of the full Documentation
-    - Different Unreal Engine versions require different LLVM versions(Unreal 5.3 requires LLVM 16.0.6)
+    - Different Unreal Engine versions require different LLVM versions(Unreal 5.3/5.4 requires LLVM 16.0.6)
 
   ---
 
@@ -129,7 +131,7 @@ This is generally correct, when using  non-full source, but your situation could
 
 This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
 
-For users who already have created a project, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
+For users who already have created a project before extenson v2.5.0, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
 
 ### Uninstalling and Reinstalling
 You can use this extension's `uninstall` and `create` commands when upgrading to a new extension version. 
