@@ -1,13 +1,15 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-`New update July 23rd, 2024`
+`New update Nov 19, 2024`
 
-Extension v2.5.1: For Unreal 5.2 and newer releases (Including 5.4+)
+Extension v2.6.0: For Unreal 5.2 `and newer releases` 
 
-This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
+- Has Unreal Source file support (`finally!`)
+- UE 5.5 support
+- Potential Mac fix
+- See Changelog for more info
 
-For users who already have created a project using extension versions previous to `v2.5.0`, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
 
 ## Important Info
 
@@ -47,6 +49,8 @@ See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHA
 ## Other Recommended Extensions
 
 * [Microsoft's C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) `Needed for Building/Debugging`
+
+* [File Switcher](https://github.com/boocs/file-switcher) `For Alt+O clangd keyboard shortcut (Head/Source switcher)` Using Clangd's Alt+O implementation is buggy, for Unreal Source files, so this extension is a good alternative
  
 * [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension) `Updated Sept 2023`
 
@@ -129,18 +133,18 @@ This is generally correct, when using  non-full source, but your situation could
 
 `This version had some changes!`
 
-This version now uses Native project Intellisense files instead of using the UBT's mode `GenerateClangDataBase`.
-
-For users who already have created a project before extenson v2.5.0, you'll need to run the "`Create Unreal Clangd Project`" command again and choose `Full` so that it overwrites old project settings. You shouldn't have to uninstall anything.
-
-### Uninstalling and Reinstalling
-You can use this extension's `uninstall` and `create` commands when upgrading to a new extension version. 
-
-
 ---
 ## Mac support
 
 This hasn't been proven to work yet`(let me know!)`. 
+
+There a new setting to try if you haven't been successful in getting clangd to work.
+
+`unreal-clangd.creation.MacFileLanguage`
+
+You can change the clangd Mac file language to C++ or Objective C++ (thanks to user szabot0412)
+- This setting is set in your .clangd files during project creation
+- in the Add: section it's the line that show `- -xc++` or `- -xobjective-c++`
 
 ---
 [Top](#unreal-52-clangd-extension-for-vscode-intellisense)
