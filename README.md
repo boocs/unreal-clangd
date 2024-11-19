@@ -5,10 +5,10 @@
 
 Extension v2.6.0: For Unreal 5.2 `and newer releases` 
 
-- Has Unreal Source file support (`finally!`)
+- Has Unreal Source file support (`finally!`) see [here](https://github.com/boocs/unreal-clangd/tree/v2?tab=readme-ov-file#unreal-source-support)
 - UE 5.5 support (`note:` now uses clang/clangd v18.1.0)
-- Potential Mac fix
-- See Changelog for more info
+- Potential Mac [fix](https://github.com/boocs/unreal-clangd/tree/v2?tab=readme-ov-file#mac-fixes)
+- See [Changelog](https://github.com/boocs/unreal-clangd/blob/v2/CHANGELOG.md) for more info
 
 
 ## Important Info
