@@ -6,7 +6,7 @@
 Extension v2.6.0: For Unreal 5.2 `and newer releases` 
 
 - Has Unreal Source file support (`finally!`)
-- UE 5.5 support
+- UE 5.5 support (`note:` now uses clang/clangd v18.1.0)
 - Potential Mac fix
 - See Changelog for more info
 
