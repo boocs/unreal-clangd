@@ -16,6 +16,11 @@
   - [General](#about)
   - [Benefits](#benefits)
 - [Requirements](#requirements)
+  - [Mac](#mac-xcodellvm)
+  - [Windows](#windows-llvm)
+  - [More Windows](#windows-requirements)
+  - [Ubuntu](#ubuntu-2204-requirements)
+  - [Arch Linux](#arch-linux-requirements)
 - [Older Unreal Versions](#older-unreal-versions)
 - [Extension](#extension)
   - [Commands](#commands)
@@ -24,6 +29,7 @@
 - [Creating a Unreal Clangd Project](#creating-a-unreal-clangd-project)
   - [General](#creating-a-unreal-clangd-project)
   - [Creating Clang Tidy Cfg at a later date](#creating-a-clang-tidy-cfg-on-a-later-date)
+- [Unreal Source support](#unreal-source-support)
 - [Info](#info)
   - [Logs](#logs)
   - [.clangd file](#clangd-file)
@@ -43,6 +49,7 @@
   - [Delegate Func Completion](#delegate-function-name-completions)
   - [Function parameter completions](#function-parameter-completions)
   - [Linux Fixes](#linux-fixes)
+  - [Mac Fixes](#mac-fixes)
 - [Auto Include](#auto-includes)
   - [General](#auto-includes)
   - [Enabling for headers](#enabling-auto-include-for-header-files)
@@ -170,6 +177,7 @@ This is generally correct, when using  non-full source, but your situation could
    - Bundle setting causes completions to be wrong (e.g. template functions)
    - Bundle setting doesn't work with VSCode's deprecated strikethrough setting
 4. This extension deletes/creates a compile_commands.json in the parent Unreal Engine directory and then copies it over to the project.
+    - Current Native Intellisense options doesn't do it this way
 6. clangd intellisense currently uses 'no precompiled headers' mode (`Will work with pch projects!`)
 7. Popup dialogs use systems sounds. Most Operating Systems allow you to adjust System(OS) sounds without affecting overall sound volume.
 8. Just like Microsoft's C++ extension, with clangd the UPROPERTY type macros don't work with code completion for their parameters.
@@ -197,12 +205,25 @@ This is generally correct, when using  non-full source, but your situation could
     - This fix is in the .clangd cfg file ([added include directory](#linux-fixes))
     - Your version of Linux may or maybe not need this fix
   
+  `Nov 2024`: Had trouble installing LLVM 18 for Unreal 5.5 (Ubuntu 22.04)
 
+-  Found this to work 
+- Make sure you don't have an `llvm.sh` file already in the directory you have open. The file you download won't overwrite the file already in your directory. It will name it something else.
+- This will install LLVM 18.1.8 (`for Unreal 5.5, make sure to install the correct version for your version of Unreal`)
+- Epic recommends 18.1.0
+- In a perfect world, patch update versions wouldn't matter
+- For me, it does seems to work fine but you could have problems. You can always build from source if you want the specific 18.1.0 version.
+
+`Here's the instructions`:
+1. wget https://apt.llvm.org/llvm.sh
+2. chmod +x llvm.sh
+3. sudo ./llvm.sh 18
 ```
 ```
 ### Mac M1/M2 Note
   - This extension has a setting that lets you set the `architecture` UBT flag
   - You can try setting this to `arm64`
+  - You might not need this and is only provided for things to try in case it's not working
   - **note:** Do this before creating your project
 
 ```
@@ -257,10 +278,11 @@ Windows and Unreal 5.2+(`non Full Source`) have been tested with:
 
 #### General Requirements
 
-- Unreal Engine 5.2+
+- Unreal Engine v5.2+
+- Unreal project created for VSCode
 - Requires specific LLVM/clang/clangd versions!
-  - https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
-  - Make sure to select correct Unreal Engine version (the link goes to UE 5.3)
+  - https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.5
+  - Make sure to select correct Unreal Engine version (the link goes to UE 5.5)
   - Requirements are only posted after a full release of UE. For Beta/Preview releases you'll have to test clang versions
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let clangd extension auto install LLVM)
 - Microsoft C++ [extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) for its `Building/Debugging` capability
@@ -277,17 +299,23 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 - Does XCode come with clang++,clangd,clang-tidy, and clang-format? Use that version
   - Else download the clang(LLVM) version specified in the `Linux` section of the above link
   - For Unreal 5.3 it would be LLVM 16.0.6
+  - For Unreal 5.5 it would be LLVM 18.1.0
 
+- `Nov 20224` Add new setting: "unreal-clangd.creation.MacFileLanguage"
+  - This allows you to change the File Language from C++ to Ojbective C++
+  - Git user szabot0412 said chaning the language to Objective C++ fixed his red squiggles
+  - If more people confirm this then I might change Objective C++ to default file language
 
 #### Windows (LLVM)
 - Windows users should use the Linux clang(LLVM) version requirement
   - Make sure you select the correct Unreal Version for the Docs
   - Different Unreal versions require different LLVM versions
-  - https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for-unreal-engine/
+  - https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.5
 - Download clang/clangd from https://github.com/llvm/llvm-project/releases/
-  - Filename will be LLVM-(version)-win64.exe (e.g. for UE 5.3.#, the filename will be LLVM-16.0.6-win64.exe)
-  - Remember if not using UE 5.3.# the LLVM version will be different
-- `note:` With UE 5.3 unfortunately Unreal Build Tool requires updated libraries so needs to see required LLVM builds. This means you must install LLVM in the default directory.
+  - Filename will be LLVM-(version)-win64.exe (e.g. for UE 5.5.#, the filename will be 
+LLVM-18.1.0-win64.exe )
+  - Remember if not using UE 5.5.# the LLVM version will be different
+- `note:` For best Unreal compatibility install LLVM in the default directory.
 
 ### Other requirements
 #### Windows Requirements
@@ -320,26 +348,37 @@ https://docs.unrealengine.com/5.3/en-US/hardware-and-software-specifications-for
 
        * For `Unreal 5.4` you want to enable `v14.38`
           - (Pic not shown)
+
+       * For `Unreal 5.5` you want to enable `v14.38`
+          - (Pic not shown)
     
-    4. If you haven't created your Unreal project yet you can skip steps 5/6
-    5. For existing Unreal projects, first Refresh your project (this will overwrite your workspace file which we fix in step 6)
-
-        - You can **Generate Visual Studio Project files** by right clicking on your project's *.uproject file in your project's parent folder.
-
-        - You can also **Refresh Visual Studio Project** inside UE5's Tools menu
-    
-    6.  You'll have to reinstall the project that this extension creates because `Generating Visual Studio project files` will overwrite your project's VSCode workspace file which has all the clangd project settings
-
-        - [Doing a partial install](#reinstall-without-overwrite)
+    4. If you haven't created your Unreal project yet you can skip step 5
+    5. For existing Unreal projects, run this extension's commands called: `Update Compile Commands file`
+       * This command is the same command that also refreshes your project
 
 #### Ubuntu 22.04 Requirements
 - dotnet-runtime-6.0
 - dotnet-sdk-6.0 (Only needed for seeing UBT logs when updating compile commands)
 
+`Nov 2024`: Had trouble installing LLVM 18 for Unreal 5.5 (Ubuntu 22.04)
+
+-  Found this to work 
+- Make sure you don't have an `llvm.sh` file already in the directory you have open. The file you download won't overwrite the file already in your directory. It will name it something else.
+- This will install LLVM 18.1.8 (`for Unreal 5.5, make sure to install the correct version for your version of Unreal`)
+- Epic recommends 18.1.0
+- In a perfect world, patch update versions wouldn't matter
+- For me, it does seems to work fine but you could have problems. You can always build from source if you want the specific 18.1.0 version.
+
+`Here's the instructions`:
+1. wget https://apt.llvm.org/llvm.sh
+2. chmod +x llvm.sh
+3. sudo ./llvm.sh 18
+
 #### Arch Linux Requirements
 - dotnet-runtime-6.0
 - clang
 - dotnet-sdk-6.0 (Only needed for seeing UBT logs when updating compile commands)
+
 
 ```
 ```
@@ -400,6 +439,7 @@ The other reason was a Unreal design change. 5.0.0 uses compile commands while 5
 * `unreal-clangd.creation.completionHelper`: true(default) Needed to make code completion functional. Creates a completionHelper.cpp and adds it to compile_commands.json
 * `unreal-clangd.creation.completionHelperMP`: true(default) Also add UnrealNetwork.h(multiplayer) to completionHelper.cpp
 * `unreal-clangd.creation.tidy`: false(default) creates a clangd tidy file, during creation command, if true **(see clang tidy section)**
+* `unreal-clangd.creation.MacFileLanguage`: Can switch Mac file language support to C++ or Objective C++
 #### Editor
 * `unreal-clangd.editor.parameterHints`: Automatically pops up param hints windows after function name completion
   - disabled:
@@ -550,6 +590,34 @@ If you noticed above, in the Creating a Unreal Clangd Project section, the comma
       ![](https://user-images.githubusercontent.com/62588629/225810841-0eaaf8c6-090c-4c53-807a-7a43e658e631.png)
 
   7. See the [clang tidy](#clang-tidy) section for more info.
+
+```
+```
+
+[Top](#table-of-contents)
+
+---
+
+## Unreal Source support
+Starting with extension version 2.6.0, it now support Unreal Source files
+
+  - `Requirements:` Must have created a VSCode project using Unreal/UBT
+    - This is because this extension uses the files that were created for your project
+
+  - When creating a project it will also create a .clangd file in the Unreal directory(only if there isn't one there)
+  - It will never overwrite a clangd file in your Unreal directory
+  - You can also use the command: `Create Unreal Source Support` if you want to only create a Unreal Source support project
+  - This dynamically creates a compile commands file based on the response files that are created when you created your Unreal project
+
+`Note:` This extension turns off errors for .cpp files `for Non-Full source Unreal Engine Files`
+  - This is because some .cpp files have special include macros
+  - The files required for these include statements don't exist in Non-Full source projects
+  - This shouldn't affect anything
+  - `This won't affect your project files`. Just Unreal Source files.
+  - This is feature is found in the .clangd file in the Unreal Engine parent directory so it can easily be removed if you want
+
+  #### Example of an erring macro below(I believe there are other include macros that error)
+  ![](https://private-user-images.githubusercontent.com/62588629/386956610-48b676d1-e1cb-4f10-8cd0-50ca4ff13416.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzE4NDY4MDEsIm5iZiI6MTczMTg0NjUwMSwicGF0aCI6Ii82MjU4ODYyOS8zODY5NTY2MTAtNDhiNjc2ZDEtZTFjYi00ZjEwLThjZDAtNTBjYTRmZjEzNDE2LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDExMTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMTE3VDEyMjgyMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTc4YTE5MDFiOTg5ZGE0MjM0ZmU2YWUwZmI5NjNjYzM5ZWEyNTY0MmFkNjVlMjg0NmNhNWJjMGUyMWEwODIzNTgmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.AhQMn4Qne-jcUq6xfVeyc1uPgB2VuxjRiXlPMW-Wk84)
 
 ```
 ```
@@ -803,8 +871,36 @@ Thanks to Mark at [stackoverflow](https://stackoverflow.com/a/76096050/13950944)
 ```
 ```
 ### Linux Fixes
+`Nov 2024`: Had trouble installing LLVM 18 for Unreal 5.5 (Ubuntu 22.04)
 
-Check the .clangd project file 'Add' section for all the fixes applied.
+-  Found this to work 
+- Make sure you don't have an `llvm.sh` file already in the directory you have open. The file you download won't overwrite the file already in your directory. It will name it something else.
+- This will install LLVM 18.1.8 (`for Unreal 5.5, make sure to install the correct version for your version of Unreal`)
+- Epic recommends 18.1.0
+- In a perfect world, patch update versions wouldn't matter
+- For me, it does seems to work fine but you could have problems. You can always build from source if you want the specific 18.1.0 version.
+
+`Here's the instructions`:
+1. wget https://apt.llvm.org/llvm.sh
+2. chmod +x llvm.sh
+3. sudo ./llvm.sh 18
+
+### Mac Fixes
+- `Nov 20224` Add new setting: "unreal-clangd.creation.MacFileLanguage"
+  - This allows you to change the File Language from C++ to Ojbective C++ (`during clangd project creation`)
+  - Git user szabot0412 said changing the file language to Objective C++ fixed his red squiggles
+  - If more people confirm this then I might change Objective C++ to default file language for Mac users
+
+  #### Manual Mac File Language Fix
+  - Open up your .clangd files in your project parent directory and Unreal Source parent directory
+  - Change this line under `Add:`
+    ```
+      - -xc++
+    ```
+    Change to this:
+    ```
+      - -xobjective-c++
+    ```
 
 ```
 ```

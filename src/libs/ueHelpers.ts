@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import * as console from './console';
 import { FOLDER_NAME_SOURCE, UNREAL_BUILD_TARGET_FILE_EXTENSION } from './consts';
 import { TextDecoder } from 'util';
-import * as pPath from 'path';
+import * as pathLib from 'path';
 
 
 const WORKSPACE_FOLDER_NAME_UE4 = "UE4";
@@ -14,6 +14,12 @@ const WORKSPACE_FOLDER_NAME_UE5 = "UE5";
 export const PROJECT_UPROJECT_FILE_EXT = ".uproject";
 const ENDING_VERSION_HEADER_PATH = "Engine/Source/Runtime/Launch/Resources/Version.h";
 const RE_UE_VERSION = /(?<=#define\s+ENGINE_(?:MAJOR|MINOR|PATCH)_VERSION\s+)\d+/gm;
+
+const FULL_SOURCE_FILE_TESTERS = [
+    "GenerateProjectFiles.bat",
+    "GenerateProjectFiles.sh",
+    "GenerateProjectFiles.command"
+];
 
 const MAX_VERSION_NUMS = 3;
 export interface UnrealVersion {
@@ -104,7 +110,7 @@ export function getProjectWorkspaceFolder(): vscode.WorkspaceFolder | undefined 
         return undefined;
     }
 
-    const workspaceFileFolderPath = pPath.parse(workspaceFileUri.fsPath).dir;
+    const workspaceFileFolderPath = pathLib.parse(workspaceFileUri.fsPath).dir;
 
     for (const folder of vscode.workspace.workspaceFolders) {
                 
@@ -272,4 +278,29 @@ export async function getBuildTargetNames(topItemContains: string | undefined = 
         return targetNames;
     }
     
+}
+
+/**
+ * @param workspace 
+ * @param relativePathsToCheck If any of these are found this function will return true
+ * @returns true/false or undefined if workspace is undefined
+ */
+export async function isFullSourceUnrealEngine(workspace: vscode.WorkspaceFolder, relativeFilePathsToCheck = FULL_SOURCE_FILE_TESTERS): Promise<boolean> {
+    
+    for (const fileNames of relativeFilePathsToCheck) {
+        
+        const fullPath = vscode.Uri.joinPath(workspace.uri, fileNames);
+         
+        try {
+            // Check if the file exists asynchronously
+            const fileStats = await vscode.workspace.fs.stat(fullPath);
+            if (fileStats.type === vscode.FileType.File) {
+                return true;  // File found, it's likely a full source Unreal Engine
+            }
+        } catch (error) {
+            continue; // We continue because just because one of these files doesn't exist doesn't mean it's not full source
+        }
+    }
+
+    return false;  // No files found, not a full source Unreal Engine
 }

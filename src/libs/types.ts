@@ -12,6 +12,13 @@ export type CreationCmdLineValueTypeCompare = "string" | "boolean" | "null";
 
 export type CreationCmdLineArgs = Map<CreationCmdLineSettings, CreationCmdLineValue>;
 
+type RemoveRspForwardInclude = "definitions" | "pch" | "none";
+
+export interface RspMatcher {
+	"ueDirRelative": string,
+    "rspRelative": string
+}
+
 export interface CompileCommand {
 	"file": string,
 	"command"?: string,
@@ -132,9 +139,10 @@ export interface ClangdExtensionFile {
 }
 
 export interface ClangdCfgFileSettings {
-	"If": IfVars
-	"CompileFlags": CompileFlags
-	"InlayHints": InlayHintsFlags
+	"If"?: IfVars
+	"CompileFlags"?: CompileFlags
+	"InlayHints"?: InlayHintsFlags
+	"Diagnostics"?: DiagnosticsFlags
 }
 
 export interface CompileFlags {
@@ -155,6 +163,12 @@ export interface InlayHintsFlags {
 	"ParameterNames": "Yes",
 	"DeducedTypes": "Yes"
 }
+
+export interface DiagnosticsFlags {
+	"UnusedIncludes"?: "None"
+	"Suppress"?: '*'
+}
+
 
 export interface ClangTidyFileSettings {
 	"Checks": string,

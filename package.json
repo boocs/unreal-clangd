@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "clangd helper for UE 5.2+",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "engines": {
     "vscode": "^1.77.3"
   },
@@ -64,6 +64,11 @@
       {
         "command": "unreal-clangd.addToCompletionHelper",
         "title": "Add headers to completionHelper.cpp",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.createUnrealSourceClangdProject",
+        "title": "Create Unreal Source support",
         "category": "unreal clangd"
       }
     ],
@@ -156,6 +161,16 @@
               "Overwrite all files and settings"
             ],
             "markdownDescription": "This setting doesn't need to be set manually. It will be set during creation process.",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.MacFileLanguage": {
+            "type": "string",
+            "default": "c++",
+            "enum": [
+              "c++",
+              "objective-c++"
+            ],
+            "markdownDescription": "How files are treated on Mac(Apple). The setting is set in your .clangd file on creation of a project.",
             "scope": "resource"
           },
           "unreal-clangd.creation.tidy": {

@@ -4,6 +4,23 @@
 
 - Create command that shows clang and clangd version in terminal
 
+## [2.6.0] 2024-11-18
+### Added
+- Unreal Source support
+    - The command below will run when you create a clangd project with this extension
+    - Command "Create Unreal Source support"
+        - Creates .clangd file in Unreal source directory
+    - Auto creates compile commands file and entries when visiting Unreal Source files
+        - Calculated based on Unreal Source rsp files created by Unreal when creating a VSCode Unreal project
+        - compile_commands.json is created in Unreal Source directory (/.vscode/unreal-clangd)
+- UE 5.5 support
+- Added in .clangd Diagnostic->UnusedIncludes = None for clang/clangd 18.1.0
+- Mac fix setting: "unreal-clangd.creation.MacFileLanguage" (idea from user szabot0412)
+    - Can switch file language from C++ to Objective C++ (default is C++ for now)
+- Ignore errors for Non Full Source Unreal Engine *.cpp files
+### Fixed
+- npm audit fix
+
 ## [2.5.1] 2024-07-22 
 ### Added from user 94Bo
 - Linux and Mac users will use RunUBT.sh instead of calling UBT directly if available

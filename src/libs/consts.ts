@@ -6,13 +6,15 @@ import { AllDefaultSettings, AllSettingNames, CCppDefaultSettings, CCppSettingNa
 import type { ClangdCfgFileSettings, CompileFlags, ClangArgWithValue, GlobPatterns, BackupGlobDirectories } from "./types";
 import type { Overwrite } from './indexTypes';
 
-export const EXTENSION_VERSION = "2.5.1";
+export const EXTENSION_VERSION = "2.6.0";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
 export const EXTENSION_NAME = "unreal clangd";
 export const UE5_WORKSPACE_NAME = "UE5";
 export const UPROJECT_FILE_EXTENSION_WITH_DOT = ".uproject";
+
+export const SOURCE_FILE_EXTENSIONS = [".h", ".hpp", ".cpp"];
 
 export const LINUX_CLANGD_CFG_ADD_USR_INCLUDE = "-isystem/usr/include"; 
 
@@ -23,6 +25,7 @@ export const VSCODE_CMD_RELOAD_WINDOW = "workbench.action.reloadWindow";
 export const VSCODE_INSERT_SNIPPET = "editor.action.insertSnippet";
 export const VSCODE_CMD_FOCUS_SUGGESTION = "focusSuggestion";
 
+export const SETTING_UESOURCE_RSPMATCHERS = "ueSource.rspMatchers";
 export const TIDY_NO_LINT_CURRENT_LINE = " // NOLINT";
 export const TIDY_NO_LINT_NEXT_LINE = "// NOLINTNEXTLINE";
 export const TIDY_TEST = "float _foo = 1.337f;  // ****CLANG TIDY TEST**** WILL NOT WORK IF YOU'VE DISABLED WARNINGS IT DETECTS";
@@ -35,6 +38,8 @@ export const CONFIG_SECTION_CPP = "C_Cpp";
 export const CONFIG_SECTION_UNREAL_CLANGD = "unreal-clangd";
 export const SETTING_CLANGD_PATH = "path";
 export const SETTING_DISABLED = "disabled";
+export const CONFIG_SETTING_MAC_FILE_LANGUAGE = "creation.MacFileLanguage";
+
 
 export const FILE_BACKUP_EXTENSION = ".bkup";
 export const FILE_NAME_DEFINITIONS = "Definitions.h";
@@ -53,13 +58,28 @@ export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP20 = "-std=c++20";
 export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP17 = "-std=c++17";
 export const NATIVE_NON_WIN_CLANGD_ADD_STD_CPP14 = "-std=c++14";
 
+export const FULL_MAC_FILE_LANGUAGE_CLANG_FLAG = "-xc++";
+
 export const FOLDER_NATIVE_COMPILE_COMMANDS_DEFAULT_FOLDER_NAME = "compileCommands_Default";
+export const FOLDER_COMPILE_COMMANDS_DEFAULT = "compileCommands_Default";
+
+export const CLANGD_COMMAND_RESTART = "clangd.restart";
 
 export const REGEX_RESPONSE_COMPILER_FLAG = "(?<=[\"']@).*?\\.rsp(?=\"|')";
 
 export const NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS = [
     "clangd.arguments", "clangd.path", "clangd.detectExtensionConflicts", "files.associations", "workbench.colorCustomizations", "editor.suggestFontSize", "dotnet.defaultSolution"
 ];
+
+export const NON_FULL_SOURCE_CLANGD_CFG_PAGE: ClangdCfgFileSettings = {
+    If: {
+        PathMatch: ".*\.cpp"
+    },
+    Diagnostics: {
+        Suppress: "*"
+    }
+
+};
 
 export const WIN_COMPILER_FLAGS_TO_ADD = [
     "/TP",
@@ -135,6 +155,47 @@ export const LINUX_COMPILER_FLAGS_TO_ADD = [
     //"#- -nostdinc++",
     //"#- -isystemThirdParty/Unix/LibCxx/include",
     //"- -isystemThirdParty/Unix/LibCxx/include/c++/v1",
+    "-Wall",
+    "-Werror",
+    "-Wdelete-non-virtual-dtor",
+    "-Wenum-conversion",
+    "-Wbitfield-enum-conversion",
+    "-Wno-enum-enum-conversion",
+    "-Wno-enum-float-conversion",
+    "-Wno-ambiguous-reversed-operator",
+    "-Wno-deprecated-anon-enum-enum-conversion",
+    "-Wno-deprecated-volatile",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-but-set-parameter",
+    "-Wno-ordered-compare-function-pointers",
+    "-Wno-bitwise-instead-of-logical",
+    "-Wno-deprecated-copy",
+    "-Wno-deprecated-copy-with-user-provided-copy",
+    "-Wno-gnu-string-literal-operator-template",
+    "-Wno-inconsistent-missing-override",
+    "-Wno-invalid-offsetof",
+    "-Wno-switch",
+    "-Wno-tautological-compare",
+    "-Wno-unknown-pragmas",
+    "-Wno-unused-function",
+    "-Wno-unused-lambda-capture",
+    "-Wno-unused-local-typedef",
+    "-Wno-unused-private-field",
+    "-Wno-unused-variable",
+    "-Wno-undefined-var-template",
+    "-Wshadow",
+    "-Wundef",
+    "-Wno-float-conversion",
+    "-Wno-implicit-float-conversion",
+    "-Wno-implicit-int-conversion",
+    "-Wno-c++11-narrowing",
+    "-fdiagnostics-absolute-paths",
+    "-fdiagnostics-color",
+    "-Wno-undefined-bool-conversion"
+
+];
+
+export const MAC_COMPILER_FLAGS_TO_ADD = [
     "-Wall",
     "-Werror",
     "-Wdelete-non-virtual-dtor",
@@ -257,6 +318,7 @@ export const BUILD_TARGET_EDITOR_SUFFIX = "Editor";
 export const FOLDER_NAME_VSCODE = ".vscode";
 export const FOLDER_NAME_UNREAL_CLANGD = "unreal-clangd";
 export const FOLDER_NAME_SOURCE = "Source";
+export const FOLDER_NAME_ENGINE = "Engine";
 
 export const UECPP_SOURCE_FILE_EXTENSIONS = ["cpp", "h"];
 export const UECPP_SOURCE_FILE_EXTENSIONS_REGEX = `(${UECPP_SOURCE_FILE_EXTENSIONS.join('|')})`;
@@ -329,6 +391,8 @@ export const GLOB_SOURCE_FILES_SUFFIX = "/**/*.{cpp,h}";
 export const GLOB_SIMPLE_CHECK_CLANGD_PROJECT_FILES = `**/*.{clangd,clang-format}`;
 
 export const LINUX_SYS_INCLUDE_CPP_V1 = "-isystemThirdParty/Unix/LibCxx/include/c++/v1";
+export const LINUX_STDLIB_SYS_INCLUDE_CPP_V1 = "-stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1";
+
 
 export const defaultCreationCmdLine: [CreationCmdLineSettings, CreationCmdLineValue][] = [
     [CREATION_ARG_SETTING_UNREAL_PLATFORM, ""],
@@ -424,7 +488,7 @@ export const defaultCompilerFlags: CompileFlags = {
     "CompilationDatabase" : `${FOLDER_NAME_VSCODE}/${FOLDER_NAME_UNREAL_CLANGD}`
 };
 
-const defaultInlayHints: InlayHintsFlags = {
+export const defaultInlayHints: InlayHintsFlags = {
     Enabled: "Yes",
     DeducedTypes: "Yes",
     ParameterNames: "Yes",
@@ -470,3 +534,5 @@ export const completionHelperCppContent = "/*\n" +
     "\n// Kismet Math\n#include \"Kismet/KismetMathLibrary.h\"\n";
 
 export const completionHelperCppMPcontent = "\n// For Unreal Multiplayer\n#include \"Net/UnrealNetwork.h\"\n";
+
+export const UNREAL_CLANGD_COMPILE_COMMANDS_RELATIVE_FOLDERS = [FOLDER_NAME_VSCODE, FOLDER_NAME_UNREAL_CLANGD];
