@@ -1,9 +1,12 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
-`New update Nov 19, 2024`
+`New update Nov 30, 2024`
 
-Extension v2.6.0: For Unreal 5.2 `and newer releases` 
+Extension v2.6.1: For Unreal 5.2 `and newer releases`
+- Changed Mac fix default setting
+
+Also from older release:
 
 - Has Unreal Source file support (`finally!`) see [here](https://github.com/boocs/unreal-clangd/tree/v2?tab=readme-ov-file#unreal-source-support)
 - UE 5.5 support (`note:` now uses clang/clangd v18.1.0)
@@ -144,7 +147,7 @@ There a new setting to try if you haven't been successful in getting clangd to w
 
 You can change the clangd Mac file language to C++ or Objective C++ (thanks to user szabot0412)
 - This setting is set in your .clangd files during project creation
-- in the Add: section it's the line that show `- -xc++` or `- -xobjective-c++`
+- in the Add: section it's the line that shows `- -xc++` or `- -xobjective-c++`
 
 ---
 [Top](#unreal-52-clangd-extension-for-vscode-intellisense)
