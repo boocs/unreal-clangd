@@ -4,6 +4,12 @@
 
 - Create command that shows clang and clangd version in terminal
 
+## [2.6.1] 2024-11-30
+### Changed
+- Mac setting: "unreal-clangd.creation.MacFileLanguage" (idea from user szabot0412)
+    - MacFileLanguage setting is now default set to Objective C++
+- Ending installation message
+
 ## [2.6.0] 2024-11-18
 ### Added
 - Unreal Source support

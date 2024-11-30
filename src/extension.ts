@@ -3287,10 +3287,10 @@ async function createUnrealSourceProject() {
 				
 		await saveFile(docsStrigified, ueClangdCfgUri);
 
-		await vscode.window.showInformationMessage("Finished creating Unreal Source project", tr.BTTN_OK);
+		await vscode.window.showInformationMessage("Installation successful! Finished creating Unreal Source project", tr.BTTN_OK);
 	}
 	else {
-		await vscode.window.showInformationMessage("Didn't overwrite Unreal Source .clangd file. Delete this file manually if you want to remake.", tr.BTTN_OK);
+		await vscode.window.showInformationMessage("Installation successful! Didn't overwrite Unreal Source .clangd file. Delete this file manually if you want to remake. (not a bug)", tr.BTTN_OK);
 	}
 }
 
