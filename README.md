@@ -1,6 +1,12 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
+`New info Feb 12, 2025`
+
+**Windows**: Should use LLVM (clang-cl/clangd) 18.1.3-18.1.8 for Unreal 5.5.# . `Note`: Linux is still recommended for 18.1.0
+
+**Updated Quick Start Guide**: Updated below to latest/correct info
+
 `New update Nov 30, 2024`
 
 Extension v2.6.1: For Unreal 5.2 `and newer releases`
@@ -57,7 +63,7 @@ See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHA
  
 * [C++ Create Definition](https://github.com/boocs/cpp-create-definition) (my extension) `Updated Sept 2023`
 
-* [Unreal Reflection Function Parameters](https://github.com/boocs/UE-Reflection-Func-Params) (my extension) `Updated Sept 2023`
+* [Unreal Reflection Function Parameters] (Deprecated) New project coming soonish 
 
 [Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
@@ -66,7 +72,7 @@ See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHA
 This is generally correct, when using  non-full source, but your situation could be different.
 
 1. Read the [Requirements](https://github.com/boocs/unreal-clangd/tree/v2#readme) section of the full Documentation
-    - Different Unreal Engine versions require different LLVM versions(Unreal 5.3/5.4 requires LLVM 16.0.6)
+    - Different Unreal Engine versions require different LLVM versions(Unreal 5.5  requires LLVM 18.1.0(Linux) and LLVM 18.1.8(Windows))
 
   ---
 
@@ -107,7 +113,7 @@ This is generally correct, when using  non-full source, but your situation could
 
   ---
 
-7. Use `DebugGame` when you have to Debug something
+7. Use `Editor` suffix and `DebugGame` when you have to Debug something. 
     - Debugging
     
       ![image](https://github.com/boocs/unreal-clangd/assets/62588629/72ef61c0-bf11-48cb-9d3b-fd03253689d7)
