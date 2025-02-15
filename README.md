@@ -76,7 +76,9 @@ This is generally correct, when using  non-full source, but your situation could
 
   ---
 
-2. Install the vsix file from this github
+2. Install the vsix file from this github 
+
+    (The vsix file can be downloaded from the `Releases` section on the right side column of this page. You might have to scroll up to see it.)
 
     ![](https://user-images.githubusercontent.com/62588629/225083466-39ca4a93-e06a-4a04-83ba-82d60b548513.png)
 
