@@ -8,7 +8,8 @@
 - [Updates](#updates)
 - [Important info](#important-info)
 - [Info](#info)
-- [Recommends Extensions](#other-recommended-extensions)
+- [Requirements](#requirements)
+- [Recommended Extensions](#other-recommended-extensions)
 - [Quick Start Guide](#quick-start-guide-ue-52)
 - [Documentation](#documentation)
 - [Upgrading Older Projects](#upgrading-older-projects)
@@ -22,6 +23,10 @@
   - [Create Full Source Unreal Engine projects](#create-full-source-unreal-engine-projects)
 - [(Bug) Older Unreal versions with newer C++ libraries (Windows only)](#bug-older-unreal-versions-with-newer-c-libraries-windows-only)
 - [Create BuildConfiguration.xml](#create-a-buildconfigurationxml)
+- [Installing correct LLVM (clangd/clang) versions](#installing-correct-llvm-clangdclang-version)
+- [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
+- [All supported Unreal version requirement links](#all-supported-unreal-version-requirement-links)
+
 ---
 ---
 
@@ -48,7 +53,7 @@ Also from older release:
 - Potential Mac [fix](https://github.com/boocs/unreal-clangd/tree/v2?tab=readme-ov-file#mac-fixes)
 - See [Changelog](https://github.com/boocs/unreal-clangd/blob/v2/CHANGELOG.md) for more info
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 
@@ -65,7 +70,7 @@ Since this refreshes your project, your project's *.code-workspace file will be 
 See change log for more info: https://github.com/boocs/unreal-clangd/blob/v2/CHANGELOG.md#250-2024-05-05
 
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 
@@ -82,7 +87,54 @@ This extension:
 
   `Note:` Windows users can use clang/clangd for Intellisense and still build with Microsoft's compiler
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
+## Requirements
+#### General :
+- Unreal v5.2+
+- LLVM (clang/clangd) Different Unreal versions requirement different LLVM versions (see below)
+- Unreal project created for VSCode
+- VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let the VSCode `clangd` extension auto install LLVM)
+- Microsoft [C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) for its `Building/Debugging` Capability
+
+#### Compiler and libraries :
+- Before explanation on getting requirements here are some useful links:
+   - [How to install correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
+   - [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
+   - [All supported Unreal version requirement links](#all-supported-unreal-version-requirement-links)
+
+`note`: The links below will tell you the requirements for `Unreal 5.5.#`
+- If you need requirements for older Unreal versions see [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links)
+
+1.  [Unreal 5.5 release notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) --
+
+    - Note: The link above can take too long to load so might not take you to the right section (`Platform SDK Upgrades`)
+    - Try loading link twice 
+    - Best resource for `Windows` (has everything you need)
+    - Shows different .NET versions needed
+    - Shows `LLVM` (clang/clangd) version needed
+    - Shows Windows SDK version needed
+    - Shows The C++ library needed
+    - Note: I would recommend using the versions mentioned in the section `IDE Version the Build farm compiles against`
+- Also shows useful `Linux/Mac` info
+
+2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine)
+   - Useful info for `Linux` and `Mac` (Not that useful for Windows)
+   - Use `Operating System` dropdown to change to Linux/Mac
+   - You can change `Unreal Engine version` on left hand side
+
+3. [Unreal Docs: Linux Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.5)
+
+   - Shows useful `Linux` info
+   - You can change `Unreal Engine version` on left hand side
+
+4. [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine)
+
+   - Shows usefull `Mac` info
+   - You can change `Unreal Engine version` on left hand side
+
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 ## Other Recommended Extensions
@@ -95,7 +147,7 @@ This extension:
 
 * [Unreal Reflection Function Parameters] (Deprecated) New project coming soonish 
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 ## Quick Start Guide (UE 5.2+)
@@ -156,7 +208,7 @@ This is generally correct, when using  non-full source, but your situation could
 
     ![image](https://user-images.githubusercontent.com/62588629/231914528-3808d25e-1d18-439f-82bd-e325db58460a.png)
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 ## Documentation
@@ -167,7 +219,7 @@ This is generally correct, when using  non-full source, but your situation could
 
 ### [**Extension Documentation**](https://github.com/boocs/unreal-clangd/tree/v2#readme)
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 ## Upgrading Older Projects
@@ -189,7 +241,7 @@ You can change the clangd Mac file language to C++ or Objective C++ (thanks to u
 - in the Add: section, it's the line that shows `- -xc++` or `- -xobjective-c++` so if you want to test quickly with reinstalling. I believe `- -xobjective-c++` is the correct one to use but I could be wrong!
 
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 
@@ -249,7 +301,7 @@ If you add a plugin to *.build.cs you'll need to run the extension command to Up
 6. This is what pops up after I'm done compiling and it runs: (This is full source 5.4.1)
 ![Image](https://github.com/user-attachments/assets/73184d81-f975-416a-8b57-900aa16617fa)
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 
@@ -324,7 +376,7 @@ If you don't want to do the first fix this fix works within clangd to fix the pr
    ```
    So in the future this fix might need to adjust to the newer includes of future Unreal Engine releases.
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
 
@@ -348,6 +400,125 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 </Configuration>
 ```
 
-[Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
+
+## Installing correct LLVM (clangd/clang) version 
+
+`note`: These examples are for Unreal `5.5.#`. Make sure you get the correct library and compiler versions for your `specific` Unreal version
+
+### Windows
+1. Get the correct LLVM (clangd/clang) version from the Release Notes of your Unreal version.
+   - See: [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links) for `Release Note` links
+2. If you check out the Release Notes link for 5.5.# you see that `Windows uses LLVM 18.1.8`
+3. You can download it here: https://github.com/llvm/llvm-project/releases/tag/llvmorg-18.1.8
+4. The file you want is: `LLVM-18.1.8-win64.exe`
+
+### Linux
+1. Any of the links in [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links) will tell you which version of `LLVM` (clangd/clang) to install
+2. It's hard on Linux to install specific versions unless you want to compile it yourself
+3. You can try the latest of the version it recommends but might run into issues
+   - If you do run into issues try compiling/using the correct version
+4. Here's how I've had success installing version 18 for Unreal 5.5.#
+   - `Note`: This installs 18.1.8 but 18.1.0 is the recommendation for Linux and Unreal 5.5.#
+   ```
+   wget https://apt.llvm.org/llvm.sh
+   chmod +x llvm.sh
+   sudo ./llvm.sh 18
+   ```
+5. dotnet-runtime-6.0 and dotnet-sdk-6.0 might also be required but doesn't say in any of the requirement links.
+   - This was true in Unreal ~5.2. 
+   - Maybe not required or newer versions required now.
+
+### Mac
+1. Unreal docs doesn't give specifics about clang/clangd like it does Windows/Linux
+2. It gives `Xcode` versions, which you should install for its libraries.
+   - I recommend the version listed in the Unreal Release Notes for your Unreal version - Section: `Platform SDK Upgrades` Subsection: `IDE version the Build farm compiles against`
+   - See [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links) for link to Release Notes
+3. For what `LLVM` (clang/clangd) version to install I would try following the Linux instructions
+   - If that doesn't work go to your project's .vscode folder
+   - Open up one of the compile commands JSON files that are in there.
+   - Check which compiler it's using.
+   - Open the compiler's parent folder in your terminal and poll it for version info
+   - Install the LLVM version which matches the compiler you just polled
+
+
+[Back to Requirements](#requirements)
+
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
+## Installing correct library versions (Windows)
+
+`Note`: In the 3.0.0 extension release you can choose the C++ library and Windows SDK the project uses. This can minimize problems.
+
+1. Run the Visual Studio Installer to install other versions of:
+   - C++ Libraries
+   - Windows SDK
+   - .NET libraries
+
+2. I use the stand-alone `Visual Studio Build Tools 2022` but this also should work if you have the `Visual Studio 2022` IDE installed.
+
+3. This example is for Unreal 5.5.# but it can apply to older Unreal versions. Older version will probably require different clangd/library versions so make sure to see here for older version requirement links: [Older Version Requurement Links](#older-unreal-versions-requirement-links)
+
+4. From the `Visual Studio installer` click on `Modify` next to  Build Tool 2022 or VS 2022 IDE
+
+   ![image](https://github.com/boocs/unreal-clangd/assets/62588629/44aa6821-f123-4133-8399-39c20cc5c660)
+
+5. Swith the tab to `Individual components` (To make it easier use Search Components box)
+
+   ![image](https://github.com/boocs/unreal-clangd/assets/62588629/d7e2c16e-bdf3-4bb2-a1e7-204ba285e991)
+
+6. Below are requirements found in the [Unreal 5.5 release notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) (`Platform SDK Upgrades` section) and what they look like in the Visual Studio Installer. `Note:` The 'release notes' link is slow to load so wont take you to the correct 'Platform SDK Upgrades' section unless you load twice.
+
+   `Visual Studio 2022 17.8 14.38.33130` (In section: 'IDE Version the Build farm compiles against' in 5.5 release notes)
+     - Some other entries look similiar.
+     - Note the `x64/x86 build tools`
+
+   ![Image](https://github.com/user-attachments/assets/9b7210db-ff1c-41a3-8bce-fd25faf38b1f)
+
+   `Windows 10 SDK (10.0.22621.0)` (In section: 'IDE Version the Build farm compiles against' in 5.5 release notes)
+     - Windows 11: Use same version number unless specified
+   
+   ![Image](https://github.com/user-attachments/assets/b0a04f30-0d6d-495f-8f41-1f9dce1a99e5)
+
+   `.NET 8.0`:
+
+   ![image](https://github.com/user-attachments/assets/d663f86a-3ce4-4c9e-b933-64243e144484)
+
+   `.NET 4.6.2 Targeting Pack`
+
+   ![Image](https://github.com/user-attachments/assets/c204943a-323b-464f-bdb8-6091b6321749)
+
+
+
+[Back to Requirements](#requirements)
+
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+---
+## All supported Unreal version requirement links
+
+
+### Unreal 5.5.#
+-- [Unreal 5.5 release notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) --
+
+-- [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine) --
+
+-- [Unreal Docs: Linux Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.5) --
+
+-- [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine) --
+
+
+### Unreal 5.4.#
+
+### Unreal 5.3.#
+
+### Unreal 5.2.#
+
+[Back to Requirements](#requirements)
+
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
 ---
