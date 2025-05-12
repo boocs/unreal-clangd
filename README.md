@@ -125,7 +125,7 @@ This extension:
       - See: [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
     - Also shows useful `Linux/Mac` info
 
-2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine)
+2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.5)
    - Useful info for `Linux` and `Mac` (Not that useful for Windows)
    - Use `Operating System` dropdown to change to Linux/Mac
    - You can change `Unreal Engine version` on left hand side
@@ -135,7 +135,7 @@ This extension:
    - Shows useful `Linux` info
    - You can change `Unreal Engine version` on left hand side
 
-4. [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine)
+4. [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.5)
 
    - Shows usefull `Mac` info
    - You can change `Unreal Engine version` on left hand side
@@ -159,7 +159,7 @@ This extension:
 ## Quick Start Guide (UE 5.2+)
 This is generally correct, when using  non-full source, but your situation could be different.
 
-1. Read the [Requirements](https://github.com/boocs/unreal-clangd/tree/v2#readme) section of the full Documentation
+1. Read the [Requirements](#requirements) section
     - Different Unreal Engine versions require different LLVM versions(Unreal 5.5  requires LLVM 18.1.0(Linux) and LLVM 18.1.8(Windows))
 
   ---
