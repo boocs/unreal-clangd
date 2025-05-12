@@ -9,6 +9,11 @@
 - [Important info](#important-info)
 - [Info](#info)
 - [Requirements](#requirements)
+    - [Requirements](#requirements)
+    - Also see:
+         - [Installing correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
+         - [Installing correct Libraries (Windows)](#installing-correct-library-versions-windows)
+         - [All supported version requirement links](#all-supported-unreal-version-requirement-links)
 - [Recommended Extensions](#other-recommended-extensions)
 - [Quick Start Guide](#quick-start-guide-ue-52)
 - [Documentation](#documentation)
@@ -107,17 +112,18 @@ This extension:
 `note`: The links below will tell you the requirements for `Unreal 5.5.#`
 - If you need requirements for older Unreal versions see [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links)
 
-1.  [Unreal 5.5 release notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) --
+1.  [Unreal 5.5 Release Notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) 
 
     - Note: The link above can take too long to load so might not take you to the right section (`Platform SDK Upgrades`)
     - Try loading link twice 
-    - Best resource for `Windows` (has everything you need)
-    - Shows different .NET versions needed
-    - Shows `LLVM` (clang/clangd) version needed
-    - Shows Windows SDK version needed
-    - Shows The C++ library needed
-    - Note: I would recommend using the versions mentioned in the section `IDE Version the Build farm compiles against`
-- Also shows useful `Linux/Mac` info
+    - `Windows`: Best resource (has everything you need)
+      - Shows different .NET versions needed
+      - Shows `LLVM` (clang/clangd) version needed
+      - Shows Windows SDK version needed
+      - Shows The C++ library needed
+      - Note: I would recommend using the versions mentioned in the section `IDE Version the Build farm compiles against`
+      - See: [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
+    - Also shows useful `Linux/Mac` info
 
 2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine)
    - Useful info for `Linux` and `Mac` (Not that useful for Windows)
@@ -434,7 +440,7 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 ### Mac
 1. Unreal docs doesn't give specifics about clang/clangd like it does Windows/Linux
 2. It gives `Xcode` versions, which you should install for its libraries.
-   - I recommend the version listed in the Unreal Release Notes for your Unreal version - Section: `Platform SDK Upgrades` Subsection: `IDE version the Build farm compiles against`
+   - I recommend the `Xcode` version listed in the Unreal Release Notes for your Unreal version - Section: `Platform SDK Upgrades` Subsection: `IDE version the Build farm compiles against`
    - See [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links) for link to Release Notes
 3. For what `LLVM` (clang/clangd) version to install I would try following the Linux instructions
    - If that doesn't work go to your project's .vscode folder
@@ -450,46 +456,53 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 
 ---
 ## Installing correct library versions (Windows)
+### Windows
 
-`Note`: In the 3.0.0 extension release you can choose the C++ library and Windows SDK the project uses. This can minimize problems.
+`Note`: In the 3.0.0 extension release, you can choose the C++ library and Windows SDK the project uses. This can minimize problems.
 
-1. Run the Visual Studio Installer to install other versions of:
+1. Run the `Visual Studio Installer` to install other versions of:
    - C++ Libraries
    - Windows SDK
    - .NET libraries
 
 2. I use the stand-alone `Visual Studio Build Tools 2022` but this also should work if you have the `Visual Studio 2022` IDE installed.
 
-3. This example is for Unreal 5.5.# but it can apply to older Unreal versions. Older version will probably require different clangd/library versions so make sure to see here for older version requirement links: [Older Version Requurement Links](#older-unreal-versions-requirement-links)
+3. This example is for Unreal 5.5.# but it can apply to older Unreal versions. Older versions will probably require different clangd/library versions so make sure to see here for older version requirement links: [Older Version Requirement Links](#older-unreal-versions-requirement-links)
 
-4. From the `Visual Studio installer` click on `Modify` next to  Build Tool 2022 or VS 2022 IDE
+4. From the `Visual Studio installer` click on `Modify` next to  Build Tools 2022 or VS 2022 IDE
 
    ![image](https://github.com/boocs/unreal-clangd/assets/62588629/44aa6821-f123-4133-8399-39c20cc5c660)
 
-5. Swith the tab to `Individual components` (To make it easier use Search Components box)
+5. Switch the tab to `Individual components` (To make it easier use Search Components box)
 
    ![image](https://github.com/boocs/unreal-clangd/assets/62588629/d7e2c16e-bdf3-4bb2-a1e7-204ba285e991)
 
-6. Below are requirements found in the [Unreal 5.5 release notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) (`Platform SDK Upgrades` section) and what they look like in the Visual Studio Installer. `Note:` The 'release notes' link is slow to load so wont take you to the correct 'Platform SDK Upgrades' section unless you load twice.
+6. Windows users will most likely find all requirements in the Unreal Release Notes (`Platform SDK Upgrades section`): [Unreal 5.5 Release Notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades)  
+   - `Note:` The 'release notes' link is slow to load so wont take you to the correct 'Platform SDK Upgrades' section unless you load twice.
+   - Use C++/Windows SDK versions found in the subsection `IDE Versions the Build farm compiles against`. Found under the **Platform SDK Upgrades** section.
+   - For older version Release Notes see [here](#all-supported-unreal-version-requirement-links)
 
-   `Visual Studio 2022 17.8 14.38.33130` (In section: 'IDE Version the Build farm compiles against' in 5.5 release notes)
+Below are the versions found in the [Unreal 5.5 Release Notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) and what they look like in the `Visual Studio Installer (Individual components)`. 
+
+
+8.   `Visual Studio 2022 17.8 14.38.33130` (In subsection: '**IDE Version the Build farm compiles against**' in 5.5 release notes)
      - Some other entries look similiar.
      - Note the `x64/x86 build tools`
 
-   ![Image](https://github.com/user-attachments/assets/9b7210db-ff1c-41a3-8bce-fd25faf38b1f)
+     ![Image](https://github.com/user-attachments/assets/9b7210db-ff1c-41a3-8bce-fd25faf38b1f)
 
-   `Windows 10 SDK (10.0.22621.0)` (In section: 'IDE Version the Build farm compiles against' in 5.5 release notes)
+9.   `Windows 10 SDK (10.0.22621.0)` (In subsection: '**IDE Version the Build farm compiles against**' in 5.5 release notes)
      - Windows 11: Use same version number unless specified
    
-   ![Image](https://github.com/user-attachments/assets/b0a04f30-0d6d-495f-8f41-1f9dce1a99e5)
+     ![Image](https://github.com/user-attachments/assets/b0a04f30-0d6d-495f-8f41-1f9dce1a99e5)
 
-   `.NET 8.0`:
+10.   `.NET 8.0` (Found in Unreal Release Notes. **Platform SDK Upgrades** section):
 
-   ![image](https://github.com/user-attachments/assets/d663f86a-3ce4-4c9e-b933-64243e144484)
+      ![image](https://github.com/user-attachments/assets/d663f86a-3ce4-4c9e-b933-64243e144484)
 
-   `.NET 4.6.2 Targeting Pack`
+11.   `.NET 4.6.2 Targeting Pack`(Found in Unreal Release Notes. **Platform SDK Upgrades** section):
 
-   ![Image](https://github.com/user-attachments/assets/c204943a-323b-464f-bdb8-6091b6321749)
+      ![Image](https://github.com/user-attachments/assets/c204943a-323b-464f-bdb8-6091b6321749)
 
 
 
@@ -500,22 +513,58 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 ---
 ## All supported Unreal version requirement links
 
+- Release Notes link is slow to load 
+  - Load site twice to go directly to section: `Platform SDK Upgrades`
+
+- Release Notes are best for `Windows` but has useful Linux/Mac info
+   - Info in Platform SDK Upgrades section
+   - For Windows:
+      - Use C++/Windows SDK versions found in subsection '**IDE Version the Build farm compiles against**'
+- Also see:
+   - [Requirements](#requirements)
+   - [How to install correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
+   - [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
+   
 
 ### Unreal 5.5.#
--- [Unreal 5.5 release notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) --
+Release Notes: [5.5.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes?application_version=5.5#platformsdkupgrades)
 
--- [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine) --
+Unreal Docs Requirements: [Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.5) 
 
--- [Unreal Docs: Linux Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.5) --
+Unreal Docs Linux Requirements [Linux](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.5)
 
--- [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine) --
+Unreal Docs MacOS requirements [MacOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.5)
 
 
 ### Unreal 5.4.#
 
+Release Note: [5.4.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.4-release-notes?application_version=5.4#platformsdkupgrades)
+
+Unreal Docs Requirements: [Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.4)
+
+Unreal Docs Linux Requirements: [Linux](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.4)
+
+Unreal Docs MacOS Requirements: [MacOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.4)
+
 ### Unreal 5.3.#
 
+Release Note: [5.3.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.3-release-notes?application_version=5.3#platformsdkupgrades)
+
+Unreal Docs Requirements: [Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.3)
+
+Unreal Docs Linux Requirements: [Linux](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.3)
+
+Unreal Docs MacOS Requirements: [MacOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.3)
+
 ### Unreal 5.2.#
+
+Release Note: [5.2.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.2-release-notes?application_version=5.2#platformsdkupgrades)
+
+Unreal Docs Requirements: [Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.2)
+
+Unreal Docs Linux Requirements: [Linux](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.2)
+
+Unreal Docs MacOS Requirements: [MacOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.2)
 
 [Back to Requirements](#requirements)
 
