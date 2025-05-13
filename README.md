@@ -480,10 +480,14 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 6. Windows users will most likely find all requirements in the Unreal Release Notes (`Platform SDK Upgrades section`): [Unreal 5.5 Release Notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades)  
    - `Note:` The 'release notes' link is slow to load so wont take you to the correct 'Platform SDK Upgrades' section unless you load twice.
    - Use C++/Windows SDK versions found in the subsection `IDE Versions the Build farm compiles against`. Found under the **Platform SDK Upgrades** section.
-   - For older version Release Notes see [here](#all-supported-unreal-version-requirement-links)
+   
 
-Below are the versions found in the [Unreal 5.5 Release Notes](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5.5-release-notes#platformsdkupgrades) and what they look like in the `Visual Studio Installer (Individual components)`. 
+Below are the versions found in the Unreal 5.5 Release Notes and what they look like in the `Visual Studio Installer (Individual components)`. 
 
+7. Here's the `Platform SDK Upgrades` section in the Unreal 5.5 Release Notes
+   - For older Unreal version Release Notes see [here](#all-supported-unreal-version-requirement-links)
+
+   ![Image](https://github.com/user-attachments/assets/da92d47b-12df-4b52-9e2d-aa76fd921534)
 
 8.   `Visual Studio 2022 17.8 14.38.33130` (In subsection: '**IDE Version the Build farm compiles against**' in 5.5 release notes)
      - Some other entries look similiar.
