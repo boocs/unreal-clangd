@@ -508,7 +508,9 @@ Below are the versions found in the Unreal 5.5 Release Notes and what they look 
 
       ![Image](https://github.com/user-attachments/assets/c204943a-323b-464f-bdb8-6091b6321749)
 
+12. Make sure to click the Visual Studio Installer's `Modify` button to install your new libraries.
 
+      ![Image](https://github.com/user-attachments/assets/c4bf64d4-63b2-483f-8abc-dbd6833ae3e6)
 
 [Back to Requirements](#requirements)
 
