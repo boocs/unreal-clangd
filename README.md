@@ -52,6 +52,9 @@
 
 ## Updates
 
+#### Version 3.0.1
+- (Windows) Fixed Professional version of Visual Studio not being able to set custom system includes
+
 #### `Version 3`
 - Big code organization, new yeoman extension skeleton, strict eslint
 - Adds toggle button bottom right(UC) for code completion modes
