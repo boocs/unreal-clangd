@@ -8,7 +8,7 @@ import type { Overwrite } from './indexTypes';
 import type { DocumentOptions, SchemaOptions, ParseOptions, CreateNodeOptions, ToStringOptions} from 'yaml';
 import { EOL } from "node:os";
 
-export const EXTENSION_VERSION = "3.0.0";
+export const EXTENSION_VERSION = "3.0.1";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 

@@ -240,14 +240,48 @@ function extractIncludePaths(output: string): string[] {
     return includeLines.filter(line => !line.toLowerCase().includes('clang'));
 }
 
-/** Reduces include paths to base paths by removing the last two directories and deduplicating. */
+/** 
+ * Return unique system include base paths
+ */
 function getBasePaths(includePaths: string[]): string[] {
     const basePaths = includePaths.map(includePath => {
         const parts = includePath.split(path.sep);
-        return parts.slice(0, -2).join(path.sep);
+
+        return getArrayBeforeLastNumberString(parts).join(path.sep);
     });
     return Array.from(new Set(basePaths));
 }
+
+
+/** 
+ * Reduces include paths to base paths by finding first ending number-including directory
+ * Then return everything before this 
+ */
+function getArrayBeforeLastNumberString(strArr: string[]): string[] {
+    // Create a copy of the array to avoid modifying the original
+    const result = [...strArr];
+    
+    // Regular expression to match any string containing at least one digit
+    const numberRegex = /\d/;
+    
+    // Iterate from the end of the array
+    while (result.length > 0) {
+        const lastElement = result[result.length - 1];
+        
+        // If we find a string with a number, remove it and return
+        if (numberRegex.test(lastElement)) {
+            result.pop();
+            return result;
+        }
+        
+        // Remove non-number string
+        result.pop();
+    }
+    
+    // Return empty array if no number is found
+    return result;
+}
+
 
 /** Identifies the C++ library and SDK paths from the base paths. */
 function identifyPaths(basePaths: string[]): { cppLibraryPath: string, sdkPath: string } | undefined {

@@ -137,7 +137,7 @@ async function addMissingSharedResponseFlagsToResponse(intellisenseRspFiles: Fil
     const moduleNameAndResponse: {moduleName: string, path: string}[] = [];
 
     for (const compileCommand of compileCommands) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        
         const found = moduleFolderNameAndUris.find((value: { name: string; uri: vscode.Uri; }, _index: number, _obj: { name: string; uri: vscode.Uri; }[]) => {
             const modulePath = value.uri.fsPath;
             const ccModulePath = compileCommand.file.slice(undefined, modulePath.length);  // TODO length can be problem?
@@ -153,7 +153,6 @@ async function addMissingSharedResponseFlagsToResponse(intellisenseRspFiles: Fil
             continue;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const alreadyHasModuleName = moduleNameAndResponse.some((value: { moduleName: string; path: string; }, _index: number, _array: { moduleName: string; path: string; }[]) => {
             return value.moduleName === found.name;
         });

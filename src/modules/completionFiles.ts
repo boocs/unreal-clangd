@@ -215,7 +215,6 @@ export async function addCompletionHelperToCompileCommands() {
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const responsePathMostEntries = Object.keys(responsePaths).reduce((previous, current, _i, _pathsArray) => {	
         return responsePaths[current] > responsePaths[previous] ? current : previous; 
     });
@@ -225,7 +224,7 @@ export async function addCompletionHelperToCompileCommands() {
     }
         
     const winResponsePathMostEntries = responsePathMostEntries.replaceAll(`\\\\`, `\\`);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    
     const sourceFolderCC = ccFile.find((value: CompileCommand, _index: number, _obj: CompileCommand[]) => {
         let hasResponsePathMostEntries = !!value.command?.includes(responsePathMostEntries) || !!value.arguments?.some((v) => {
             return v.includes(responsePathMostEntries);

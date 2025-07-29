@@ -1,5 +1,8 @@
 # Change Log
 
+## [3.0.1] 2025-7-29
+### Fixed
+- (Windows) Users using professional versions of Visual Studio can now set custom system includes
 
 ## [3.0.0] 2025-7-13
 ### Added

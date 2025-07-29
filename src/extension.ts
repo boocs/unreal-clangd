@@ -1,7 +1,4 @@
 
-// Docs - explain about auto header insertion problem: "#include \"Windows/WindowsPlatform.h\"  // FORCEINLINE 
-
-
 // Wait for 3.1.0
 // Better way to backup *.code-workspace file settings?
    // if changed Copy *.code-workspace to .vscode/unreal-clangd?
@@ -71,11 +68,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		console.log(tr.NOT_UNREAL_PROJECT);
 		return;
 	}
+
+	console.log(`Started ${consts.EXTENSION_NAME} ${consts.EXTENSION_VERSION}\n`);
 	
 	await preActivate();
 	
-	console.log(`Started ${consts.EXTENSION_NAME} ${consts.EXTENSION_VERSION}\n`);
-
 	let disposable = vscode.commands.registerCommand('unreal-clangd.updateCompileCommands', async () => {
 		await updateCompileCommands();
 	});

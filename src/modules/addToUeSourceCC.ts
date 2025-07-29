@@ -45,7 +45,6 @@ async function addFilesToUESourceCompileCommands(
 
     const parsedCurrentFilePath = nodePath.parse(currentDocUri.fsPath);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const isSourceFile =  consts.SOURCE_FILE_EXTENSIONS.some((value: string, _index: number, _array: string[]) => {
         return value === parsedCurrentFilePath.ext;
     });
@@ -113,7 +112,7 @@ async function addFilesToUESourceCompileCommands(
 
 
 function isPathInCompileCommands(compileCommands: CompileCommand[], pathToCheck: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    
     return compileCommands.some((value: CompileCommand, _index: number, _array: CompileCommand[]) => {
         
         if(nodePath.relative(value.file, pathToCheck) === ""){

@@ -152,8 +152,8 @@ async function getUpdateCCArgs(buildTargetName: string, platform: string | undef
     return args;
 }
 
-
-async function runUpdateCompileCommandsWithTask(projectWorkspace: vscode.WorkspaceFolder, unrealWorkspace: vscode.WorkspaceFolder, ubtCommand: {command: string, args:string[]}) {
+// MARK: Do we need _projectWorkspace? (Same as runUpdateCompileCommandsWithDebug)
+async function runUpdateCompileCommandsWithTask(_projectWorkspace: vscode.WorkspaceFolder, unrealWorkspace: vscode.WorkspaceFolder, ubtCommand: {command: string, args:string[]}) {
     
     if(getIntellisenseType() !== "Native") {
         console.error("NonNative runUpdateCompileCommandsWithTask needs testing...");
@@ -199,7 +199,7 @@ async function runUpdateCompileCommandsWithTask(projectWorkspace: vscode.Workspa
 }
 
 async function runUpdateCompileCommandsWithDebug(
-    projectWorkspace: vscode.WorkspaceFolder,
+    _projectWorkspace: vscode.WorkspaceFolder,
     unrealWorkspace: vscode.WorkspaceFolder,
     ubtCommand: {command: string, args: string[]}) {
     
