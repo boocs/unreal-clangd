@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Creates clangd project for Unreal 5.2+",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "engines": {
     "vscode": "^1.99.0"
   },

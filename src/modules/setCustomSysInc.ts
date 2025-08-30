@@ -601,7 +601,8 @@ async function getFmsCompatibilityVersion(cppVersionUri: vscode.Uri) {
     const result = await runTerminalCommand(`"${clUri.fsPath}"`, `Error running cl.exe: ${clUri.fsPath}`);
     let re: RegExp;
     try {
-        re = new RegExp(`(?<=Compiler Version )[.\\d]+`);
+        //re = new RegExp(`(?<=Compiler Version )[.\\d]+`);
+        re = new RegExp(`(?:(?:\\d+\\.){2,}\\d+)`);
     } catch (error) {
         if(error instanceof Error) { console.error(error.message);}
         console.error("RegExp in getFmsCompatibilityVersion() was malformed!");
@@ -611,7 +612,7 @@ async function getFmsCompatibilityVersion(cppVersionUri: vscode.Uri) {
     const version = result?.stderr.match(re)?.[0];
 
     if(!version){
-        console.error(`Couldn't get Fms Compatibility Version! re=${re.source} terminalCmdResult=${result ? "result" : "undefined"}`);
+        console.error(`Couldn't get Fms Compatibility Version! Path: ${clUri.fsPath} re=${re.source} terminalCmdResult=${result ? result.stderr : "undefined"}`);
         return;
     }
     

@@ -1,5 +1,9 @@
 # Change Log
 
+## [3.0.2] 2025-8-30
+### Fixed
+- (Windows) Polling cl version now works in other languages for 'Set Custom System includes' command
+    - Also fixed Polling error message to give better info when can't get cl version number
 ## [3.0.1] 2025-7-29
 ### Fixed
 - (Windows) Users using professional versions of Visual Studio can now set custom system includes
