@@ -52,6 +52,9 @@
 
 ## Updates
 
+#### Version 3.0.2
+- (Windows) Fixed Polling cl version for set custom system includes for non-English languages
+
 #### Version 3.0.1
 - (Windows) Fixed Professional version of Visual Studio not being able to set custom system includes
 
