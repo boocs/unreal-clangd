@@ -18,7 +18,8 @@
 - [Important info](#important-info)
 - [Info](#info)
 - [Requirements](#requirements)
-    - [Requirements](#requirements)
+    - [General](#general)
+    - [Windows](#windows)
     - Also see:
          - [Installing correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
          - [Installing correct Libraries (Windows)](#installing-correct-library-versions-windows)
@@ -128,12 +129,15 @@ This extension:
 ---
 
 ## Requirements
-#### General :
+#### General
 - Unreal v5.2+
 - LLVM (clang/clangd) Different Unreal versions requirement different LLVM versions (see below)
 - Unreal project created for VSCode
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let the VSCode `clangd` extension auto install LLVM)
 - Microsoft [C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) for its `Building/Debugging` Capability
+
+#### Windows 
+- Powershell 7+
 
 #### Compiler and libraries :
 - Before explanation on getting requirements here are some useful links:
