@@ -53,6 +53,9 @@
 
 ## Updates
 
+### Version 3.1.0
+- Fixed bug in Unreal source file support
+
 #### Version 3.0.2
 - (Windows) Fixed Polling cl version for set custom system includes for non-English languages
 
