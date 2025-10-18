@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.1.0] 2025-10-18
+### Fixed
+- Fixed Unreal source files not working correctly (thanks @romantimm)
+### Added
+- Added logging when adding source file to Unreal compile commands
+- Prompt user to remove invalid entry in Unreal's compile_commands.json
+
 ## [3.0.2] 2025-8-30
 ### Fixed
 - (Windows) Polling cl version now works in other languages for 'Set Custom System includes' command

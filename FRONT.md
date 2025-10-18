@@ -7,20 +7,25 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 
 `WARNING`: Extension version `3.0.0+` has breaking changes. To upgrade version `2.0.0+` projects see section:
 
-   - web: [Upgrading Older Projects](https://github.com/boocs/unreal-clangd?tab=readme-ov-file#upgrading-older-projects)
+   -  [Upgrading Older Projects](https://github.com/boocs/unreal-clangd?tab=readme-ov-file#upgrading-older-projects)
 
    - local: [Upgrading Older Projects](#upgrading-older-projects)
+
 
 `note`: Ubuntu users: I started getting this error message wtih 5.6.0 but it still seemed to work.
    - Unable to watch for file changes. Please follow the instructions link to resolve this issue.
    - See [here](https://code.visualstudio.com/docs/setup/linux#_visual-studio-code-is-unable-to-watch-for-file-changes-in-this-large-workspace-error-enospc)
+
+---
+---
 
 # Table of Contents
 - [Updates](#updates)
 - [Important info](#important-info)
 - [Info](#info)
 - [Requirements](#requirements)
-    - [Requirements](#requirements)
+    - [General](#general)
+    - [Windows](#windows)
     - Also see:
          - [Installing correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
          - [Installing correct Libraries (Windows)](#installing-correct-library-versions-windows)
@@ -53,6 +58,12 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 ---
 
 ## Updates
+
+### Version 3.1.0
+- Fixed bug in Unreal source file support
+
+#### Version 3.0.2
+- (Windows) Fixed Polling cl version for set custom system includes for non-English languages
 
 #### Version 3.0.1
 - (Windows) Fixed Professional version of Visual Studio not being able to set custom system includes
@@ -127,12 +138,15 @@ This extension:
 ---
 
 ## Requirements
-#### General :
+#### General
 - Unreal v5.2+
 - LLVM (clang/clangd) Different Unreal versions requirement different LLVM versions (see below)
 - Unreal project created for VSCode
 - VSCode [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) extension (Do not let the VSCode `clangd` extension auto install LLVM)
 - Microsoft [C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) for its `Building/Debugging` Capability
+
+#### Windows 
+- Powershell 7+
 
 #### Compiler and libraries :
 - Before explanation on getting requirements here are some useful links:

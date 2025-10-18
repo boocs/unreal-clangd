@@ -8,6 +8,8 @@ import * as ueHelpers from '../libs/ueHelpers';
 import { convertWindowsDriveLetterToUpper, getCompilerFromCompileCommands, getProjectCompileCommandsName, getValidatedCompileCommandObjectsFromUri, writeCompileCommandsFile } from '../libs/projHelpers';
 import { getRspMatchers, restartClangd } from '../shared';
 
+import * as console from '../libs/console';
+
 
 export async function startAddFilesToUESourceCompileCommands( currentDocUri: vscode.Uri) {
 
@@ -76,6 +78,10 @@ async function addFilesToUESourceCompileCommands(
         return;
     }
 
+    const projectUri = ueHelpers.getProjectWorkspaceFolder()?.uri;
+    if(!projectUri){
+        return;
+    }
     const rspPathRelative = getSourceFileRspPathMatch(ueUri, currentDocUri);
 
     if(!rspPathRelative){
@@ -94,11 +100,14 @@ async function addFilesToUESourceCompileCommands(
         return;
     }
     
-    const ueCompileCommand = createUESourceCompileCommand(ueUri, currentDocUri.fsPath, ccCompiler, rspPathRelative);
+    const ueCompileCommand = createUESourceCompileCommand(ueUri, projectUri, currentDocUri.fsPath, ccCompiler, rspPathRelative);
 
     ueSelfCompileCommands.push(ueCompileCommand);
 
     if (friendFileInfo === undefined) {
+        console.log(`Adding file to UE compile commands: ${currentDocUri.fsPath}`);
+        console.log(`   Relative rsp path: ${rspPathRelative}`);
+
         const friendUri: vscode.Uri | undefined = await findFriendUri(currentDocUri);
         if (friendUri) {
             await addFilesToUESourceCompileCommands(ueUri, friendUri, { origCC: ueSelfCompileCommands, compiler: ccCompiler });
@@ -108,6 +117,7 @@ async function addFilesToUESourceCompileCommands(
         
     }
 
+    return;
 }
 
 
@@ -131,7 +141,9 @@ function getSourceFileRspPathMatch( parentUri: vscode.Uri, fileUri: vscode.Uri){
 
     const rspMatcherPaths: {rspPath: string, closeness: number}[] = [];
 
-    for (const matcher of getRspMatchers()) {
+    const rspMatchers = getRspMatchers();
+
+    for (const matcher of rspMatchers) {
         const dirPath = vscode.Uri.joinPath(parentUri, matcher.ueDirRelative);
         const pathTest = nodePath.relative(dirPath.fsPath, fileUri.fsPath);
         
@@ -173,9 +185,9 @@ function getSourceFileRspPathMatch( parentUri: vscode.Uri, fileUri: vscode.Uri){
 }
 
 
-function createUESourceCompileCommand(ueUri: vscode.Uri, file: string, compilerPath: string, rspRelative: string): CompileCommand {
+function createUESourceCompileCommand(ueUri: vscode.Uri, projectUri: vscode.Uri, file: string, compilerPath: string, rspRelative: string): CompileCommand {
     const ccDirectory = vscode.Uri.joinPath(ueUri, consts.FOLDER_NAME_ENGINE, consts.FOLDER_NAME_SOURCE);
-    const rspPath = vscode.Uri.joinPath(ueUri, rspRelative);
+    const rspPath = vscode.Uri.joinPath(projectUri, rspRelative);
 
     return {
         file: convertWindowsDriveLetterToUpper(file),

@@ -50,7 +50,7 @@ async function createRspMatchers(progress: vscode.Progress<{
             progress.report({increment:increment});
 
             const rspName = nodePath.parse(extraction.uri.fsPath).name.split('.')[0];
-            const rspRelative = nodePath.relative(ueUri.fsPath, extraction.uri.fsPath);
+            const rspRelative = nodePath.relative(projUri.fsPath, extraction.uri.fsPath);
 
             const ueDirPath = nodePath.dirname(extraction.extracted[0]);
             const ueDirRelPath = nodePath.relative(ueUri.fsPath, ueDirPath);

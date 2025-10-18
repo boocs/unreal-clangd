@@ -1,16 +1,13 @@
 
-// Wait for 3.1.0
+
+// Wait for 3.2.0
+// ***** Remove prompt to remove invalid entry in Unreal compile_commands.json
 // Better way to backup *.code-workspace file settings?
    // if changed Copy *.code-workspace to .vscode/unreal-clangd?
       // Don't copy if clangd settings are missing from *.code-workspace (meaning uninstalled/not installed or improper refresh)
 // better unreal source support
-	// retry -mode=GenerateClangDatabase
-	// Stopped using it because of:
-		// Errors in response files that needed to be fixed
-		// Would cause you to have to do a full rebuild whenever used
-	// If we use it only for Unreal source files it shouldn't be as bad
-		// Rarely would have to run it
-			// That makes the problems not as bad
+	// retry -mode=GenerateClangDatabase - this only support full source UE so maybe not...
+	// Maybe full source unreal engine soure files only?
 // Create an algo to create a custom rsp file for completionHelper.cpp?
 	// create a 2nd rsp file that lets you add customizations to the first
 	// create algo runs on update compile command
@@ -43,6 +40,7 @@ import { addCompletionHelperToCompileCommands, FILENAME_ADD_COMPLETIONS, FILENAM
 import { isProjectChange, onProjectChange } from './modules/projectChange';
 import { startModifyResponseFiles } from './modules/modifyRspFiles';
 import { startCreateRspMatchers } from './modules/createRspMatchers';
+import { checkUnrealCompileCommands } from './modules/unrealCCChecker';
 
 
 let newSourceFilesDetectionFileWatcher: vscode.FileSystemWatcher | null = null;
@@ -342,6 +340,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			await vscode.window.showTextDocument(uri, {preserveFocus: true, preview: false, viewColumn: vscode.ViewColumn.Active});
 		}
     }));
+
+	await checkUnrealCompileCommands();
 
 	const mainWorkspaceFolder = getProjectWorkspaceFolder();
 	if(!mainWorkspaceFolder){
