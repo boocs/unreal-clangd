@@ -19,13 +19,14 @@
 - [Updates](#updates)
 - [Important info](#important-info)
 - [Info](#info)
+   - [How This Extension works](#how-this-extension-works)
 - [Requirements](#requirements)
-    - [General](#general)
-    - [Windows](#windows)
-    - Also see:
-         - [Installing correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
-         - [Installing correct Libraries (Windows)](#installing-correct-library-versions-windows)
-         - [All supported version requirement links](#all-supported-unreal-version-requirement-links)
+   - [General](#general)
+   - [Windows](#windows)
+   - Also see:
+      - [Installing correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
+      - [Installing correct Libraries (Windows)](#installing-correct-library-versions-windows)
+      - [All supported version requirement links](#all-supported-unreal-version-requirement-links)
 - [Recommended Extensions](#other-recommended-extensions)
 - [Quick Start Guide](#quick-start-guide-ue-52)
    - [Existing Projects](#8-existing-projects)
@@ -137,6 +138,33 @@ This extension:
 * Has a uninstall command
 
   `Note:` Windows users can use clang/clangd for Intellisense and still build with Microsoft's compiler
+
+
+### How This Extension works
+
+1. clangd's native fast code completion doesn't support macros*
+   - `clangd does support macro code completion though!`
+      - Macros show up when you directly #include a header file in your code (any macro in the header directly/indirectly will show up)
+      - Macros show up when you indirectly #include a header with preparse include
+
+2. Unreal uses preparse include to include `a lot` of headers for code completion
+   - This is slow and doesn't use clangd's native fast code completion
+
+3. How does the extension create fast completion loading?
+   - Uses native clangd completions for non macro symbols
+   - Remove all headers from preparse include list (this can be toggled - see below)
+   - Add a curated list of headers that contain popular macros and add those to preparse includes
+      - This shortened preparse include list causes code completion to load fast 
+      - `This list can be modified by the user to add/subtract headers with macros!` (.vscode/unreal-clangd/addMacroCompletions.h)
+      - `Remember` that clangd will add macros to completion when you #include a header directly in your code
+         - So you might not need to modify this list at all!
+4. This extension allows you to toggle between macro modes
+   - You can toggle between curated macro list(fast) and almost all macro list(slow)
+   - The toggle button is on the bottom right (on info bar)
+      - `UC⚡`(fast) = Non-macro completions and the most popular macro completions
+      - `UC⌚`(slow) = Non-macro completions and almost all macro completions
+
+
 
 [Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
