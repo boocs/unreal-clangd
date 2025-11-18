@@ -1,6 +1,8 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
+`Linux`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
+
 `WARNING`: Extension version `3.0.0+` has breaking changes. To upgrade version `2.0.0+` projects see section:
 
    -  [Upgrading Older Projects](https://github.com/boocs/unreal-clangd?tab=readme-ov-file#upgrading-older-projects)
@@ -312,7 +314,22 @@ This README has pretty good documentation but if you want to see extended docume
 
 ## Upgrading Older Projects
 
-#### Extension Version 3
+### Extension Version 3.2.1+ 
+
+Upgrading Unreal 5.6 or older projects to `Linux Unreal 5.7`
+
+If you don't wan't to reinstall extension project you can just replace this line in both .clangd files(project/unreal)
+
+``` json
+ # Replace line below with line below it
+ # - -stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1
+   - -isystem/include/c++/v1
+```
+---
+
+### Extension Version 3
+
+`Upgrading extension version 2 projects`
 
 Extension 3.0.0 has `breaking` changes. To upgrade version 2 projects:
 
