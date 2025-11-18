@@ -15,22 +15,6 @@
 
 # Table of Contents
 - [Updates](#updates)
-# Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
-
-`WARNING`: Extension version `3.0.0+` has breaking changes. To upgrade version `2.0.0+` projects see section:
-
-   -  [Upgrading Older Projects](https://github.com/boocs/unreal-clangd?tab=readme-ov-file#upgrading-older-projects)
-
-
-`note`: Ubuntu users: I started getting this error message wtih 5.6.0 but it still seemed to work.
-   - Unable to watch for file changes. Please follow the instructions link to resolve this issue.
-   - See [here](https://code.visualstudio.com/docs/setup/linux#_visual-studio-code-is-unable-to-watch-for-file-changes-in-this-large-workspace-error-enospc)
-
----
----
-
-# Table of Contents
-- [Updates](#updates)
 - [Important info](#important-info)
 - [Info](#info)
 - [Requirements](#requirements)
