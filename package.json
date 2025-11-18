@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Creates clangd project for Unreal 5.2+",
-  "version": "3.1.0",
+  "version": "3.2.1",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -80,6 +80,16 @@
         "command": "unreal-clangd.openAddCompletionsFiles",
         "title": "Open 'Add Completions' Files (regular and macro)",
         "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.backupWorkspaceConfig",
+        "title": "Back up workspace cfg file",
+        "category": "unreal clangd"
+      },
+      {
+        "command": "unreal-clangd.restoreWorkspaceConfig",
+        "title": "Restore workspace cfg file",
+        "category": "unreal clangd"
       }
     ],
     "configuration": [
@@ -101,12 +111,6 @@
             "description": "Which Intellisense files to use for your project.",
             "scope": "resource",
             "order": 0
-          },
-          "unreal-clangd.native.code-workspaceFileBackupSettings": {
-            "type": "array",
-            "markdownDescription": "Any setting you want backed up when running the Native \"Update Intellisense Files\" command.\nRunning this `Unreal Build Tool's` command refreshes your project causing the project's `*.code-workspace` file to be overwritten.\n These settings will automatically be backed up: `clangd.arguments`, `clangd.path`, `clangd.detectExtensionConflicts`, `files.associations`, `workbench.colorCustomizations`, `editor.suggestFontSize`, `dotnet.defaultSolution`\n* `note:` Do not set in a config that Unreal overwrites!",
-            "scope": "resource",
-            "order": 1
           },
           "unreal-clangd.fixes.delegateFuncCompletions": {
             "type": "boolean",

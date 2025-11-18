@@ -273,7 +273,7 @@ async function findMissingResponseFlags(rspFileStr: string, sharedFileStr: strin
             continue;
         }
         
-        console.warning(`Found shared include not in Intellisense Response: ${sharedAbsPath}`);
+        console.warn(`Found shared include not in Intellisense Response: ${sharedAbsPath}`);
         missingIncludePaths.push(sharedAbsPath);
 
     }

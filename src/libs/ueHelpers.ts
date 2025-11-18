@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import * as console from './console';
 import * as consts from './consts';
 import type { UnrealPlatform } from './indexTypes';
-import { doesUriExist, getFileString, getProjectCompileCommandsName, logException } from './projHelpers';
+import { doesUriExist, getFileString, getProjectCompileCommandsName, getWorkspaceFileUri, logException } from './projHelpers';
 import * as tr from '../tr/text';
 import type {File} from '../libs/types';
 
@@ -116,7 +116,7 @@ export function getUnrealWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
 
 
 export function getProjectWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
-    const workspaceFileUri = vscode.workspace.workspaceFile;
+    const workspaceFileUri = getWorkspaceFileUri();
     
     if (!workspaceFileUri || !vscode.workspace.workspaceFolders) {
         console.error("No workspace folders found!");
@@ -131,7 +131,7 @@ export async function isUnrealProject(): Promise<boolean> {
     const workspaceUri = vscode.workspace.workspaceFile;
     
 
-    if (!workspaceUri || !vscode.workspace.workspaceFolders) {
+    if (!workspaceUri || !workspaceUri.fsPath.endsWith(".code-workspace") || !vscode.workspace.workspaceFolders) {
         console.error("No workspace folders found!");
         return false;
     }

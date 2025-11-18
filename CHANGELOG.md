@@ -1,5 +1,20 @@
 # Change Log
 
+## [3.2.1] 2025-11-17
+### Changed
+- New way of backing up/restoring *.code-workspace settings
+### Added
+- Backs up workspace cfg on startup or on cfg change (if conditions met)
+    - Backup is saved in `.vscode/unreal-clangd/.code-workspace.backup`
+- Restores on startup if bad workspace file detected
+    - currently only restores sections: `folders`, `settings`, `tasks`, `launch`
+- Asks to restore after running command: Update compile commands (refresh project)
+- Added manual commands: `Backup Workspace cfg file` , `Restore Workspace cfg file` 
+- Added Links to `Unreal 5.7` requirements
+### Fixed
+- Fixed system include, for Linux, that gets put in .clangd file
+    
+
 ## [3.1.0] 2025-10-18
 ### Fixed
 - Fixed Unreal source files not working correctly (thanks @romantimm)

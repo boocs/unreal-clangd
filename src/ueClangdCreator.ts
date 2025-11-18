@@ -174,7 +174,7 @@ async function createFileWithLog(uri: vscode.Uri | undefined, content: string[] 
     }
 
     if (overwrite === undefined) {
-        console.warning(tr.OVERWRITE_IS_UNDEFINED);
+        console.warn(tr.OVERWRITE_IS_UNDEFINED);
         overwrite = false;
     }
 

@@ -181,7 +181,6 @@ async function runUpdateCompileCommandsWithTask(_projectWorkspace: vscode.Worksp
         setIsUpdateCompileCommands(true);
         try {
             console.log(`${tr.CREATING_CC_FILE_IN_path} ${unrealWorkspace.uri.fsPath}\n`);
-            backupWorkspaceSettings();
             await vscode.tasks.executeTask(updateCCTask);
         } catch (error) {
             console.error(tr.ERR_WITH_EXEC_TASK);
@@ -194,7 +193,7 @@ async function runUpdateCompileCommandsWithTask(_projectWorkspace: vscode.Worksp
         }
     }
     else {
-        console.warning(tr.STILL_UPDATING_CC_TRY_AGAIN_LATER);
+        console.warn(tr.STILL_UPDATING_CC_TRY_AGAIN_LATER);
     }
 }
 
@@ -229,7 +228,6 @@ async function runUpdateCompileCommandsWithDebug(
         setIsUpdateCompileCommands(true);
         try {
             console.log(`${tr.CREATING_CC_FILE_IN_path} ${unrealWorkspace.uri.fsPath}\n`);
-            backupWorkspaceSettings();
             const didStart = await vscode.debug.startDebugging(unrealWorkspace, dbgConfig);
             if(!didStart){
                 console.error("Error when `debug` updating compile commands!");
@@ -248,7 +246,7 @@ async function runUpdateCompileCommandsWithDebug(
         }
     }
     else {
-        console.warning(tr.STILL_UPDATING_CC_TRY_AGAIN_LATER);
+        console.warn(tr.STILL_UPDATING_CC_TRY_AGAIN_LATER);
     }
 }
 
@@ -268,43 +266,6 @@ function getShellQuoting(command: string, args: string[]): {command: vscode.Shel
     const modCommand = process.platform === "win32" ? { value: command, quoting: vscode.ShellQuoting.Strong } : { value: command, quoting: vscode.ShellQuoting.Weak };
     
     return {command: modCommand, args: modArgs};
-}
-
-
-function backupWorkspaceSettings() {
-    
-    if(_codeWorkspaceSettingsBackup !== undefined){
-        console.error("Backup settings have already been set!");
-        return;
-    }
-    
-    const workspace = ueHelpers.getProjectWorkspaceFolder();	
-    const globalConfig = vscode.workspace.getConfiguration(undefined, workspace);
-    
-
-    let settings: string[] = globalConfig.get<string[]>("unreal-clangd.native.code-workspaceFileBackupSettings", []);
-
-    settings = settings.concat(consts.NATIVE_CODE_WORKSPACE_BACKUP_SETTINGS);
-
-    _codeWorkspaceSettingsBackup = {};
-    for (const setting of settings) {
-
-        let value: unknown = undefined;
-        try {
-            value = globalConfig.inspect(setting)?.workspaceValue;
-        } catch  {
-            console.warning(`Error trying to backup setting: ${setting} (might not be a bug)`);
-            continue;
-        }
-        
-        if(value === undefined){
-            console.warning(`Error trying to backup setting: ${setting} (might not be a bug)`);
-            continue;
-        }
-
-        _codeWorkspaceSettingsBackup[setting] = value;
-    }
-
 }
 
 
@@ -377,7 +338,7 @@ export async function restoreWorkspaceSettings() {
             await globalConfig.update(key, value, vscode.ConfigurationTarget.Workspace);
         } 
         catch  {
-            console.warning(`Error trying to backup workspace setting: ${key} (might not be a bug)`);
+            console.warn(`Error trying to backup workspace setting: ${key} (might not be a bug)`);
             continue;
         }
         

@@ -22,7 +22,7 @@ export async function isProjectChange() {
     
         // Only run convert if current project is a unreal clangd project
         if(! (await hasClangdProjectFiles(projectWorkspace ))) { 
-            console.warning("Current project isn't a unreal clangd project. Will not run Unreal compile commands converter.");
+            console.warn("Current project isn't a unreal clangd project. Will not run Unreal compile commands converter.");
             return;
         }
     
@@ -34,7 +34,7 @@ export async function isProjectChange() {
     
         const fileString = await getFileString(ccUri);
         if(!fileString) {
-            console.warning("This is probably not an error. Unreal compile commands is dynamic and might not be created yet.");
+            console.warn("This is probably not an error. Unreal compile commands is dynamic and might not be created yet.");
             return;
         }
     

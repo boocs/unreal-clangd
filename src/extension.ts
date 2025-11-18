@@ -2,9 +2,7 @@
 
 // Wait for 3.2.0
 // ***** Remove prompt to remove invalid entry in Unreal compile_commands.json
-// Better way to backup *.code-workspace file settings?
-   // if changed Copy *.code-workspace to .vscode/unreal-clangd?
-      // Don't copy if clangd settings are missing from *.code-workspace (meaning uninstalled/not installed or improper refresh)
+
 // better unreal source support
 	// retry -mode=GenerateClangDatabase - this only support full source UE so maybe not...
 	// Maybe full source unreal engine soure files only?
@@ -30,8 +28,8 @@ import { onSetCustomSystemIncludes, startCheckCustomSystemIncludes } from './mod
 import {getUnrealClangdCompileCommandsUri, getValidatedCompileCommandObjectsFromUri, getUnrealClangdConfig, getUnrealCompileCommandsUriForProject, doesUriExist, getProjectCompileCommandsName, isFile, getFileString, saveFile} from './libs/projHelpers';
 
 import * as console from './libs/console';
-import { getIsUpdateCompileCommands, restoreWorkspaceSettings, setIsUpdateCompileCommands, updateCompileCommands } from './modules/updateCompileCommands';
-import { askAndRunUpdateCompileCommands, checkAndAskFixClangdSettingsInWorkspaceFile as checkAndAskFixClangdSettingsNotInWorkspaceFile, getIntellisenseType, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,  hasClangdProjectFiles, restartClangd } from './shared';
+import { getIsUpdateCompileCommands, setIsUpdateCompileCommands, updateCompileCommands } from './modules/updateCompileCommands';
+import { askAndRunUpdateCompileCommands, doesWorkspaceFileContainClangdSettings, getIntellisenseType, getIsFinishingCreation, getIsUninstalling, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,   getUnrealSemanticVersionString,  hasClangdProjectFiles, restartClangd } from './shared';
 import { createUnrealClangdProject, createUnrealSourceProject, finishCreationAfterUpdateCompileCommands } from './modules/createProject';
 import { uninstallExtensionProject } from './modules/uninstallExtProj';
 import { startAddFilesToUESourceCompileCommands } from './modules/addToUeSourceCC';
@@ -41,6 +39,7 @@ import { isProjectChange, onProjectChange } from './modules/projectChange';
 import { startModifyResponseFiles } from './modules/modifyRspFiles';
 import { startCreateRspMatchers } from './modules/createRspMatchers';
 import { checkUnrealCompileCommands } from './modules/unrealCCChecker';
+import { backupOnConfigChange, backupOrRestoreClangdSettingsInWorkspaceFile, getRestoreState } from './modules/backupWorkspace';
 
 
 let newSourceFilesDetectionFileWatcher: vscode.FileSystemWatcher | null = null;
@@ -61,13 +60,22 @@ let _isTogglingMacroCompletions = false;
 
 
 export async function activate(context: vscode.ExtensionContext) {
+
+	//await backupCodeWorkspace();
+	//await restoreCodeWorkspaceFileSettings();
 	
 	if (!await ueHelpers.isUnrealProject()) {
 		console.log(tr.NOT_UNREAL_PROJECT);
 		return;
 	}
 
-	console.log(`Started ${consts.EXTENSION_NAME} ${consts.EXTENSION_VERSION}\n`);
+
+	const unrealVersionStr = await getUnrealSemanticVersionString();
+	if(unrealVersionStr === undefined){
+		console.error("Couldn't get Unreal version!");
+		return;
+	} 
+	console.log(`Started ${consts.EXTENSION_NAME} ${consts.EXTENSION_VERSION} on Unreal ${unrealVersionStr}\n`);
 	
 	await preActivate();
 	
@@ -264,8 +272,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	
-	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration( e => {
-		onDidChangeConfiguration(e);
+	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration( async e => {
+		await onDidChangeConfiguration(e);
 	}));
 
 	context.subscriptions.push(vscode.window.onDidChangeWindowState(async  e => {
@@ -295,6 +303,26 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
+	context.subscriptions.push(vscode.commands.registerCommand('unreal-clangd.backupWorkspaceConfig', async () => {
+		const projWorkspaceFolder = getProjectWorkspaceFolder();
+		if(!projWorkspaceFolder) {return;}
+
+		if(! doesWorkspaceFileContainClangdSettings(projWorkspaceFolder)) {
+			console.error("Can't backup workspace config. No clangd settings found!");
+			return;
+		}
+
+		await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backup");
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('unreal-clangd.restoreWorkspaceConfig', async () => {
+		const projWorkspaceFolder = getProjectWorkspaceFolder();
+		if(!projWorkspaceFolder) {return;}
+
+		await backupOrRestoreClangdSettingsInWorkspaceFile(true, "restore");
+	}));
+
+	
 	context.subscriptions.push(vscode.commands.registerCommand('unreal-clangd.setCustomSystemIncludes', async () => {
 		await onSetCustomSystemIncludes();
 	}));
@@ -396,14 +424,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	
-	onDidChangeConfiguration(undefined, true);
+	await onDidChangeConfiguration(undefined, true);
 
 	const unrealClangdConfig = getUnrealClangdConfig(mainWorkspaceFolder);
 	const isCreateProject = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
 
-	
-	if(!isCreateProject && await hasClangdProjectFiles(mainWorkspaceFolder)){
-		await checkAndAskFixClangdSettingsNotInWorkspaceFile();
+	const isClangdProject = await hasClangdProjectFiles(mainWorkspaceFolder);
+	if(!isCreateProject && isClangdProject && !getIsFinishingCreation()){
+		await backupOrRestoreClangdSettingsInWorkspaceFile(isClangdProject);  // MARK: BACKUP/RESTORE
 		await startCheckCustomSystemIncludes();
 		await createToggleMacroStatusBarButton();
 		if((await isProjectChange()) && !isChangingProject){
@@ -417,7 +445,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		await handleCreateProjectIfSet();
 	}
 	else {
-		console.warning("No .clangd/.clang-format files found or wasn't creating project on startup. (This could mean you haven't created a unreal-clangd project yet) ");
+		console.warn("No .clangd/.clang-format files found or wasn't creating project on startup. (This could mean you haven't created a unreal-clangd project yet) ");
 	}
 		
 }
@@ -478,13 +506,13 @@ async function addMSCppExtensionSettings() {
 					try {
 						await cppConfig.update(setting, element.value, element.configTarget);
 					} catch  {
-						console.warning("Microsoft Cpp Extensions isn't enabled.");
+						console.warn("Microsoft Cpp Extensions isn't enabled.");
 						return;
 					}
 				}
 			}
 			else {
-				console.warning("Microsoft Cpp Extensions isn't enabled.");
+				console.warn("Microsoft Cpp Extensions isn't enabled.");
 			}
 			
 		}
@@ -494,7 +522,7 @@ async function addMSCppExtensionSettings() {
 
 
 
-function onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent | undefined, setAll=false) {
+async function onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent | undefined, setAll=false) {
 	const projectWorkspace = getProjectWorkspaceFolder();
 	if(!projectWorkspace){
 		console.error(tr.COULDNT_GET_PROJ_WS_WILL_STILL_GET_SET_VARS);
@@ -553,6 +581,15 @@ function onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent | undefined
 		}
 	} */
 
+	if(!projectWorkspace){
+		return;
+	}
+	const unrealClangdConfig = getUnrealClangdConfig(projectWorkspace);
+	const isCreateProject = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
+	if(getRestoreState() !== "JustRestored" && !isCreateProject && !getIsFinishingCreation() && !getIsUninstalling()){
+		await backupOnConfigChange();
+	}
+	
 };
 
 
@@ -676,7 +713,15 @@ async function copyNewlyCreatedCompileCommandToCCFolder() {
 
 
 async function onEndUpdateCompileCommands(state: 'updateCC' | 'creating') {
-	await restoreWorkspaceSettings();
+	// MARK: BACKUP
+
+	const projectWorkspaceFolder = getProjectWorkspaceFolder();
+	if(projectWorkspaceFolder && state === 'updateCC'){
+		await backupOrRestoreClangdSettingsInWorkspaceFile(true, "restore");
+	}
+	else {
+		
+	}
 
 	await setTimeout(500);  // MARK: TEST was 1250
 
@@ -686,7 +731,7 @@ async function onEndUpdateCompileCommands(state: 'updateCC' | 'creating') {
 		//await startSetPreParseIncludesInClangdCfg();
 	//}
 	
-	await onUnrealCompileCommandsCreatedOrChanged();  // MARK: We need this?
+	await onUnrealCompileCommandsCreatedOrChanged();  // MARK: need this?
 
 	await addCompletionHelperToCompileCommands();
 

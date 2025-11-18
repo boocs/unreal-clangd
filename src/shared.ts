@@ -4,17 +4,22 @@ import * as path from 'path';
 import type { ExtensionIntellisenseType, CompileCommand, RspMatcher, CompileCommandFile, File } from "./libs/types";
 import * as tr from './tr/text';
 import * as consts from './libs/consts';
-import { doesUriExist, getFileString, logException, saveFile } from './libs/projHelpers';
-import { getProjectWorkspaceFolder, getUnrealUri } from './libs/ueHelpers';
-import { createUnrealClangdProject } from "./modules/createProject";
+import {  getFileString, logException, saveFile } from './libs/projHelpers';
+import { getProjectWorkspaceFolder, getUnrealUri, getUnrealVersion, UnrealVersion } from './libs/ueHelpers';
+
 
 import * as console from './libs/console';
 
+
 let _intellisenseType: ExtensionIntellisenseType = "Native";  // In future this could be change via setting
 let _isWantingToCreate = false;
+let _isFinishingCreation = false;
 let _isUninstallingUeClangdProject = false;
+let _unrealSemanticVersion: Promise<UnrealVersion | undefined> | undefined = undefined;
 const _rspMatchers: RspMatcher[] = [];
 
+
+// intellisenseType
 export function getIntellisenseType(): ExtensionIntellisenseType {
     return _intellisenseType;
 }
@@ -22,6 +27,7 @@ export function setIntellisenseType(value: ExtensionIntellisenseType) {
     _intellisenseType = value;
 }
 
+// isWantingToCreate
 export function getIsWantingToCreate(): boolean {
     return _isWantingToCreate;
 }
@@ -29,6 +35,7 @@ export function setIsWantingToCreate(value: boolean) {
     _isWantingToCreate = value;
 }
 
+// isUinstallingUeClangdProject
 export function getIsUninstalling(): boolean {
     return _isUninstallingUeClangdProject;
 }
@@ -36,12 +43,20 @@ export function setIsUninstalling(value: boolean) {
     _isUninstallingUeClangdProject = value;
 }
 
+// rsp matchers
 export function getRspMatchers(): RspMatcher[] {
     return _rspMatchers;
 }
-
 export function setRspMatchers(value: RspMatcher) {
     _rspMatchers.push(value);
+}
+
+// isFinishingCreation
+export function getIsFinishingCreation(): boolean {
+    return _isFinishingCreation;
+}
+export function setIsFinishingCreation(value: boolean) {
+    _isFinishingCreation = value;
 }
 
 
@@ -140,39 +155,6 @@ export async function setCompilerSetting(mainWorkspace: vscode.WorkspaceFolder, 
 }
 
 
-/**
- * Needed to check if Workspace File has be cleaned of clangd settings with a UBT 'Refresh Project' command 
- */
-export async function checkAndAskFixClangdSettingsInWorkspaceFile(){
-    const projWorkspaceFolder = getProjectWorkspaceFolder();
-    if(!projWorkspaceFolder) {
-        return;
-    }
-    
-    console.log("Checking if clangd settings missing in workspace file...");
-    // simple check
-    const isAlreadyAProject = await doesUriExist(vscode.Uri.joinPath(projWorkspaceFolder.uri, consts.FILE_NAME_CLANGD_CFG));
-    if(!isAlreadyAProject || doesWorkspaceFileContainClangdSettings(projWorkspaceFolder)){
-        console.log("No missing clangd settings found.");
-        return;
-    }
-        
-    const result = await vscode.window.showWarningMessage(
-        "Clangd settings not found in your Workspace File!\n\nRun Unreal-clangd project creation?",
-        {
-            detail: "This could be because you refreshed your project without using this extensions `Update compile commands file (refresh project)` command which prevents this from happening. You can use the 'Partial' install option if so.",
-            modal: true
-        },
-        "Run"
-    );
-
-    if(!result) {
-        return;
-    }
-
-    await createUnrealClangdProject();
-}
-
 export function doesWorkspaceFileContainClangdSettings(workspaceFolder: vscode.WorkspaceFolder) {
     
     const config = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_CLANGD, workspaceFolder);
@@ -253,7 +235,7 @@ export async function hasClangdProjectFiles(workspace: vscode.WorkspaceFolder, g
 
         if (clangdFiles.length === 0) {
             hasError = true;
-            console.warning(`Couldn't find: ${globFileName}`);
+            console.error(`Function hasClangdProjectFiles() couldn't find: ${globFileName}`);
         }
     }
 
@@ -329,4 +311,44 @@ export function getUnrealClangdCfgUri() {
     if(!ueUri) {return;}
 
     return vscode.Uri.joinPath(ueUri, consts.FILE_NAME_CLANGD_CFG);
+}
+
+
+/**
+ * Gets/Stores Unreal's semantic versioning
+ * 
+ * @returns a Promise that must be awaited
+ */
+export async function getUnrealSemanticVersion(): Promise<{ major: number; minor: number; patch: number; } | undefined> {
+   
+    return _unrealSemanticVersion ??= getUnrealVersion();
+}
+
+
+/**
+ * Gets Unreal's semantic version string/Stores Unreal's semantic version
+ * 
+ */
+export async function getUnrealSemanticVersionString(): Promise<string | undefined> {
+   
+    const unrealVersion = await getUnrealSemanticVersion();
+    return unrealVersion ?  `${String(unrealVersion.major)}.${String(unrealVersion.minor)}.${String(unrealVersion.patch)}` : undefined;
+}
+
+
+/**
+ * MARK: WARNING this may need to be fixed for arch linux and earlier non arch linux (5.1 or 5.2 uses V1?)
+ * @returns 
+ */
+export async function getLinuxStdLibSystemInclude(): Promise<string> {
+    const unrealVersion = await getUnrealSemanticVersion();
+    if (!unrealVersion) {
+        return consts.LINUX_STDLIB_SYS_INCLUDE_V3;
+    }
+    else if (unrealVersion.major === 4 || (unrealVersion.major === 5 && unrealVersion.minor < 7)) {
+        return consts.LINUX_STDLIB_SYS_INCLUDE_V2;
+    }
+    
+    return consts.LINUX_STDLIB_SYS_INCLUDE_V3;
+    
 }

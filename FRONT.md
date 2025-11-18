@@ -51,13 +51,23 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 - [Create BuildConfiguration.xml](#create-a-buildconfigurationxml)
 - [Installing correct LLVM (clangd/clang) versions](#installing-correct-llvm-clangdclang-version)
 - [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
-- [All supported Unreal version requirement links](#all-supported-unreal-version-requirement-links)
+- [All supported Unreal versions requirement links](#all-supported-unreal-version-requirement-links)
 - [Downloading Source Code](#downloading-source-code)
 
 ---
 ---
 
 ## Updates
+
+### Version 3.2.1
+- Backs up workspace cfg on startup or on cfg change (if conditions met)
+    - Backup is saved in `.vscode/unreal-clangd/.code-workspace.backup`
+- Restores on startup if bad workspace file detected
+    - currently only restores sections: `folders`, `settings`, `tasks`, `launch`
+- Asks to restore after running command: Update compile commands (refresh project)
+- Added manual commands: `Backup Workspace cfg file` , `Restore Workspace cfg file` 
+- Added Links to `Unreal 5.7` requirements
+- Fixed system include, for Ubuntu Linux, that gets put in .clangd file (for Unreal 5.7)
 
 ### Version 3.1.0
 - Fixed bug in Unreal source file support
@@ -154,10 +164,12 @@ This extension:
    - [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
    - [All supported Unreal version requirement links](#all-supported-unreal-version-requirement-links)
 
-`note`: The links below will tell you the requirements for `Unreal 5.6.#`
-- If you need requirements for older Unreal versions see [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links)
+`note`: The links below will tell you the requirements for `Unreal 5.7.#`
+- If you need requirements for other Unreal versions
+   - see [All supported Unreal version requirements links](#all-supported-unreal-version-requirement-links)
+   ---
 
-1.  [Unreal 5.6 Release Notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-6-release-notes?application_version=5.6#platform-sdk-upgrades)
+1.  [Unreal 5.7 Release Notes (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-7-release-notes?application_version=5.7#platform-sdk-upgrades)
 
     - Note: The link above can take too long to load so might not take you to the right section (`Platform SDK Upgrades`)
     - Try loading link twice 
@@ -170,17 +182,17 @@ This extension:
       - See: [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
     - Also shows useful `Linux/Mac` info
 
-2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.6)
+2. [Unreal Docs: Hardware and Software Specifications](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.7)
    - Useful info for `Linux` and `Mac` (Not that useful for Windows)
    - Use `Operating System` dropdown to change to Linux/Mac
    - You can change `Unreal Engine version` on left hand side
 
-3. [Unreal Docs: Linux Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.6)
+3. [Unreal Docs: Linux Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.7)
 
    - Shows useful `Linux` info
    - You can change `Unreal Engine version` on left hand side
 
-4. [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.6)
+4. [Unreal Docs: MacOS Development Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.7)
 
    - Shows usefull `Mac` info
    - You can change `Unreal Engine version` on left hand side
@@ -473,7 +485,7 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 
 ## Installing correct LLVM (clangd/clang) version 
 
-`note`: These examples are for Unreal `5.6.#`. Make sure you get the correct library and compiler versions for your `specific` Unreal version
+`note`: These examples are for Unreal `5.6.#`. Make sure you get the correct library and compiler versions for your `specific` Unreal version [here](#all-supported-unreal-version-requirement-links)
 
 ### Windows
 1. Get the correct LLVM (clangd/clang) version from the Release Notes of your Unreal version.
@@ -536,7 +548,7 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 
 2. I use the stand-alone `Visual Studio Build Tools 2022` but this also should work if you have the `Visual Studio 2022` IDE installed.
 
-3. This example is for Unreal 5.6.# but it can apply to older Unreal versions. Older versions will probably require different clangd/library versions so make sure to see here for older version requirement links: [Older Version Requirement Links](#older-unreal-versions-requirement-links)
+3. This example is for Unreal 5.6.# but it can apply to other Unreal versions. Other versions will probably require different clangd/library versions so make sure to see here for other version requirement links: [Other Version Requirement Links](#all-supported-unreal-version-requirement-links)
 
 4. From the `Visual Studio installer` click on `Modify` next to  Build Tools 2022 or VS 2022 IDE
 
@@ -554,7 +566,7 @@ Here's a basic BuildConfiguration.xml (It's easy to create all this using VSCode
 Below are the versions found in the Unreal 5.6 Release Notes and what they look like in the `Visual Studio Installer (Individual components)`. 
 
 7. Here's the `Platform SDK Upgrades` section in the Unreal 5.6 Release Notes
-   - For older Unreal version Release Notes see [here](#all-supported-unreal-version-requirement-links)
+   - For other Unreal version Release Notes see [here](#all-supported-unreal-version-requirement-links)
 
    ![Image](https://github.com/user-attachments/assets/c54ad0fb-1c59-4184-a34d-8af3a424ab6d)
 
@@ -620,6 +632,18 @@ Below are the versions found in the Unreal 5.6 Release Notes and what they look 
    - [Requirements](#requirements)
    - [How to install correct LLVM (clangd/clang) version](#installing-correct-llvm-clangdclang-version)
    - [Installing correct library versions (Windows)](#installing-correct-library-versions-windows)
+
+## Unreal 5.7.#
+Release Notes: [5.7.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-7-release-notes?application_version=5.7#platform-sdk-upgrades)
+
+Here's what the Windows requirements look like(section: Platform SDK Upgrades):
+![Image](https://github.com/user-attachments/assets/573d2626-97a2-46b1-9f02-86ba8c344f99)
+
+Unreal Docs Requirements: [Requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/hardware-and-software-specifications-for-unreal-engine?application_version=5.7) 
+
+Unreal Docs Linux Requirements [Linux](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine?application_version=5.7)
+
+Unreal Docs MacOS requirements [MacOS](https://dev.epicgames.com/documentation/en-us/unreal-engine/macos-development-requirements-for-unreal-engine?application_version=5.7)
 
 ## Unreal 5.6.#
 Release Notes: [5.6.# (Platform SDK Upgrades)](https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-6-release-notes?application_version=5.6#platform-sdk-upgrades)

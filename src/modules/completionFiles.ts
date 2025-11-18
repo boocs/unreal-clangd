@@ -346,5 +346,5 @@ async function getProjectCompletionHelperCompileCommandsEntry() {
         }
     }
 
-    console.warning("Project Change: Didn't find project completion helper entry in compile_commands.json");
+    console.warn("Project Change: Didn't find project completion helper entry in compile_commands.json");
 }

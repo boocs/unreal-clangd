@@ -60,7 +60,7 @@ async function createRspMatchers(progress: vscode.Progress<{
             }
             
             if(!ueDirRelPath.endsWith(rspName)){  // Pattern broke so don't add these
-                console.warning(extraction.uri.fsPath);
+                console.warn(extraction.uri.fsPath);
                 continue;
             }
 

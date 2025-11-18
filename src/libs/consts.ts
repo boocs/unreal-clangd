@@ -8,7 +8,7 @@ import type { Overwrite } from './indexTypes';
 import type { DocumentOptions, SchemaOptions, ParseOptions, CreateNodeOptions, ToStringOptions} from 'yaml';
 import { EOL } from "node:os";
 
-export const EXTENSION_VERSION = "3.1.0";
+export const EXTENSION_VERSION = "3.2.1";
 export const VALIDATE_UNREAL_VERSIONS: { min: ueHelpers.UnrealVersion, max: ueHelpers.UnrealVersion } =
     { min: { major: 5, minor: 2, patch: 0 }, max: { major: 6, minor: 0, patch: 0 } };  // The unreal versions this extension was created for
 
@@ -394,8 +394,9 @@ export const GLOB_GCD_FILES = `Intermediate/Build/**/UnrealEditor/**/${UPDATE_CO
 export const GLOB_SOURCE_FILES_SUFFIX = "/**/*.{cpp,h}";
 export const GLOB_SIMPLE_CHECK_CLANGD_PROJECT_FILES = `**/*.{clangd,clang-format}`;
 
-export const LINUX_SYS_INCLUDE_CPP_V1 = "-isystemThirdParty/Unix/LibCxx/include/c++/v1";
-export const LINUX_STDLIB_SYS_INCLUDE_CPP_V1 = "-stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1";
+export const LINUX_STDLIB_SYS_INCLUDE_V1 = "-isystemThirdParty/Unix/LibCxx/include/c++/v1";
+export const LINUX_STDLIB_SYS_INCLUDE_V2 = "-stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1";
+export const LINUX_STDLIB_SYS_INCLUDE_V3 = "-isystem/include/c++/v1";
 
 
 export const defaultCreationCmdLine: [CreationCmdLineSettings, CreationCmdLineValue][] = [

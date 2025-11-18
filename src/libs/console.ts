@@ -31,7 +31,7 @@ export function error(message: string) {
 }
 
 
-export function warning(message: string) {
+export function warn(message: string) {
     warningCount += 1;
 
     if (IS_DEBUG) { console.error(message); }

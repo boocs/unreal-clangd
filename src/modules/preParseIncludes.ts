@@ -63,7 +63,7 @@ class SetOfSets {
 
     await iterateOverProjectFolders( execSetPreParseIncludesInClangdCfg, (result, uri) => {
         if(!result){
-            console.warning(`Error with set preparse includes. Might be because project hasn't been created yet. ${uri.fsPath}`);
+            console.warn(`Error with set preparse includes. Might be because project hasn't been created yet. ${uri.fsPath}`);
             console.log("***** This could also not be a bug if it's for Unreal Source. It has dynamic compile commands creation and might not have a compile_commands.json file yet.");
         }
         return 'continue';
@@ -177,7 +177,7 @@ async function getAddValue(rspPath: string) {
     if(!rspFileString) {return;}
     
     if(!hasPCHPreParse(rspFileString)) {
-        console.warning(`(probably not bug) No PCH preparse found in: ${rspPath}`);
+        console.warn(`(probably not bug) No PCH preparse found in: ${rspPath}`);
         return;
     }
     

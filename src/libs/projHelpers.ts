@@ -76,7 +76,10 @@ export async function getValidatedCompileCommandObjectsFromUri(compileCommandUri
     return getValidatedCompileCommandObjectsFromFileString(fileString);
 }
 
-
+/**
+ * @param uri vscode.Uri
+ * @error logs to console and returns undefined
+ */
 export async function getFileString(uri: vscode.Uri): Promise<string | undefined> {
     let fileString;
     try {
@@ -221,9 +224,9 @@ export function getRegex(pattern: string, flags?: string) {
     }
 }
 
-export function logException(error: unknown) {
+export function logException(error: unknown, errorType: "error" | "warn" = "error") {
     if(error instanceof Error){
-        console.error(error.message);
+        console[errorType](error.message);
         return;
     }
     console.error("Exception occurred but it wasn't an instance of Error!");
@@ -349,6 +352,33 @@ export async function getProjectCompileCommandsName(options: {withExtension: boo
     }
 }
 
+
+/**
+ * 
+ * @param uri uri to save
+ * @param oldFileString if set will compare strings and won't save if equal
+ * @param newFileString new file string to save
+ * @returns 
+ */
+export async function writeFile(uri: vscode.Uri, oldFileString: string | undefined, newFileString: string) {
+    
+    if((oldFileString !== undefined) && (oldFileString === newFileString)){
+        console.log(`No changes detected. Will not write file: ${uri.fsPath}`);
+        return;
+    }
+
+    try {
+        await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(newFileString));
+    } catch (error) {
+        logException(error);
+        return;
+    }
+
+    console.log(`Saved file: ${uri.fsPath}`);
+}
+
+
+
 /**
  * 
  * @param compileCommandsUri uri to compile commands file
@@ -375,4 +405,56 @@ export async function writeCompileCommandsFile(compileCommandsUri: vscode.Uri, o
     }
 
     console.log(`Saved file: ${compileCommandsUri.fsPath}`);
+}
+
+
+export async function setProjectSetting(
+    config: vscode.WorkspaceConfiguration,
+    section: string,
+    value: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+    configurationTarget?: boolean | vscode.ConfigurationTarget | null | undefined,
+    overrideInLanguage?: boolean,
+    logType: "error" | "warn" = "error") {
+
+    try {
+        await config.update(section, value, configurationTarget, overrideInLanguage);
+    } 
+    catch (error) {
+        logException(error, logType);        
+        return;
+    }
+}
+
+
+export async function askToReloadVSCode() {
+
+    const result = await vscode.window.showInformationMessage(
+        "Extension needs to reload VSCode...",
+        {
+            detail: "Choose Cancel if you need to read logs, save files, etc.\n\nAfter cancelling, manually restart VSCode after your done.",
+            modal: true
+        },
+        "Reload"
+    );
+
+    if(result === 'Reload') {
+        await vscode.commands.executeCommand(consts.VSCODE_CMD_RELOAD_WINDOW);
+    }
+}
+
+
+/**
+ * The *.code-workspace file that's currently being used.
+ * 
+ * @returns undefined if none or the workspace file is untitled and not yet saved
+ */
+export function getWorkspaceFileUri() {
+    const workspaceFile = vscode.workspace.workspaceFile;
+
+    if(!workspaceFile?.fsPath.endsWith(".code-workspace")){
+        return undefined;
+    }
+
+    return workspaceFile;
 }

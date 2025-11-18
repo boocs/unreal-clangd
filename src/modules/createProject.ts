@@ -12,7 +12,7 @@ import * as dyn from '../dynamic';
 import { type ClangdCfgFileSettings, type ClangdExtensionFile, ValidateUnrealResults, type YamlFile, type AllDefaultSettings, type CreationCmdLineArgs, type CreationCmdLineSettings, type CreationCmdLineValue, type ExtensionYamlFiles, type ProjectInfoVars, DiagnosticsFlags } from '../libs/types';
 import { UeClangdCreator } from '../ueClangdCreator';
 import { TextEncoder } from 'util';
-import { getCfgValue, getIntellisenseType, getIsWantingToCreate, getSourceFilesFirstChildFolderUris, setCompilerSetting, setIsWantingToCreate } from '../shared';
+import { getCfgValue, getIntellisenseType, getIsWantingToCreate, getLinuxStdLibSystemInclude, getSourceFilesFirstChildFolderUris, setCompilerSetting, setIsFinishingCreation, setIsWantingToCreate } from '../shared';
 import { UnrealPlatform } from '../libs/indexTypes';
 import { updateCompileCommands } from "./updateCompileCommands";
 import { onSetCustomSystemIncludes } from './setCustomSysInc';
@@ -21,6 +21,7 @@ import { createCompletionFiles, getMacroCompletionHelperPath } from './completio
 import { getFullPreparseIncludeLine } from './preParseIncludes';
 
 import * as console from '../libs/console';
+import { backupOrRestoreClangdSettingsInWorkspaceFile } from './backupWorkspace';
 
 
 export async function startCreateUnrealClangdProject() {
@@ -116,6 +117,7 @@ export async function createUnrealClangdProject(): Promise<"ran" | "cancelled"> 
 
 export async function finishCreationAfterUpdateCompileCommands() {
     setIsWantingToCreate(false);
+    setIsFinishingCreation(true);
 
     await createCompletionFiles();
 
@@ -188,7 +190,7 @@ export async function finishCreationAfterUpdateCompileCommands() {
         return;
     }
 
-    dyn.addPlatformSpecificChanges(getIntellisenseType(), uePlatform, clangdExtYamlFiles);
+    await dyn.addPlatformSpecificChanges(getIntellisenseType(), uePlatform, clangdExtYamlFiles);
 
     const clangdExtFiles = getClangdExtFiles(clangdExtYamlFiles);
 
@@ -221,6 +223,9 @@ export async function finishCreationAfterUpdateCompileCommands() {
         },
         "Reload", "Skip"
     );
+
+    setIsFinishingCreation(false); // Shouldn't need this since reload below but here anyway
+    await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backup");
 
     if(endCreationResult === "Reload"){
         await vscode.commands.executeCommand(consts.VSCODE_CMD_RELOAD_WINDOW);
@@ -255,8 +260,8 @@ async function handleUnrealVersionCheck(unrealVersion: ueH.UnrealVersion | undef
 
     }
     else {
-        console.warning(tr.UE_VERSION_CHECK_BYPASSED);
-        console.warning(tr.WARN_CREATION_WILL_CONTINUE);
+        console.warn(tr.UE_VERSION_CHECK_BYPASSED);
+        console.warn(tr.WARN_CREATION_WILL_CONTINUE);
     }
 
     return true;
@@ -281,7 +286,7 @@ async function handleExtensionConflict(workspaceFolder: vscode.WorkspaceFolder):
 
     if((hasClangdSetting && hasCCppSettings) || !isCppExtEnabled){
         if(!isCppExtEnabled){
-            console.warning("Microsoft Cpp extension is disabled!");
+            console.warn("Microsoft Cpp extension is disabled!");
             return 'cancelled';
         }
         return 'run';       
@@ -307,8 +312,8 @@ async function handleExtensionConflict(workspaceFolder: vscode.WorkspaceFolder):
         await cCppConfig.update(cCppSettingNames.intelliSenseEngine, consts.SETTING_DISABLED, vscode.ConfigurationTarget.WorkspaceFolder);
     } catch (error) {
         if(error instanceof Error){
-            console.warning(error.message);
-            console.warning("This warning above isn't an error if you have the MS C++ extension disabled.");
+            console.warn(error.message);
+            console.warn("This warning above isn't an error if you have the MS C++ extension disabled.");
         }
     }
     
@@ -740,11 +745,11 @@ async function getAddForClangdCfg(platform: NodeJS.Platform, ueVersion: ueH.Unre
     const startingAdd = [cppVersion, getFullPreparseIncludeLine(macroCompHelperPath)];
 
     switch (platform) {
-        case "win32":
+        case "win32": 
             return startingAdd.concat(consts.WIN_COMPILER_FLAGS_TO_ADD);
             break;
-        case "linux":
-            return startingAdd.concat(consts.LINUX_STDLIB_SYS_INCLUDE_CPP_V1, consts.LINUX_COMPILER_FLAGS_TO_ADD);
+        case "linux": 
+            return startingAdd.concat(await getLinuxStdLibSystemInclude(), consts.LINUX_COMPILER_FLAGS_TO_ADD);
             //return [cppVersion, consts.LINUX_STDLIB_SYS_INCLUDE_CPP_V1].concat(consts.LINUX_COMPILER_FLAGS_TO_ADD);
             break;
         case "darwin":
