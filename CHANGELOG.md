@@ -1,5 +1,16 @@
 # Change Log
 
+## [3.3.0] 2025-12-14
+### Fix
+- Pasting something in headers won't trigger the remove #include feature as often
+    - Triggers on pasted text that starts with "#include" and when first '\n' is last char in pasted text
+- Fixed bug where code-workspace is modified, without clangd settings, and it fails to backup instead of falling back to restore
+- npm audit fix
+### Added
+- Now also creates a .clang-format for Full Source Unreal during installation.
+- Can move errors to warning to prevent gui popup. Can currently move only one: `no-rsp-path-match` . Feel free to recommend more annoying errors
+
+
 ## [3.2.1] 2025-11-17
 ### Changed
 - New way of backing up/restoring *.code-workspace settings
@@ -14,7 +25,6 @@
 ### Fixed
 - Fixed system include, for Linux, that gets put in .clangd file
     
-
 ## [3.1.0] 2025-10-18
 ### Fixed
 - Fixed Unreal source files not working correctly (thanks @romantimm)

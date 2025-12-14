@@ -65,7 +65,7 @@ async function getClangdSettingsState(
     if (hasClangdSettings) {
         return 'backup';
     }
-
+    
     return 'restore';
 }
 
@@ -120,7 +120,7 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
  * @param isClangdProject Optional flag indicating if it's a Clangd project. If undefined, it will be determined automatically.
  * @returns Promise that resolves to void.
  */
-export async function backupOrRestoreClangdSettingsInWorkspaceFile(isClangdProject?: boolean, forceAction?: "backup" | "restore"): Promise<void> {
+export async function backupOrRestoreClangdSettingsInWorkspaceFile(isClangdProject?: boolean, forceAction?: "backup" | "restore" | "backupFallbackRestore"): Promise<void> {
     const projWorkspaceFolder = getProjectWorkspaceFolder();
     if (!projWorkspaceFolder) {
         return;
@@ -142,8 +142,7 @@ export async function backupOrRestoreClangdSettingsInWorkspaceFile(isClangdProje
     }
 
     
-    // state === 'restore'
-    if(forceAction !== 'backup') {
+    if(forceAction !== "backup") {
         let msg: string | undefined = undefined;
         if(forceAction === "restore"){
             msg = "Restoring workspace file settings. Choose an option:";
@@ -482,7 +481,7 @@ export async function backupOnConfigChange() {
     }
     if (timeDifference < oneMinuteInMs) {
         console.log('Workspace file modified. Backing up file.');
-        await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backup");       
+        await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backupFallbackRestore");       
     } else {
         console.log('Workspace file not modified on config change. No workspace file backup will occur.');
     }

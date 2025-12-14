@@ -58,9 +58,15 @@ export async function onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent)
         return;
     }
 
-    
-    if(isAutoIncludeHeaders && e.contentChanges.length === 1 && e.document.fileName.endsWith(".h") && e.contentChanges[0].text.startsWith("#include \"")){
+    const pastedText = e.contentChanges[0].text;
+    if(isAutoIncludeHeaders && e.contentChanges.length === 1 && e.document.fileName.endsWith(".h") && pastedText.startsWith("#include \"")){
+
+        const _firstEndlineCharPos = pastedText.indexOf("\n");
+        if(_firstEndlineCharPos + 1 !== pastedText.length) {  // Don't undo paste unless first '\n' is last character (creates very narrow criteria)
+            return;
+        }
         await removeAutoIncludeFromHeader(e);
+        return;  
     }
         
     const delegateFunctionCompletion: GroupDelegateFuncDefineName | undefined = (RE_FOR_GETTING_UNDER_SCORE_DELEGATE_DEFINE_NAME.exec(firstContentChange.text))?.groups as GroupDelegateFuncDefineName | undefined;

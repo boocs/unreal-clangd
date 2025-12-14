@@ -73,19 +73,27 @@ async function addFilesToUESourceCompileCommands(
         return;
     }
     
-    if(getRspMatchers().length === 0){
-        console.error("No Rsp Matchers found!");
-        return;
-    }
 
     const projectUri = ueHelpers.getProjectWorkspaceFolder()?.uri;
     if(!projectUri){
         return;
     }
+
+    if(getRspMatchers().length === 0){
+        console.error("No Rsp Matchers found!");        
+        return;
+    }
+
+    
     const rspPathRelative = getSourceFileRspPathMatch(ueUri, currentDocUri);
 
     if(!rspPathRelative){
-        console.error(`No RSP path match found for: ${currentDocUri.fsPath}`);
+        if(isErrorNoRspPathMatch(projectUri)){
+            console.error(`No RSP path match found for: ${currentDocUri.fsPath}`);
+        }
+        else {
+            console.warn(`No RSP path match found for: ${currentDocUri.fsPath}`);
+        }
         return;
     }
 
@@ -255,3 +263,18 @@ function findClosestUri(uris: vscode.Uri[], targetUri: vscode.Uri) {
 
     return closestUri;
 }
+
+
+function isErrorNoRspPathMatch(configScopeUri: vscode.Uri) {
+
+    const config = vscode.workspace.getConfiguration("unreal-clangd.gui", configScopeUri);
+
+    const value = config.get<string[]>("errorToWarning", []);
+
+    if(value.includes("no-rsp-path-match")){
+        return false;
+    }
+    
+    return true;
+}
+

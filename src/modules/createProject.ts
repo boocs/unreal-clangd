@@ -225,7 +225,9 @@ export async function finishCreationAfterUpdateCompileCommands() {
     );
 
     setIsFinishingCreation(false); // Shouldn't need this since reload below but here anyway
-    await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backup");
+
+    // We don't do "backFallbackRestore" here since using "backup" will log a bug in installation process if it can't backup
+    await backupOrRestoreClangdSettingsInWorkspaceFile(true, "backup");  
 
     if(endCreationResult === "Reload"){
         await vscode.commands.executeCommand(consts.VSCODE_CMD_RELOAD_WINDOW);
@@ -713,22 +715,46 @@ export async function createUnrealSourceProject() {
         for (const doc of ueSourceClangdCfgDocs) {
             docsStrigified += yaml.stringify(doc, consts.CLANGD_STRINGIFY_OPTIONS);
         }
-                
-        await projH.saveFile(docsStrigified, ueClangdCfgUri);
 
-        await vscode.window.showInformationMessage(
-            `Installation successful!${EOL}${EOL}Finished creating Unreal Source project`,
-            {modal: true},
-            tr.BTTN_OK
-        );
+        if(await projH.saveFile(docsStrigified, ueClangdCfgUri) === 'success'){
+            console.log(`Saved file: ${ueClangdCfgUri.fsPath}`);
+        }
+        else {
+            console.error(`Couldn't save file!: ${ueClangdCfgUri.fsPath}`);
+            return;
+        }
     }
     else {
-        await vscode.window.showInformationMessage(
-            `Installation successful!${EOL}${EOL}Didn't overwrite Unreal Source .clangd file. Delete this file manually and use command 'Create Unreal Source support' if you want to remake. (not a bug)`,
-            {modal: true},
-            tr.BTTN_OK
-        );
+        console.warn( `Didn't overwrite Unreal Source .clangd file. Delete this file manually and use command 'Create Unreal Source support' if you want to remake. (not a bug)`);
     }
+
+
+    // Create .clang-format file (full source)
+    const unrealWorkspaceFolder = ueH.getUnrealWorkspaceFolder();
+    if (!unrealWorkspaceFolder) {
+        return;
+    }
+    if (await ueH.isFullSourceUnrealEngine(unrealWorkspaceFolder)) {
+        const formatFileStr = yaml.stringify(consts.defaultGeneralClangFormatFile, consts.CLANG_FORMAT_STRINGIFY_OPTIONS);
+        const saveUri = vscode.Uri.joinPath(ueUri, consts.FILE_NAME_CLANG_FORMAT);
+
+        let saveResult;
+        if (!(await projH.isFile(saveUri))) {
+            saveResult = await projH.saveFile( formatFileStr, saveUri);
+        }
+
+        if(saveResult === 'error') {
+            console.error(`Couldn't save file!: ${saveUri.fsPath}`);
+            return;
+        }
+    }
+
+
+    await vscode.window.showInformationMessage(
+        `Installation successful!${EOL}${EOL}Finished creating Unreal Source project`,
+        { modal: true },
+        tr.BTTN_OK
+    );
 }
 
 

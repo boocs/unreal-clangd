@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Creates clangd project for Unreal 5.2+",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -230,7 +230,17 @@
             "default": true,
             "markdownDescription": "(`Windows only`) On startup, a info window pops if you haven't set your custom system includes.",
             "scope": "machine-overridable"
-          }
+          },
+          "unreal-clangd.gui.errorToWarning": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["no-rsp-path-match"]
+          },
+          "default": [],
+          "description": "Array of error names to downgrade from error to warning.",
+          "scope": "resource"
+        }
         }
       }
     ],
