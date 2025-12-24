@@ -5,13 +5,7 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 
 `note`: This local copy can be out of date
 
-`Linux`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
-
-`WARNING`: Extension version `3.0.0+` has breaking changes. To upgrade version `2.0.0+` projects see section:
-
-   -  [Upgrading Older Projects](https://github.com/boocs/unreal-clangd?tab=readme-ov-file#upgrading-older-projects)
-
-   - local: [Upgrading Older Projects](#upgrading-older-projects)
+`Linux/Mac`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
 
 
 `note`: Ubuntu users: I started getting this error message wtih 5.6.0 but it still seemed to work.
@@ -62,6 +56,15 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 
 ## Updates
 
+## Version 3.3.1
+- Fixed restore not working in 3.3.0 by stripping any comments
+- Pasting something in headers won't trigger the remove #include feature as often
+    - Triggers on pasted text that starts with "#include" and when first '\n' is last char in pasted text
+- Fixed bug where code-workspace is modified, without clangd settings, and it fails to backup instead of falling back to restore
+- npm audit fix
+- Now also creates a .clang-format for Full Source Unreal during installation. see [Upgrading Older Projects](#upgrading-older-projects)
+- `unreal-clangd.gui.errorToWarning` Can move errors to warning to prevent gui popup. Can currently move only one: `no-rsp-path-match` . Feel free to recommend more annoying errors
+
 ### Version 3.2.1
 - Backs up workspace cfg on startup or on cfg change (if conditions met)
     - Backup is saved in `.vscode/unreal-clangd/.code-workspace.backup`
@@ -72,7 +75,7 @@ This is a local copy of the front facing Docs located here: https://github.com/b
 - Added Links to `Unreal 5.7` requirements
 - Fixed system include, for Linux, that gets put in .clangd file (for Unreal 5.7)
 
-### Version 3.1.0
+#### Version 3.1.0
 - Fixed bug in Unreal source file support
 
 #### Version 3.0.2
@@ -147,24 +150,26 @@ This extension:
 
 
 ### How This Extension works
-
-1. clangd's native fast code completion doesn't support macros*
+ 
+1. clangd's native fast code completion uses compile_commands.json, but it doesn't support macro completions*
    - `clangd does support macro code completion though!`
       - Macros show up when you directly #include a header file in your code (any macro in the header directly/indirectly will show up)
-      - Macros show up when you indirectly #include a header with preparse include
+      - Macros show up when you indirectly #include a header with preparse includes
 
-2. Unreal uses preparse include to include `a lot` of headers for code completion
+2. Unreal uses `preparse includes` to include both non-macro and macro completions by including `a lot` of headers.
    - This is slow and doesn't use clangd's native fast code completion
+   
 
 3. How does the extension create fast completion loading?
-   - Uses native clangd completions for non macro symbols
-   - Remove all headers from preparse include list (this can be toggled - see below)
-   - Add a curated list of headers that contain popular macros and add those to preparse includes
-      - This shortened preparse include list causes code completion to load fast 
+   - Uses native clangd completions for almost all non-macro symbols
+      - `You can also add more headers with the file`: (.vscode/unreal-clangd/addCompletions.h)
+   - Extension removes all headers from default 'preparse includes' list (`this can be toggled` - see below)
+   - Adds a curated list of headers that contain popular macros and adds those to preparse includes
+      - This shortened 'preparse include' list causes code completion to load fast 
       - `This list can be modified by the user to add/subtract headers with macros!` (.vscode/unreal-clangd/addMacroCompletions.h)
       - `Remember` that clangd will add macros to completion when you #include a header directly in your code
          - So you might not need to modify this list at all!
-4. This extension allows you to toggle between macro modes
+4. This extension allows you to `toggle between macro modes`
    - You can toggle between curated macro list(fast) and almost all macro list(slow)
    - The toggle button is on the bottom right (on info bar)
       - `UC⚡`(fast) = Non-macro completions and the most popular macro completions
@@ -348,13 +353,19 @@ This README has pretty good documentation but if you want to see extended docume
 
 ## Upgrading Older Projects
 
+`note:` When reading through thing below just remember you can always uninstall extension project and reinstall if you're unsure how to do things.
+
+### Extension Version 3.3.0+
+
+If using Full Source Unreal Engine - Run extension command: `Create Unreal Source support` (doesn't overwrite) to add .clang-format file to Unreal parent directory
+
 ### Extension Version 3.2.1+ 
 
-Upgrading Unreal 5.6 or older projects to `Linux Unreal 5.7`
+`Linux/Mac` : Upgrading Unreal 5.6 or older projects to `Unreal 5.7`
 
-If you don't wan't to reinstall extension project you can just replace this line in both .clangd files(project/unreal)
+If you don't wan't to reinstall extension project you can just replace this line in both `.clangd` files(project/unreal)
 
-``` json
+``` yaml
  # Replace line below with line below it
  # - -stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1
    - -isystem/include/c++/v1

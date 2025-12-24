@@ -19,6 +19,7 @@ import { createUnrealClangdProject } from './createProject';
 import { doesWorkspaceFileContainClangdSettings, hasClangdProjectFiles} from '../shared';
 
 
+
 export const BACKUP_WORKSPACE_RELATIVE_PATH = [FOLDER_NAME_VSCODE, FOLDER_NAME_UNREAL_CLANGD, ".code-workspace.backup"];
 
 type ClangdSettingsState = 'backup' | 'restore' | 'skip';
@@ -256,7 +257,8 @@ async function restoreCodeWorkspaceFileSettings() {
     
     let json: WorkspaceSettingsFile;
     try {
-        json = JSON.parse(backupFileString) as unknown as WorkspaceSettingsFile;
+        const { default: stripJsonComments } = await import('strip-json-comments');
+        json = JSON.parse(stripJsonComments(backupFileString)) as unknown as WorkspaceSettingsFile;
     } catch (error) {
         logException(error);
         return;

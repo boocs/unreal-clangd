@@ -1,11 +1,4 @@
 
-
-// add errorToWarning section/setting - add No RSP path match found for * to the section
-// Make sure restore doesn't happen when creating project or creating partial project
-    // go through each forceBackup and see if we shouldn't restore fallback
-	// add another option forceBackupRestoreFallback???
-
-
 // Wait for 3.4.0+?
 // ***** Remove prompt to remove invalid entry in Unreal compile_commands.json
 

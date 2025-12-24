@@ -1,7 +1,8 @@
 # Change Log
 
-## [3.3.0] 2025-12-14
+## [3.3.1] 2025-12-14
 ### Fix
+- Fixed restore not working in 3.3.0 by using strip-json-comments
 - Pasting something in headers won't trigger the remove #include feature as often
     - Triggers on pasted text that starts with "#include" and when first '\n' is last char in pasted text
 - Fixed bug where code-workspace is modified, without clangd settings, and it fails to backup instead of falling back to restore
