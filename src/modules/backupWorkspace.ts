@@ -11,7 +11,7 @@ import * as nodePath from 'node:path';
 import {setTimeout} from 'node:timers/promises';
 
 import { getProjectWorkspaceFolder } from '../libs/ueHelpers';
-import { askToReloadVSCode, doesUriExist, getFileString, getWorkspaceFileUri, logException, setProjectSetting, writeFile } from '../libs/projHelpers';
+import { doesUriExist, getFileString, getWorkspaceFileUri, logException, setProjectSetting, writeFile } from '../libs/projHelpers';
 import { FOLDER_NAME_UNREAL_CLANGD, FOLDER_NAME_VSCODE } from '../libs/consts';
 
 import * as console from '../libs/console';
@@ -84,11 +84,19 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
     const backupUri = vscode.Uri.joinPath(projWorkspaceFolder.uri, ...BACKUP_WORKSPACE_RELATIVE_PATH);
     const backupExists = await doesUriExist(backupUri);
 
-    const choices = backupExists ? ["Restore from backup", "Run project installation"] : ["Run project installation"];
+    // Auto-restore from backup if it exists, without prompting
+    if (backupExists) {
+        console.log("Backup exists - auto-restoring workspace settings...");
+        await restoreCodeWorkspaceFileSettings();
+        return;
+    }
+
+    // Only prompt if no backup exists
+    const choices = ["Run project installation"];
     const result = await vscode.window.showWarningMessage(
-        msg ?? "Clangd settings not found in your Workspace File! This could be because you refreshed your project without using this extension's `Update compile commands file (refresh project)` command, which prevents this from happening.",
+        msg ?? "Clangd settings not found in your Workspace File! No backup found to restore from.",
         {
-            detail: backupExists ? "Restore: Restore from backup file\nInstall: Run partial install for starter settings" : "Install: Run partial install for starter settings",
+            detail: "Install: Run partial install for starter settings",
             modal: true
         },
         ...choices
@@ -98,16 +106,7 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
         return;
     }
 
-    if (result === "Restore from backup") {
-        const result = await previewBackupFileAndPrompt(backupUri);
-
-        if(result === "Proceed"){
-            await restoreCodeWorkspaceFileSettings();
-        }
-    } 
-    else {
-        await createUnrealClangdProject();
-    }
+    await createUnrealClangdProject();
 }
 
 /**
@@ -193,38 +192,7 @@ function getSortedWorkspaceFolders() {
 }
 
 
-async function previewBackupFileAndPrompt(backupUri: vscode.Uri) {
-    // Step 1: Open and display the known file
-    const document = await vscode.workspace.openTextDocument(backupUri);
-    await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.One }); // Opens in the main editor column
-
-    // Step 2: Show confirmation dialog after file is displayed
-    const message = 'Review the file underneath. Do you want to proceed with restore?';
-    const detail = "Use mouse scroll wheel or 'Page Up/Down' buttons to navagate.";
-
-    let selection;
-    for (;;) {
-        selection = await vscode.window.showInformationMessage(message, {detail: detail, modal: true}, "Page Up", "Page Down", 'Proceed');
-        if(selection !== "Page Down" && selection !== "Page Up") {
-            break;
-        }
-
-        if(selection === "Page Down") {
-            await vscode.commands.executeCommand("scrollPageDown");
-        }
-        else {
-            await vscode.commands.executeCommand("scrollPageUp");
-        }
-    }
-
-    // close preview backup file 
-    const currentDocument = vscode.window.activeTextEditor?.document;
-    if(currentDocument && nodePath.relative(backupUri.fsPath, currentDocument.fileName) === ""){
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    }
-
-    return selection;
-}
+// previewBackupFileAndPrompt removed - now auto-restoring without preview
 
 async function restoreCodeWorkspaceFileSettings() {
 
@@ -270,7 +238,8 @@ async function restoreCodeWorkspaceFileSettings() {
 
     await restoreFromJson(json);
 
-    await askToReloadVSCode();
+    // Removed askToReloadVSCode() - settings apply without reload
+    console.log("Workspace settings restored successfully (no reload needed)");
     
     return;
 }

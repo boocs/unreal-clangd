@@ -28,7 +28,7 @@ import {getUnrealClangdCompileCommandsUri, getValidatedCompileCommandObjectsFrom
 
 import * as console from './libs/console';
 import { getIsUpdateCompileCommands, setIsUpdateCompileCommands, updateCompileCommands } from './modules/updateCompileCommands';
-import { askAndRunUpdateCompileCommands, doesWorkspaceFileContainClangdSettings, getIntellisenseType, getIsFinishingCreation, getIsUninstalling, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,   getUnrealSemanticVersionString,  hasClangdProjectFiles, restartClangd } from './shared';
+import { doesWorkspaceFileContainClangdSettings, getIntellisenseType, getIsFinishingCreation, getIsUninstalling, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,   getUnrealSemanticVersionString,  hasClangdProjectFiles, restartClangd } from './shared';
 import { createUnrealClangdProject, createUnrealSourceProject, finishCreationAfterUpdateCompileCommands } from './modules/createProject';
 import { uninstallExtensionProject } from './modules/uninstallExtProj';
 import { startAddFilesToUESourceCompileCommands } from './modules/addToUeSourceCC';
@@ -627,11 +627,11 @@ async function setupNewSourceFileDetection(projectWorkspace: vscode.WorkspaceFol
 
 				newSourceFilesDetectionFileWatcher.onDidCreate(async () => {
 
-					const detailMessage = getIntellisenseType() === "Native" ? "Would you like to update compile command/Intellisense files now?" : tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE;
-
+					// Auto-update compile commands without prompting
 					if (!hasCreatedNewSourceFile && !isUnrealBuildingRebuildingTask && !getIsUpdateCompileCommands()) {
 						hasCreatedNewSourceFile = true;
-						await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_NEW_SOURCE_FILE_DETECTED, detailMessage);
+						console.log("New source file detected - auto-updating compile commands...");
+						await updateCompileCommands();
 						hasCreatedNewSourceFile = false;
 					}
 
