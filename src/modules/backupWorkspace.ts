@@ -12,11 +12,11 @@ import {setTimeout} from 'node:timers/promises';
 
 import { getProjectWorkspaceFolder } from '../libs/ueHelpers';
 import { askToReloadVSCode, doesUriExist, getFileString, getWorkspaceFileUri, logException, setProjectSetting, writeFile } from '../libs/projHelpers';
-import { FOLDER_NAME_UNREAL_CLANGD, FOLDER_NAME_VSCODE } from '../libs/consts';
+import { FOLDER_NAME_UNREAL_CLANGD, FOLDER_NAME_VSCODE, VSCODE_CMD_RELOAD_WINDOW } from '../libs/consts';
 
 import * as console from '../libs/console';
 import { createUnrealClangdProject } from './createProject';
-import { doesWorkspaceFileContainClangdSettings, hasClangdProjectFiles} from '../shared';
+import { doesWorkspaceFileContainClangdSettings, getAutomationIsSet, hasClangdProjectFiles, restartClangd} from '../shared';
 
 
 
@@ -84,8 +84,10 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
     const backupUri = vscode.Uri.joinPath(projWorkspaceFolder.uri, ...BACKUP_WORKSPACE_RELATIVE_PATH);
     const backupExists = await doesUriExist(backupUri);
 
+    const isAlwaysRestoreFromBackup = backupExists && getAutomationIsSet("restore-from-backup-when-available", projWorkspaceFolder);
+
     const choices = backupExists ? ["Restore from backup", "Run project installation"] : ["Run project installation"];
-    const result = await vscode.window.showWarningMessage(
+    const result = isAlwaysRestoreFromBackup ? "Restore from backup" : await vscode.window.showWarningMessage(
         msg ?? "Clangd settings not found in your Workspace File! This could be because you refreshed your project without using this extension's `Update compile commands file (refresh project)` command, which prevents this from happening.",
         {
             detail: backupExists ? "Restore: Restore from backup file\nInstall: Run partial install for starter settings" : "Install: Run partial install for starter settings",
@@ -99,10 +101,12 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
     }
 
     if (result === "Restore from backup") {
-        const result = await previewBackupFileAndPrompt(backupUri);
+        const result = isAlwaysRestoreFromBackup ? "Proceed" : await previewBackupFileAndPrompt(backupUri);
 
         if(result === "Proceed"){
             await restoreCodeWorkspaceFileSettings();
+            
+            if(isAlwaysRestoreFromBackup) {console.warn("Restored from backup automatically because of value set in unreal-clangd.automation!");}
         }
     } 
     else {
@@ -270,7 +274,22 @@ async function restoreCodeWorkspaceFileSettings() {
 
     await restoreFromJson(json);
 
-    await askToReloadVSCode();
+    if(getAutomationIsSet("restore-from-backup-when-available", projectWorkspace)){
+
+        if(getAutomationIsSet("dont-auto-reload-on-restore", projectWorkspace)) {
+            await restartClangd(); 
+            console.warn("Restored from backup without reloading VSCode. This might cause problems. Restart VSCode if something feels off!");
+        }
+        else {
+           await vscode.commands.executeCommand(VSCODE_CMD_RELOAD_WINDOW);
+        }
+        
+        
+    }
+    else {
+        await askToReloadVSCode();
+    }
+    
     
     return;
 }

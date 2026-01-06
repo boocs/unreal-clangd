@@ -1,5 +1,5 @@
 
-// Wait for 3.4.0+?
+// Wait for 3.5.0+?
 // ***** Remove prompt to remove invalid entry in Unreal compile_commands.json
 
 // better unreal source support
@@ -28,7 +28,7 @@ import {getUnrealClangdCompileCommandsUri, getValidatedCompileCommandObjectsFrom
 
 import * as console from './libs/console';
 import { getIsUpdateCompileCommands, setIsUpdateCompileCommands, updateCompileCommands } from './modules/updateCompileCommands';
-import { askAndRunUpdateCompileCommands, doesWorkspaceFileContainClangdSettings, getIntellisenseType, getIsFinishingCreation, getIsUninstalling, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,   getUnrealSemanticVersionString,  hasClangdProjectFiles, restartClangd } from './shared';
+import { askAndRunUpdateCompileCommands, doesWorkspaceFileContainClangdSettings, getAutomationIsSet, getIntellisenseType, getIsFinishingCreation, getIsUninstalling, getIsWantingToCreate,  getSourceFilesFirstChildFolderNames,   getUnrealSemanticVersionString,  hasClangdProjectFiles, restartClangd } from './shared';
 import { createUnrealClangdProject, createUnrealSourceProject, finishCreationAfterUpdateCompileCommands } from './modules/createProject';
 import { uninstallExtensionProject } from './modules/uninstallExtProj';
 import { startAddFilesToUESourceCompileCommands } from './modules/addToUeSourceCC';
@@ -148,23 +148,23 @@ export async function activate(context: vscode.ExtensionContext) {
 		if(getIntellisenseType() === "Native"){
 			console.log("Running Native onDidEndTask.");
 
-			if(e.execution.task.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME){
-			
-				
+			if (e.execution.task.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME) {
+
+
 				const isWantingToCreate = getIsWantingToCreate();
-				if(isWantingToCreate){
+				if (isWantingToCreate) {
 					await onEndUpdateCompileCommands('creating');
 					await finishCreationAfterUpdateCompileCommands();
 				}
 				else {
 					await onEndUpdateCompileCommands('updateCC');
 				}
-	
+
 				console.log(`End Task: ${consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME}`);
 				return;
 			}
 
-			if ([" Rebuild", " Build"].some((value: string) => {return e.execution.task.name.includes(value);})) {
+			if ([" Rebuild", " Build"].some((value: string) => { return e.execution.task.name.includes(value); })) {
 				isUnrealBuildingRebuildingTask = false;
 				await restartClangd();
 			}
@@ -224,21 +224,22 @@ export async function activate(context: vscode.ExtensionContext) {
 		if(getIntellisenseType() === "Native"){
 			console.log("Running Native onDidEndTask.");
 
-			if(e.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME){
-			
+			if (e.name === consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME) {
+
 				const isWantingToCreate = getIsWantingToCreate();
-				if(isWantingToCreate){
+				if (isWantingToCreate) {
 					await onEndUpdateCompileCommands('creating');
 					await finishCreationAfterUpdateCompileCommands();
 				}
 				else {
 					await onEndUpdateCompileCommands('updateCC');
 				}
-	
+
 				console.log(`End Task: ${consts.UPDATE_COMPILE_COMMANDS_DBGCFG_NAME}`);
 				return;
 			}
-			if ([" Rebuild", " Build"].some((value: string) => {return e.name.includes(value);})) {
+
+			if ([" Rebuild", " Build"].some((value: string) => { return e.name.includes(value); })) {
 				await restartClangd();
 			}
 
@@ -584,8 +585,9 @@ async function onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent | und
 		return;
 	}
 	const unrealClangdConfig = getUnrealClangdConfig(projectWorkspace);
+	const isClangdProject = await hasClangdProjectFiles(projectWorkspace);
 	const isCreateProject = unrealClangdConfig.get<boolean>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
-	if(getRestoreState() !== "JustRestored" && !isCreateProject && !getIsFinishingCreation() && !getIsUninstalling()){
+	if(isClangdProject && getRestoreState() !== "JustRestored" && !isCreateProject && !getIsFinishingCreation() && !getIsUninstalling() && !getIsUpdateCompileCommands()){
 		await backupOnConfigChange();
 	}
 	
@@ -624,17 +626,26 @@ async function setupNewSourceFileDetection(projectWorkspace: vscode.WorkspaceFol
 				console.log(tr.SETTING_UP_NEW_SRC_FILE_DETECT);
 
 				newSourceFilesDetectionFileWatcher = vscode.workspace.createFileSystemWatcher(newSourceFilesRelativePattern, false, true, true);
-
+				 
 				newSourceFilesDetectionFileWatcher.onDidCreate(async () => {
-
-					const detailMessage = getIntellisenseType() === "Native" ? "Would you like to update compile command/Intellisense files now?" : tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE;
-
-					if (!hasCreatedNewSourceFile && !isUnrealBuildingRebuildingTask && !getIsUpdateCompileCommands()) {
-						hasCreatedNewSourceFile = true;
-						await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_NEW_SOURCE_FILE_DETECTED, detailMessage);
-						hasCreatedNewSourceFile = false;
+					
+					const isAutomateCC = getAutomationIsSet("update-CC-on-new-source", projectWorkspace);
+					
+					if (isAutomateCC) {
+						if(!isUnrealBuildingRebuildingTask && !getIsUpdateCompileCommands()){
+							await vscode.commands.executeCommand(consts.EXT_CMD_UPDATE_COMPILE_COMMANDS);
+							console.warn("Ran update compile commands automatically because of unreal-clangd.automation setting value");
+						}
 					}
+					else {
+						const detailMessage = getIntellisenseType() === "Native" ? "Would you like to update compile command/Intellisense files now?" : tr.QST_WOULD_YOU_LIKE_TO_UPDATE_INTELLISENSE;
 
+						if (!hasCreatedNewSourceFile && !isUnrealBuildingRebuildingTask && !getIsUpdateCompileCommands()) {
+							hasCreatedNewSourceFile = true;
+							await askAndRunUpdateCompileCommands([tr.BTTN_YES, tr.BTTN_NO], [tr.BTTN_YES], tr.WARN_NEW_SOURCE_FILE_DETECTED, detailMessage);
+							hasCreatedNewSourceFile = false;
+						}
+					}
 				});
 			}
 		}

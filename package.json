@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Creates clangd project for Unreal 5.2+",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -229,7 +229,7 @@
             "type": "boolean",
             "default": true,
             "markdownDescription": "(`Windows only`) On startup, a info window pops if you haven't set your custom system includes.",
-            "scope": "machine-overridable"
+            "scope": "resource"
           },
           "unreal-clangd.gui.errorToWarning": {
             "type": "array",
@@ -241,6 +241,22 @@
             },
             "default": [],
             "description": "Array of error names to downgrade from error to warning.",
+            "uniqueItems": true,
+            "scope": "resource"
+          },
+          "unreal-clangd.automation": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "update-CC-on-new-source",
+                "restore-from-backup-when-available",
+                "dont-auto-reload-on-restore"
+              ]
+            },
+            "default": [],
+            "markdownDescription": "Array of convenience options to do automatically.\n\n- `update-CC-on-new-source` - Don't ask to update compile commands when adding new source files\n- `restore-from-back-when-available` - WARNING: Only set if you're in control of your environment! This will auto restore from back and reload VSCode\n- `dont-reload-on-restore` - Prevents auto-reload on restore. Restart VSCode if you notice any issues after enabling ",
+            "uniqueItems": true,
             "scope": "resource"
           }
         }

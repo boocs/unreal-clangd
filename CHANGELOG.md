@@ -1,5 +1,16 @@
 # Change Log
 
+## [3.4.0] 2026-1-6  
+- Thanks @jacklp for the idea and code
+### Added
+- `unreal-clangd.automation` : Automation settings for convenience 
+    - auto run update compile commands when new source files dectected
+    - auto restore from backup if backup file available
+    - don't auto reload vscode window after restore (restart vscode if this causes problems)
+### Fixed
+- Running update compile commands would double call backupOrRestore when config file changed
+- Running backup on config change when not a project
+
 ## [3.3.1] 2025-12-14
 ### Fix
 - Fixed restore not working in 3.3.0 by using strip-json-comments

@@ -121,17 +121,94 @@ export function getSourceFilesFirstChildFolderNames(baseUri: vscode.Uri | undefi
     return matchedPathStrings;
 }
 
-// Todo: This doesn't seem right? What doesn't seem right? Bad comment...
+
+/**
+ * Gets a setting value from the 'unreal-clangd' configuration section.
+ * 
+ * **Parameters:**
+ * - **setting** (`string`): Any setting from the 'unreal-clangd' config.
+ * - **scope** (`vscode.ConfigurationScope | null`, optional): Scope for the 'unreal-clangd' config.
+ *   Omit for default workspace scope, or pass `null` for global settings.
+ * - **defaultValue** (`T`): If the value is undefined, return this instead.
+ * 
+ * @returns The setting value (or defaultValue/undefined).
+ */
+export function getCfgValue<T>(setting: string, scope: vscode.ConfigurationScope | null | undefined, defaultValue: T  ): T
+/**
+ * Get a config setting value from a provided configuration object.
+ * 
+ * **Parameters:**
+ * - **setting** (`string`): Any setting from the config.
+ * - **config** (`vscode.WorkspaceConfiguration`): The config to get the setting value from.
+ * - **defaultValue** (`T`): If the value is undefined, return this instead.
+ * 
+ * @returns The setting value (or defaultValue/undefined).
+ */
+// eslint-disable-next-line @typescript-eslint/unified-signatures
+export function getCfgValue<T>(setting: string, config: vscode.WorkspaceConfiguration, defaultValue: T ): T
+/**
+ * Get a config setting value from a provided configuration object.
+ * 
+ * **Parameters:**
+ * - **setting** (`string`): Any setting from the config.
+ * - **config** (`vscode.WorkspaceConfiguration`): The config to get the setting value from.
+ * 
+ * @returns The setting value (or defaultValue/undefined).
+ */
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-export function getCfgValue<T>(config: vscode.WorkspaceConfiguration, setting: string): T | undefined {
-    const value = config.get<T>(setting);
+export function getCfgValue<T>(setting: string, config: vscode.WorkspaceConfiguration): T | undefined
+/**
+ * Gets a setting value from the 'unreal-clangd' configuration section.
+ * 
+ * **Parameters:**
+ * - **setting** (`string`): Any setting from the 'unreal-clangd' config.
+ * - **scope** (`vscode.ConfigurationScope | null`, optional): Scope for the 'unreal-clangd' config.
+ *   Omit for default workspace scope, or pass `null` for global settings.
+ * 
+ * @returns The setting value (or defaultValue/undefined).
+ */
+// eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-unnecessary-type-parameters
+export function getCfgValue<T>(setting: string, scope: vscode.ConfigurationScope | null | undefined): T | undefined
+export function getCfgValue<T>(setting: string, configOrScope?: vscode.WorkspaceConfiguration | vscode.ConfigurationScope | null, defaultValue?: T ): T | undefined {
+    
+    const isConfig = (configOrScope: vscode.WorkspaceConfiguration | vscode.ConfigurationScope | null | undefined): configOrScope is vscode.WorkspaceConfiguration => {
+        return configOrScope !== undefined && configOrScope !== null && 'inspect' in configOrScope;
+    };
+
+    let config: vscode.WorkspaceConfiguration;
+
+    if(isConfig(configOrScope)) {
+        config = configOrScope;
+    }
+    else {
+        config = vscode.workspace.getConfiguration(consts.CONFIG_SECTION_UNREAL_CLANGD, configOrScope);
+    }
+
+    let value: T | undefined;
+
+    if (defaultValue !== undefined) {
+        value = config.get<T>(setting, defaultValue);
+    } else {
+        value = config.get<T>(setting);
+    }
 
     if (value === undefined) {
         console.error(`${tr.ERR_FINDING_CFG_SETTING} ${setting}`);
-        return value;
     }
 
     return value;
+}
+
+
+export function getAutomationIsSet(automationSetting: "update-CC-on-new-source" | "restore-from-backup-when-available" | "dont-auto-reload-on-restore", scope: vscode.ConfigurationScope | null | undefined) {
+    const automationValue = getCfgValue<string[]>("automation", scope, []);
+    
+    if(!Array.isArray(automationValue)){
+        console.error("Automation value should be an array!"); 
+        return false;
+    }
+
+    return  automationValue.includes(automationSetting);
 }
 
 

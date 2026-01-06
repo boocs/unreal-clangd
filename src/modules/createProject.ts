@@ -158,12 +158,7 @@ export async function finishCreationAfterUpdateCompileCommands() {
         return;
     }
 
-    const isClangTidyEnabled: boolean | undefined = getCfgValue(ueClangdConfig, consts.settingNames.unrealClangd.settings['creation.tidy']);
-
-    if (isClangTidyEnabled === undefined) {
-        console.error(tr.COULDNT_GET_CLANG_TIDY_SETTINGS);
-        return;
-    }
+    const isClangTidyEnabled: boolean | undefined = getCfgValue(consts.settingNames.unrealClangd.settings['creation.tidy'], ueClangdConfig, false);
 
     let forcedCompiler: vscode.Uri | undefined = undefined;
     if (process.platform === "win32") {
@@ -209,7 +204,7 @@ export async function finishCreationAfterUpdateCompileCommands() {
     
     //await startSetPreParseIncludesInClangdCfg();
 
-    const creationOverwriteSetting = getCfgValue<string>(ueClangdConfig, consts.settingNames.unrealClangd.settings['creation.overwrite']);
+    const creationOverwriteSetting = getCfgValue<string>(consts.settingNames.unrealClangd.settings['creation.overwrite'], ueClangdConfig);
     if(creationOverwriteSetting !== consts.OVERWRITE_PARTIAL){
         await onSetCustomSystemIncludes(); 
         //await startConvertUnrealCompileCommands(); // Do we need this if they're going to reload? This will also run on reload/restart...
@@ -597,9 +592,12 @@ function getCmdLineString(creationCmdLine: CreationCmdLineArgs): string {
 function setCreationCmdLineDynamicValues(workspaceFolder: vscode.WorkspaceFolder, creationCmdLine: CreationCmdLineArgs, uePlatform: UnrealPlatform) {
     const ueClangdConfig = projH.getUnrealClangdConfig(workspaceFolder);
 
+    const overwriteValue = getCfgValue<string>(consts.settingNames.unrealClangd.settings['creation.overwrite'], ueClangdConfig);
+    const createTidyValue = getCfgValue<boolean>(consts.settingNames.unrealClangd.settings['creation.tidy'], ueClangdConfig, false);
+
     creationCmdLine.set('platform', uePlatform);
-    creationCmdLine.set('overwrite', getCfgValue<string>(ueClangdConfig, consts.settingNames.unrealClangd.settings['creation.overwrite']));
-    creationCmdLine.set('tidy', getCfgValue<boolean>(ueClangdConfig, consts.settingNames.unrealClangd.settings['creation.tidy']));
+    creationCmdLine.set('overwrite', overwriteValue);
+    creationCmdLine.set('tidy', createTidyValue);
 }
 
 
