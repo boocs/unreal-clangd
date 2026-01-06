@@ -5,12 +5,7 @@
    - `Beta` 3.4.0 version in [releases](https://github.com/boocs/unreal-clangd/releases)
    - Future section (below)
 
-This is a local copy of the front facing Docs located here: https://github.com/boocs/unreal-clangd
-
-`note`: This local copy can be out of date
-
 `Linux/Mac`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
-
 
 `note`: Ubuntu users: I started getting this error message wtih 5.6.0 but it still seemed to work.
    - Unable to watch for file changes. Please follow the instructions link to resolve this issue.
