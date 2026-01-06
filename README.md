@@ -1,6 +1,13 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
+`Added:` 
+   - `Beta` 3.4.0 version in [releases](https://github.com/boocs/unreal-clangd/releases)
+   - Future section (below)
+
+This is a local copy of the front facing Docs located here: https://github.com/boocs/unreal-clangd
+
+`note`: This local copy can be out of date
 
 `Linux/Mac`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
 
@@ -14,6 +21,7 @@
 
 # Table of Contents
 - [Updates](#updates)
+- [Future](#future)
 - [Important info](#important-info)
 - [Info](#info)
    - [How This Extension works](#how-this-extension-works)
@@ -52,6 +60,15 @@
 ---
 
 ## Updates
+
+## Version 3.4.0 Jan 6th (beta in releases)
+- Thanks @jacklp for the idea and code
+- Added `unreal-clangd.automation` : Automation settings for convenience 
+    - auto run update compile commands when new source files dectected
+    - auto restore from backup if backup file available
+    - don't auto reload vscode window after restore (restart vscode if this causes problems)
+- Fixed Running update compile commands would double call backupOrRestore when config file changed
+- Fixed Running backup on config change when not a project
 
 ## Version 3.3.1
 - Fixed restore not working in 3.3.0 by stripping any comments
@@ -108,6 +125,27 @@
 - See `Changelog` for more info:
    - web: [Changelog](https://github.com/boocs/unreal-clangd/blob/v3/CHANGELOG.md) 
    - local: [Changelog](CHANGELOG.md)
+
+[Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
+
+## Future
+
+#### Currently Working On
+- Non-destructive response files(rsp)
+   - Try build rsp files as option
+   - Retry using GenerateClangDatabase again?
+- Start of 'non-spaghetti' rewrite
+   - with tests? ...
+   - Just the start. Will take awhile
+
+#### Experimental
+- Cache all macros and add to code completion
+   - Remove slow preparse includes?
+
+#### Other
+- Remake existing reflection function parameter extension
+   - instead of snippets add as code completion
+   - add a way of adding, removing, fixing entries
 
 [Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
@@ -771,4 +809,3 @@ When downloading source code you won't be able to compile until you run:
 
 ---
 ---
-
