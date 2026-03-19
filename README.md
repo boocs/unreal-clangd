@@ -2,10 +2,14 @@
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
 `Added:` 
-   - `Beta` 3.4.0 version in [releases](https://github.com/boocs/unreal-clangd/releases)
-   - Future section (below)
+  -  3.4.1 version (March 18, 2026)
 
-`Linux/Mac`: Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
+`Updated:`
+  - Future section (below)
+  - Updrading older projects
+
+`Linux/Mac`: 
+- Unreal 5.7 - See [upgrading older projects](#upgrading-older-projects) section on upgrading from Unreal 5.6 without extension project reinstall
 
 `note`: Ubuntu users: I started getting this error message wtih 5.6.0 but it still seemed to work.
    - Unable to watch for file changes. Please follow the instructions link to resolve this issue.
@@ -56,7 +60,18 @@
 
 ## Updates
 
-## Version 3.4.0 Jan 6th (beta in releases)
+## Version 3.4.1 March 18th, 2026
+- Thanks @dawnfan for Create Rsp matchers idea and algo help
+- Create Rsp matchers should now successfully create all the matchers it should
+    - `Upgrading old projects`: Delete the compile_commands.json file in `Unreal Parent directory/.vscode/unreal-clangd`
+- `Linux`: Stardard C++ Library now forces the Unreal version, in .clangd, during installation
+    - `Upgrading older projects`: Erase the .clangd file in `Unreal Parent directory` and run `Create Unreal Clangd Project` and choose overwrite
+- `Linux`: Added setting creation.LinuxTarget. default: x86_64 , other setting: aarch64
+- npm audit
+    - still issues with testing/mocha
+    - this is a dev issue and shouldn't affect users
+
+### Version 3.4.0 Jan 6th, 2026
 - Thanks @jacklp for the idea and code
 - Added `unreal-clangd.automation` : Automation settings for convenience 
     - auto run update compile commands when new source files dectected
@@ -65,7 +80,7 @@
 - Fixed Running update compile commands would double call backupOrRestore when config file changed
 - Fixed Running backup on config change when not a project
 
-## Version 3.3.1
+### Version 3.3.1
 - Fixed restore not working in 3.3.0 by stripping any comments
 - Pasting something in headers won't trigger the remove #include feature as often
     - Triggers on pasted text that starts with "#include" and when first '\n' is last char in pasted text
@@ -126,12 +141,18 @@
 ## Future
 
 #### Currently Working On
+- Using AI was able to get alot done on the rewrite...
+   - Just the start. Full rewrite will take awhile
+   - Will try to release this Native rsp code along with some rewrites soonish
+      - Ext lib rewrites
+      - Added XState lib
+      - Added neverthrow lib
+
+#### Next in line
+- Retry using GenerateClangDatabase again
 - Non-destructive response files(rsp)
-   - Try build rsp files as option
-   - Retry using GenerateClangDatabase again?
-- Start of 'non-spaghetti' rewrite
-   - with tests? ...
-   - Just the start. Will take awhile
+- Try Build rsp files as option
+   
 
 #### Experimental
 - Cache all macros and add to code completion
@@ -383,38 +404,16 @@ This README has pretty good documentation but if you want to see extended docume
 
 ## Upgrading Older Projects
 
-`note:` When reading through thing below just remember you can always uninstall extension project and reinstall if you're unsure how to do things.
+`note:` When reading through things below just remember you can always uninstall extension project and reinstall if you're unsure how to do it.
 
-### Extension Version 3.3.0+
 
-If using Full Source Unreal Engine - Run extension command: `Create Unreal Source support` (doesn't overwrite) to add .clang-format file to Unreal parent directory
+### Extension 3.4.1
+`All OS`:
+  - Delete the compile_commands.json file in `Unreal Parent directory/.vscode/unreal-clangd`
 
-### Extension Version 3.2.1+ 
+`Linux`:
+  - Erase the .clangd file in `Unreal Parent directory` and run `Create Unreal Clangd Project` and choose overwrite
 
-`Linux/Mac` : Upgrading Unreal 5.6 or older projects to `Unreal 5.7`
-
-If you don't wan't to reinstall extension project you can just replace this line in both `.clangd` files(project/unreal)
-
-``` yaml
- # Replace line below with line below it
- # - -stdlib++-isystemThirdParty/Unix/LibCxx/include/c++/v1
-   - -isystem/include/c++/v1
-```
----
-
-### Extension Version 3
-
-`Upgrading extension version 2 projects`
-
-Extension 3.0.0 has `breaking` changes. To upgrade version 2 projects:
-
-1. Run the extension's command: `Uninstall Unreal Clangd Project` on your project.
-
-2. In your Unreal directory:
-   - delete file: `.clangd`
-   - delete file: `.vscode/unreal-clangd/comple_commands.json`
-
-3. With extension version 3.0.0+: Run the extension's command: `Create Unreal clangd project (cfg files and settings)`
 
 [Back to Top](#unreal-52-clangd-extension-for-vscode-intellisense)
 
