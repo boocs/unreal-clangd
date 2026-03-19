@@ -1,13 +1,18 @@
 
+// native: pull errors to disable in .clangd from build rsp files?
+
 // Wait for 3.5.0+?
 // ***** Remove prompt to remove invalid entry in Unreal compile_commands.json
 
+
+// Waiting for 4.*
 // better unreal source support
-	// retry -mode=GenerateClangDatabase - this only support full source UE so maybe not...
-	// Maybe full source unreal engine soure files only?
+	// retry -mode=GenerateClangDatabase 
 // Create an algo to create a custom rsp file for completionHelper.cpp?
 	// create a 2nd rsp file that lets you add customizations to the first
 	// create algo runs on update compile command
+// Use experimental clang-format in full-source Extras/clang-format
+// Change Create Unreal Source Support command to a force commands that overwrites files
 
 import * as vscode from 'vscode';
 import * as tr from './tr/text';
@@ -59,9 +64,6 @@ let _isTogglingMacroCompletions = false;
 
 
 export async function activate(context: vscode.ExtensionContext) {
-
-	//await backupCodeWorkspace();
-	//await restoreCodeWorkspaceFileSettings();
 	
 	if (!await ueHelpers.isUnrealProject()) {
 		console.log(tr.NOT_UNREAL_PROJECT);

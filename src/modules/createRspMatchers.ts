@@ -6,144 +6,173 @@ import * as consts from '../libs/consts';
 import { getRspMatchers, setRspMatchers } from '../shared';
 
 import * as console from '../libs/console';
-import { getProjectCompileCommandsName, logException } from '../libs/projHelpers';
+import { getProjectCompileCommandsName } from '../libs/projHelpers';
+
 
 export async function startCreateRspMatchers() {
-
-    await vscode.window.withProgress({location: vscode.ProgressLocation.Notification, cancellable:false, title: "Creating Rsp matchers for Unreal Source support..."},
-            async (progress) => {
-                await createRspMatchers(progress);
-            }
-        );
+    await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, cancellable: true, title: "Creating Rsp matchers for Unreal Source support..." },
+        async (progress, token) => {
+            await createRspMatchers(progress, token);
+        }
+    );
 }
 
 async function createRspMatchers(progress: vscode.Progress<{
-    message?: string;
-    increment?: number;
-}>) {
-    console.log("Creating Unreal Source rsp matchers...");
-    
-    const ueUri = ueHelpers.getUnrealUri();
+            message?: string;
+            increment?: number;
+        }>, 
+            token: vscode.CancellationToken
+    ){
+    console.log("[createRspMatchers] Creating Unreal Source rsp matchers...");
 
-    if(!ueUri) {
+    const ueUri = ueHelpers.getUnrealUri();
+    if (!ueUri) { return; }
+
+    if (getRspMatchers().length !== 0) {
         return;
     }
-    
-    if(getRspMatchers().length === 0){
-        
-        const ccName = await getProjectCompileCommandsName({withExtension: false});
-        if(!ccName) {return [];}
 
-        const projUri = ueHelpers.getProjectWorkspaceFolder()?.uri;
-        if(!projUri) {return;}
+    const ccName = await getProjectCompileCommandsName({ withExtension: false });
+    if (!ccName) { return; }
 
-        //const ccFolderName = "compileCommands_Default";
-        const relPat = new vscode.RelativePattern(vscode.Uri.joinPath(projUri, consts.FOLDER_NAME_VSCODE, ccName), "*.rsp");
-        const ueRspFiles = await vscode.workspace.findFiles(relPat);
-        const re = /(?<=Source"\s?\r?\n[/-]I\s?").*(?=")/;
-        
-        const extractions = await extractRegexFromUris(ueRspFiles, re);
+    const projUri = ueHelpers.getProjectWorkspaceFolder()?.uri;
+    if (!projUri) { return; }
 
-        const increment = 100 / extractions.length;
+    const relPat = new vscode.RelativePattern(
+        vscode.Uri.joinPath(projUri, consts.FOLDER_NAME_VSCODE, ccName), "*.rsp"
+    );
+    const ueRspFiles = await vscode.workspace.findFiles(relPat);
 
-        for (const extraction of extractions) {
-            progress.report({increment:increment});
+    const results = await findRspMatchers(ueRspFiles, ueUri, progress, token);
 
-            const rspName = nodePath.parse(extraction.uri.fsPath).name.split('.')[0];
-            const rspRelative = nodePath.relative(projUri.fsPath, extraction.uri.fsPath);
+    for (const result of results) {
+        if (!result.passed || !result.ueDirRelative) { continue; }
 
-            const ueDirPath = nodePath.dirname(extraction.extracted[0]);
-            const ueDirRelPath = nodePath.relative(ueUri.fsPath, ueDirPath);
-
-            if(ueDirRelPath.startsWith(".") || nodePath.isAbsolute(ueDirRelPath)){  // relative outside ue path or absolute path
-                continue;
-            }
-            
-            if(!ueDirRelPath.endsWith(rspName)){  // Pattern broke so don't add these
-                console.warn(extraction.uri.fsPath);
-                continue;
-            }
-
-            setRspMatchers({
-                rspRelative: rspRelative,
-                ueDirRelative: ueDirRelPath
-            });
-        }
-        
-        await addManualRspMatchers();
-
-        console.log(`UE Source rsp matchers created: ${getRspMatchers().length.toString()}`);
+        const rspRelative = nodePath.relative(projUri.fsPath, result.uri.fsPath);
+        setRspMatchers({ rspRelative, ueDirRelative: result.ueDirRelative });
     }
+
 }
 
 
-async function extractRegexFromUris(uris: vscode.Uri[], regex: RegExp) {
-    const extractions: { uri: vscode.Uri; extracted: RegExpMatchArray }[] = [];
+interface RspMatcherTestResult {
+    uri: vscode.Uri;
+    moduleName: string;
+    passed: boolean;
+    ueDirRelative?: string;
+    error?: string;
+}
 
-    for (const uri of uris) {
+
+function matchRspIncludes(
+    uri: vscode.Uri,
+    fileStr: string,
+    candidates: { name: string; source: string }[],
+    ueUri: vscode.Uri
+): RspMatcherTestResult {
+
+    const allIncludesRe = /(?<=[/-]I\s?").*(?=")/g;
+    const excludeRe = /[/\\]Intermediate(?:[/\\]|$)/;
+
+    const allMatches = fileStr.match(allIncludesRe) ?? [];
+    const filtered = allMatches.filter(m => !excludeRe.test(m));
+
+    for (const candidate of candidates) {
+
+        for (const match of filtered) {
+
+            // Removes ending folders like /Private , /Public , or Internal from path
+            // MARK: Any cases where this could fail? Yes Engine rsp files do so we added a different pattern to algo
+            const ueDirPath = nodePath.dirname(match);
+
+            const ueDirRelPath = nodePath.relative(ueUri.fsPath, ueDirPath);
+            
+            if (!ueDirRelPath.startsWith('.') && !nodePath.isAbsolute(ueDirRelPath) && ueDirRelPath.endsWith(candidate.name)) {   
+                return { uri, moduleName: candidate.name, passed: true, ueDirRelative: ueDirRelPath };
+            }
+        }
+    }
+
+    return { uri, moduleName: "", passed: false, ueDirRelative: "" };
+}
+
+
+export async function findRspMatchers(
+    rspUris: vscode.Uri[],
+    ueUri: vscode.Uri,
+    progress: vscode.Progress<{
+            message?: string;
+            increment?: number;
+        }>, 
+            token: vscode.CancellationToken
+): Promise<RspMatcherTestResult[]> {
+
+    const definitionsRe = /^(?:\/FI|-include)\s?"([^"]*Definitions[^"]*\.h)"/gm;
+    const results: RspMatcherTestResult[] = [];
+
+    const increment = rspUris.length > 0 ? 100 / rspUris.length : 100;
+    for (const uri of rspUris) {
+        if(token.isCancellationRequested){
+            console.warn("Cancelled Unreal Source support setup!");
+            return [];
+        }
+
+        progress.report({ increment });
+        const rspName = nodePath.parse(uri.fsPath).name;
+
         let fileStr: string;
         try {
-            fileStr =  new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
-        } catch (error) {
-            logException(error);
-            console.error(`Error reading file ${uri.fsPath}`);
+            fileStr = new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
+        } catch (_error) {
+            console.log(`[findRspMatchers] Failed to read: ${uri.fsPath}`);
+            results.push({ uri, moduleName: rspName.split('.')[0], passed: false, error: 'Failed to read file' });
             continue;
         }
 
-        const result = fileStr.match(regex);
+        // --- Resolve module name (4-source priorities) ---
+        definitionsRe.lastIndex = 0;
+        const defMatch = definitionsRe.exec(fileStr);
 
-        if(!result || result.length === 0){
-            console.error(uri.fsPath);
+        let fromDir = '';
+        let fromDef = '';
+        if (defMatch) {
+            const defPath = defMatch[1];
+            fromDir = nodePath.basename(nodePath.dirname(defPath));
+            // e.g. "Definitions.XmlParser.123456" -> "XmlParser"
+            const defStem = nodePath.parse(defPath).name;
+            fromDef = defStem
+                .split('.')
+                .slice(1)                        // remove "Definitions"
+                .filter(p => !/^\d+$/.test(p))  // remove numeric-only segments
+                .join('.');
+        } else {
+            console.log(`[findRspMatchers] No Definitions include found in: ${rspName}`);
+        }
+        const fromRsp = rspName.split('.')[0];  // fallback 1 — always available
+
+        const multiDir = fromDir.split(/(?=[A-Z])/).join(nodePath.sep);
+
+        const candidates = [
+            { name: fromDir, source: 'dir' },
+            { name: multiDir, source: 'multiDir'},
+            { name: fromRsp === fromDir ? '' : fromRsp, source: 'rsp' },
+            { name: fromDef === fromDir ? '' : fromDef, source: 'def' },
+        ].filter(c => c.name);
+
+        const found = matchRspIncludes(uri, fileStr, candidates, ueUri);
+        if (found.passed) {
+            results.push(found);
             continue;
         }
-                
-        extractions.push({uri: uri, extracted: result});
+        else {
+            console.warn(`(Probably fine) Didn't find rsp matcher for: ${found.uri.fsPath}`);
+        }
+        
     }
-    
-    return extractions;
-}
 
+    const passed = results.filter(r => r.passed).length;
+    console.log(`[findRspMatchers] ${String(passed)} / ${String(rspUris.length)} RSP files passed  (non-equal numbers probably not error)`);
 
-async function addManualRspMatchers() {
-	//e:\Program Files\Epic Games\UE_5.4\.vscode\compileCommands_Default\UATHelper.547.rsp
-	//e:\Program Files\Epic Games\UE_5.4\.vscode\compileCommands_Default\TreeMap.717.rsp
-
-    const ccName = await getProjectCompileCommandsName({withExtension: false});
-    if(!ccName) {return [];}
-
-    const ueUri = ueHelpers.getUnrealUri();
-    if(!ueUri) {return;}
-
-    const treeMapRelPat = new vscode.RelativePattern(ueUri, `.vscode/${ccName}/TreeMap.*.rsp`);
-    const treeMapUri = await vscode.workspace.findFiles(treeMapRelPat, null, 1);
-    if(treeMapUri.length === 1) {
-        const treeMapFileName = nodePath.parse(treeMapUri[0].fsPath).base;
-        const treeMapRspRelative = [ ".vscode", ccName, treeMapFileName].join(nodePath.sep);
-	    const treeMapUeDir = ["Engine","Source","Developer","TreeMap"].join(nodePath.sep);
-        setRspMatchers({
-		    rspRelative: treeMapRspRelative,
-		    ueDirRelative: treeMapUeDir
-	    });
-    }
-    else {
-        console.error("Couldn't get TreeMap rsp file!");
-    }
-	
-    const uatHelperRelPat = new vscode.RelativePattern(ueUri, `.vscode/${ccName}/UATHelper.*.rsp`);
-    const uatHelperUri = await vscode.workspace.findFiles(uatHelperRelPat, null, 1);
-    if(uatHelperUri.length === 1) {
-        const uatHelperFileName = nodePath.parse(uatHelperUri[0].fsPath).base;
-        const uatHelperRspRelative = [ ".vscode", ccName, uatHelperFileName].join(nodePath.sep);
-	    const uatHelperUeDir = ["Engine","Source","Editor","UATHelper"].join(nodePath.sep);
-
-        setRspMatchers({
-		    rspRelative: uatHelperRspRelative,
-		    ueDirRelative: uatHelperUeDir
-	    });
-    }
-    else {
-        console.error("Couldn't get UATHelper rsp file!");
-    }
-	
-	return;
+    return results;
 }

@@ -1,5 +1,17 @@
 # Change Log
 
+## [3.4.1] 2026-3-18
+- Thanks @dawnfan for Create Rsp matchers idea and algo help
+### Fixed
+- Create Rsp matchers should now successfully create all the matchers it should
+    - `Upgrading old projects`: Delete the compile_commands.json file in `Unreal Parent directory/.vscode/unreal-clangd`
+- `Linux`: Stardard C++ Library now forces the Unreal version, in .clangd, during installation
+    - `Upgrading older projects`: Erase the .clangd file in `Unreal Parent directory` and run `Create Unreal Clangd Project` and choose overwrite
+- `Linux`: Added setting creation.LinuxTarget. default: x86_64 , other setting: aarch64
+- npm audit
+    - still issues with testing/mocha
+    - this is a dev issue and shouldn't affect users
+
 ## [3.4.0] 2026-1-6  
 - Thanks @jacklp for the idea and code
 ### Added

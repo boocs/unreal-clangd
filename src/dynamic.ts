@@ -7,7 +7,7 @@ import { getProjectWorkspaceFolder, UnrealVersion } from "./libs/ueHelpers";
 import { FILENAME_MACRO_COMP_HELPER } from "./modules/completionFiles";
 import { getFullPreparseIncludeLine } from "./modules/preParseIncludes";
 import { convertWindowsDriveLetterToUpper } from "./libs/projHelpers";
-import { getLinuxStdLibSystemInclude } from "./shared";
+import { getLinuxStdLibSystemInclude } from "./modules/linux";
 
 
 export function addDynamicDefaultSettingsToConfig(ueVersion: UnrealVersion | undefined, clangdExtYamlFiles: ExtensionYamlFiles, configSettings: AllDefaultSettings, clangdPath: string, compileCommandsDirUri: vscode.Uri | undefined): boolean {
@@ -82,9 +82,11 @@ export async function addPlatformSpecificChanges( intellisenseType: ExtensionInt
         case 'Linux':
 			if(intellisenseType === "Native"){
 
-				const sysInclude = await getLinuxStdLibSystemInclude();
-				
-				addToClangdAdd(clangdExtYamlFiles, sysInclude);
+				const sysInclude: string[] = await getLinuxStdLibSystemInclude();
+
+				for (const element of sysInclude) {
+					addToClangdAdd(clangdExtYamlFiles, element);
+				}
 				
 				for (const warning of consts.LINUX_COMPILER_FLAGS_TO_ADD) {
 					addToClangdAdd(clangdExtYamlFiles, warning);

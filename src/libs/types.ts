@@ -45,7 +45,8 @@ export type UeClangdSettingNamesKeys =
 	"completion.openCompletionHelperOnStartup" |
 	"completion.completionHelperInfoOnStartup" |
 	"utility.createProjectOnStartup" |
-	"systemIncludes.showMissingWarning";
+	"systemIncludes.showMissingWarning" |
+	"creation.LinuxTarget";
 	
 export type VSCodeSettingNamesKeys = 
 	"files.associations" | "editor.suggest.snippetsPreventQuickSuggestions" |

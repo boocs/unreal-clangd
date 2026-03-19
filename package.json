@@ -2,7 +2,7 @@
   "name": "unreal-clangd",
   "displayName": "Unreal Clangd",
   "description": "Creates clangd project for Unreal 5.2+",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -171,7 +171,17 @@
               "c++",
               "objective-c++"
             ],
-            "markdownDescription": "How files are treated on Mac(Apple). The setting is set in your .clangd file on creation of a project.",
+            "markdownDescription": "(`Mac`) How files are treated on Mac(Apple). The setting is set in your .clangd file on creation of a project.",
+            "scope": "resource"
+          },
+          "unreal-clangd.creation.LinuxTarget": {
+            "type": "string",
+            "default": "x86_64",
+            "enum": [
+              "x86_64",
+              "aarch64"
+            ],
+            "markdownDescription": "(`Linux`) Target architecture for Linux builds. `(currently Unreal 5.7+ only)`",
             "scope": "resource"
           },
           "unreal-clangd.creation.tidy": {

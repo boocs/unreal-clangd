@@ -413,19 +413,4 @@ export async function getUnrealSemanticVersionString(): Promise<string | undefin
 }
 
 
-/**
- * MARK: WARNING this may need to be fixed for arch linux and earlier non arch linux (5.1 or 5.2 uses V1?)
- * @returns 
- */
-export async function getLinuxStdLibSystemInclude(): Promise<string> {
-    const unrealVersion = await getUnrealSemanticVersion();
-    if (!unrealVersion) {
-        return consts.LINUX_STDLIB_SYS_INCLUDE_V3;
-    }
-    else if (unrealVersion.major === 4 || (unrealVersion.major === 5 && unrealVersion.minor < 7)) {
-        return consts.LINUX_STDLIB_SYS_INCLUDE_V2;
-    }
-    
-    return consts.LINUX_STDLIB_SYS_INCLUDE_V3;
-    
-}
+

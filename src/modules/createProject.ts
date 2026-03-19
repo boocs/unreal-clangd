@@ -12,7 +12,7 @@ import * as dyn from '../dynamic';
 import { type ClangdCfgFileSettings, type ClangdExtensionFile, ValidateUnrealResults, type YamlFile, type AllDefaultSettings, type CreationCmdLineArgs, type CreationCmdLineSettings, type CreationCmdLineValue, type ExtensionYamlFiles, type ProjectInfoVars, DiagnosticsFlags } from '../libs/types';
 import { UeClangdCreator } from '../ueClangdCreator';
 import { TextEncoder } from 'util';
-import { getCfgValue, getIntellisenseType, getIsWantingToCreate, getLinuxStdLibSystemInclude, getSourceFilesFirstChildFolderUris, setCompilerSetting, setIsFinishingCreation, setIsWantingToCreate } from '../shared';
+import { getCfgValue, getIntellisenseType, getIsWantingToCreate, getSourceFilesFirstChildFolderUris, setCompilerSetting, setIsFinishingCreation, setIsWantingToCreate } from '../shared';
 import { UnrealPlatform } from '../libs/indexTypes';
 import { updateCompileCommands } from "./updateCompileCommands";
 import { onSetCustomSystemIncludes } from './setCustomSysInc';
@@ -22,6 +22,7 @@ import { getFullPreparseIncludeLine } from './preParseIncludes';
 
 import * as console from '../libs/console';
 import { backupOrRestoreClangdSettingsInWorkspaceFile } from './backupWorkspace';
+import { getLinuxStdLibSystemInclude } from './linux';
 
 
 export async function startCreateUnrealClangdProject() {
