@@ -1,6 +1,17 @@
 
 # Unreal 5.2+ Clangd extension for VSCode (Intellisense+)
 
+`Unreal 5.8` (June 17, 2026)
+  - For precompile 5.8.0, Epic no longer includes Unreal Source response files
+  - This prevents the extension's basic Unreal source support for the precompiled version
+  - I'll have to check on fix for this...
+  - `Note:` This doesn't affect project code completion
+
+`Unreal clangd 4.0` (June 17, 2026)
+  - Still working on it!
+  
+---
+
 `Added:` 
   -  3.4.1 version (March 18, 2026)
 
