@@ -87,11 +87,12 @@ async function handleRestoreClangdSettings(projWorkspaceFolder: vscode.Workspace
     const isAlwaysRestoreFromBackup = backupExists && getAutomationIsSet("restore-from-backup-when-available", projWorkspaceFolder);
 
     const choices = backupExists ? ["Restore from backup", "Run project installation"] : ["Run project installation"];
+    const message = msg ?? "Clangd settings not found in your Workspace File! This could be because you refreshed your project without using this extension's `Update compile commands file (refresh project)` command, which prevents this from happening.";
+    const backupMessage = backupExists ? "Restore: Restore from backup file\nInstall: Run partial install for starter settings" : "Install: Run partial install for starter settings";
     const result = isAlwaysRestoreFromBackup ? "Restore from backup" : await vscode.window.showWarningMessage(
-        msg ?? "Clangd settings not found in your Workspace File! This could be because you refreshed your project without using this extension's `Update compile commands file (refresh project)` command, which prevents this from happening.",
+        `${message} ${backupMessage}`,
         {
-            detail: backupExists ? "Restore: Restore from backup file\nInstall: Run partial install for starter settings" : "Install: Run partial install for starter settings",
-            modal: true
+            modal: false
         },
         ...choices
     );
@@ -208,7 +209,7 @@ async function previewBackupFileAndPrompt(backupUri: vscode.Uri) {
 
     let selection;
     for (;;) {
-        selection = await vscode.window.showInformationMessage(message, {detail: detail, modal: true}, "Page Up", "Page Down", 'Proceed');
+        selection = await vscode.window.showInformationMessage(`${message} ${detail}`, {modal: false}, "Page Up", "Page Down", 'Proceed');
         if(selection !== "Page Down" && selection !== "Page Up") {
             break;
         }

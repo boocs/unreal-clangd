@@ -88,13 +88,7 @@ async function addFilesToUESourceCompileCommands(
     const rspPathRelative = getSourceFileRspPathMatch(ueUri, currentDocUri);
 
     if(!rspPathRelative){
-        if(isErrorNoRspPathMatch(projectUri)){
-            console.error(`No RSP path match found for: ${currentDocUri.fsPath}`);
-        }
-        else {
-            console.warn(`No RSP path match found for: ${currentDocUri.fsPath}`);
-        }
-        return;
+        console.error(`No RSP path match found for: ${currentDocUri.fsPath}`);
     }
 
     const ccName = await getProjectCompileCommandsName();
@@ -263,18 +257,3 @@ function findClosestUri(uris: vscode.Uri[], targetUri: vscode.Uri) {
 
     return closestUri;
 }
-
-
-function isErrorNoRspPathMatch(configScopeUri: vscode.Uri) {
-
-    const config = vscode.workspace.getConfiguration("unreal-clangd.gui", configScopeUri);
-
-    const value = config.get<string[]>("errorToWarning", []);
-
-    if(value.includes("no-rsp-path-match")){
-        return false;
-    }
-    
-    return true;
-}
-

@@ -214,8 +214,8 @@ export function getAutomationIsSet(automationSetting: "update-CC-on-new-source" 
 
 export async function askAndRunUpdateCompileCommands(buttons: string[], positiveConfirms: string[], message: string, detailMessage: string) {
     const result = await vscode.window.showInformationMessage(
-        message,
-        { modal: true, detail: detailMessage },
+        `${message} ${detailMessage}`,
+        { modal: false },
         ...buttons);
 
     if (result !== undefined && positiveConfirms.includes(result)) {

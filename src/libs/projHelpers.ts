@@ -430,10 +430,9 @@ export async function setProjectSetting(
 export async function askToReloadVSCode() {
 
     const result = await vscode.window.showInformationMessage(
-        "Extension needs to reload VSCode...",
+        "Extension needs to reload VSCode. Do you want to reload now?",
         {
-            detail: "Choose Cancel if you need to read logs, save files, etc.\n\nAfter cancelling, manually restart VSCode after your done.",
-            modal: true
+            modal: false
         },
         "Reload"
     );

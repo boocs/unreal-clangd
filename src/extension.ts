@@ -335,7 +335,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('unreal-clangd.toggleMacroCompletions', async () => {
 		if(_isTogglingMacroCompletions) {
-			await vscode.window.showInformationMessage(
+			await vscode.window.showWarningMessage(
 				"Clicked UC button too quickly."
 			);
 			return;

@@ -60,9 +60,11 @@ async function getCCWithValidResponseFiles(ccs: CompileCommand[]) {
         // Not a file so ask to delete or keep or delete all invalid
         if (choice !== "Remove All") {
             console.error(`Unreal CC invalid rsp path found! ${rspPath}`);
+            const message = `Invalid path found in Unreal's compile_commands.json!\n\nRSP Path:\n${rspPath}`;
+            const detail = "What would you like to do with this invalid path?";
             choice = await vscode.window.showErrorMessage(
-                `Invalid path found in Unreal's compile_commands.json!\n\nRSP Path:\n${rspPath}`,
-                { detail: "What would you like to do with this invalid path?", modal: true },
+                `${message} ${detail}`,
+                { modal: false },
                 "Remove", "Remove All", "Keep"
             );
         }

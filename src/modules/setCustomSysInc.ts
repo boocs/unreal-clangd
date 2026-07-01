@@ -43,9 +43,11 @@ export async function startCheckCustomSystemIncludes(): Promise<void> {
 	await iterateOverProjectFolders( checkCustomSystemIncludesInClangdCfg, async (result, uri) => {
 		if(result === 'okFail'){
 			
+            const message = `Custom System Includes not found!${EOL}${EOL}Run 'Set Custom System Includes' now?`;
+            const detail = "note: 'Cancel and never show again' = 'unreal-clangd.systemIncludes.showMissingWarning' and will be set in folder config: .vscode/settings.json";
 			const askRunCCResult = await vscode.window.showWarningMessage(
-				`Custom System Includes not found!${EOL}${EOL}Run 'Set Custom System Includes' now?`,
-				{detail: "note: 'Cancel and never show again' = 'unreal-clangd.systemIncludes.showMissingWarning' and will be set in folder config: .vscode/settings.json",modal: true},
+				`${message} ${detail}`,
+				{modal: false},
 				"Run", "Cancel and never show again"
 			);
 
@@ -201,28 +203,25 @@ async function getLibraryUris(): Promise<{ cppLibUri: vscode.Uri | undefined; sd
 async function confirmProceed(defaultLibraryPaths: string[]): Promise<boolean> {
     const libPaths = defaultLibraryPaths.join(EOL);
 
-    let choice: "See Documentation" | "Continue" | undefined = "See Documentation";
+    const message = `Would you like to change the library versions for this project?${EOL}${EOL}If you don't, clang ` +
+        "will auto choose the libraries below which might be incorrect for your Unreal version. " +
+        "These new settings will be set in your .clangd config files in the 'Add' section." +
+        `${EOL}${EOL}You can install different library versions using the Visual Studio Installer. See documentation.`;
+    const choice = await vscode.window.showInformationMessage(
+        `${message} ${libPaths}`,
+        {
+            modal: false
+        },
+        'See Documentation', 'Continue'
+    );
 
-    while (choice === 'See Documentation') {
-        choice = await vscode.window.showInformationMessage(
-            `Would you like to change the library versions for this project?${EOL}${EOL}If you don't, clang ` +
-            "will auto choose the libraries below which might be incorrect for your Unreal version. " +
-            "These new settings will be set in your .clangd config files in the 'Add' section." +
-            `${EOL}${EOL}You can install different library versions using the Visual Studio Installer. See documentation.`,
-            {
-                detail: libPaths,
-                modal: true
-            },
-            'See Documentation', 'Continue'
-        );
-
-        if(choice === "See Documentation") {
-            const url = vscode.Uri.parse(WEB_VISUAL_STUDIO_INSTALLER_DOCS, true);
-            vscode.env.openExternal(url);
-        }
+    if(choice === "See Documentation") {
+        const url = vscode.Uri.parse(WEB_VISUAL_STUDIO_INSTALLER_DOCS, true);
+        vscode.env.openExternal(url);
+        return false;
     }
 
-    return choice === 'Continue';
+    return true;
 }
 
 
@@ -485,9 +484,10 @@ async function saveCustomLibraryFlagsToClangdConfigs(clangdCfgFolderUri: vscode.
         // Show user any flags that will be replaced
         const replacedValues = getStartsWithFromSequence("getFiltered", SYS_INC_FILTER_PREFIXES, addValues);
         if (replacedValues.length > 0) {
+            const message = `The items below will be replaced in:${EOL}${clangdCfgUri.fsPath}${EOL}${EOL}Do you want to proceed? If the below settings look correct then feel free to 'Skip'.`;
             const choice = await vscode.window.showInformationMessage(
-                `The items below will be replaced in:${EOL}${clangdCfgUri.fsPath}${EOL}${EOL}Do you want to proceed? If the below settings look correct then feel free to 'Skip'.`,
-                { detail: replacedValues.join(EOL), modal: true }, "Skip", "OK"
+                `${message} ${replacedValues.join(EOL)}`,
+                { modal: false }, "Skip", "OK"
             );
 
             if (choice === undefined || choice === "Skip") { 

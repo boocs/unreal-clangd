@@ -57,7 +57,7 @@ export async function createUnrealClangdProject(): Promise<"ran" | "cancelled"> 
 
     const creatingProjectAfterReload = ueClangdConfig.get<string>(consts.settingNames.unrealClangd.settings['utility.createProjectOnStartup']);
     if (!creatingProjectAfterReload && !getIsWantingToCreate()) {
-        const installTypeResult = await vscode.window.showWarningMessage(tr.WHAT_INSTALL_TYPE, { detail: tr.FULL_OR_PARTIAL, modal: true }, tr.BTTN_FULL, tr.BTTN_PARTIAL);
+        const installTypeResult = await vscode.window.showWarningMessage(`${tr.WHAT_INSTALL_TYPE} ${tr.FULL_OR_PARTIAL}`, { modal: false }, tr.BTTN_FULL, tr.BTTN_PARTIAL);
 
         if (!installTypeResult) {
             return "cancelled";
@@ -138,7 +138,7 @@ export async function finishCreationAfterUpdateCompileCommands() {
     setCreationCmdLineDynamicValues(mainWorkspaceFolder, creationCmdLine, uePlatform);
     const cmdLineString = getCmdLineString(creationCmdLine);
 
-    const result = await vscode.window.showInformationMessage(tr.CREATION_CMD_LINE_OPTIONS, { detail: cmdLineString, modal: true }, tr.BTTN_OK);
+    const result = await vscode.window.showInformationMessage(`${tr.CREATION_CMD_LINE_OPTIONS} ${cmdLineString}`, { modal: true }, tr.BTTN_OK);
 
     if (result !== tr.BTTN_OK) {
         console.log(tr.ERR_NO_CREATION_ARGS_WERE_FOUND);
@@ -211,11 +211,12 @@ export async function finishCreationAfterUpdateCompileCommands() {
         //await startConvertUnrealCompileCommands(); // Do we need this if they're going to reload? This will also run on reload/restart...
     }
     
+    const message = `Unreal-clangd project creation successful!${EOL}${EOL}Choose 'Reload' to reload the VSCode window to finish creation.`;
+    const detailMessage = "If you need to read some log files then you can skip this. Restart VSCode after you're done reading logs.";
     const endCreationResult = await vscode.window.showInformationMessage(
-        `Unreal-clangd project creation successful!${EOL}${EOL}Choose 'Reload' to reload the VSCode window to finish creation.`,
+        `${message} ${detailMessage}`,
         {
-            detail: "If you need to read some log files then you can skip this. Restart VSCode after you're done reading logs.",
-            modal: true
+            modal: false
         },
         "Reload", "Skip"
     );
@@ -291,8 +292,8 @@ async function handleExtensionConflict(workspaceFolder: vscode.WorkspaceFolder):
     }
 
     const results = await vscode.window.showInformationMessage(
-        tr.INFO_SET_CONFLICT_SETTINGS,
-        {modal:true, detail: tr.WARN_CONFLICT_SETTINGS_RELOAD},
+        `${tr.INFO_SET_CONFLICT_SETTINGS} ${tr.WARN_CONFLICT_SETTINGS_RELOAD}`,
+        {modal:false},
         tr.BTTN_OK);
 
     if(results !== tr.BTTN_OK){
@@ -411,10 +412,10 @@ function isValidUnrealVersion(userVersion: ueH.UnrealVersion | null, extensionVe
 }
 
 
-async function isOkWithWarning(text: string, detail: string, modal = true): Promise<boolean> {
+async function isOkWithWarning(text: string, detail: string, modal = false): Promise<boolean> {
     const results = await vscode.window.showWarningMessage(
-        text,
-        { detail: detail, modal: modal },
+        `${text} ${detail}`,
+        { modal: modal },
         tr.BTTN_CONTINUE);
 
     if (results === tr.BTTN_CONTINUE) {
@@ -665,7 +666,7 @@ export async function createUnrealSourceProject() {
     const ueUri = ueH.getUnrealUri();
 
     if(!ueUri){
-        await vscode.window.showInformationMessage("Error creating Unreal Source project!");
+        await vscode.window.showErrorMessage("Error creating Unreal Source project!");
         return;
     }
 
@@ -679,7 +680,7 @@ export async function createUnrealSourceProject() {
     const ueVersion = await ueH.getUnrealVersion();
     if(!ueVersion){
         console.error("Couldn't get ueVersion!");
-        await vscode.window.showInformationMessage("Error creating Unreal Source project!");
+        await vscode.window.showErrorMessage("Error creating Unreal Source project!");
         return;
     }
     
@@ -751,8 +752,6 @@ export async function createUnrealSourceProject() {
 
     await vscode.window.showInformationMessage(
         `Installation successful!${EOL}${EOL}Finished creating Unreal Source project`,
-        { modal: true },
-        tr.BTTN_OK
     );
 }
 
@@ -761,7 +760,7 @@ async function getAddForClangdCfg(platform: NodeJS.Platform, ueVersion: ueH.Unre
     const cppVersion = dyn.getCppVersion(ueVersion);
     if(!cppVersion){
         console.error("Couldn't get cppVersion for Add in .clangd(UE Source)!");
-        await vscode.window.showInformationMessage("Error creating Unreal Source project!");
+        await vscode.window.showErrorMessage("Error creating Unreal Source project!");
         return;
     }
 

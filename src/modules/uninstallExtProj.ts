@@ -39,10 +39,9 @@ export async function uninstallExtensionProject() {
         const detailString = getDeleteFilesWindowDetailString(projectWorkspaceFolder, ueClangdProjectFiles);
 
         const deleteFilesResult = await vscode.window.showInformationMessage(
-            tr.THESE_WILL_BE_DELETED_PROCEED,
+            `${tr.THESE_WILL_BE_DELETED_PROCEED} ${detailString}`,
             {
-                detail: detailString,
-                modal: true
+                modal: false
             },
             tr.BTTN_DEL, tr.BTTN_TO_TRASH, tr.BTTN_SKIP
         );
@@ -184,10 +183,9 @@ async function askDeleteSettings(extensionName: string, settingNames: Record<str
     }
 
     return await vscode.window.showInformationMessage(
-        `${tr.left_SETTINGS_WILL_BE_DELETED_ext_name}${extensionName} ${tr.right_ext_name_SETTINGS_WILL_BE_DELETED}`,
+        `${tr.left_SETTINGS_WILL_BE_DELETED_ext_name}${extensionName} ${tr.right_ext_name_SETTINGS_WILL_BE_DELETED} ${settingNamesString}`,
         {
-            detail: settingNamesString,
-            modal: true
+            modal: false
         },
         tr.BTTN_ALL, tr.BTTN_PROJECT, tr.BTTN_SKIP
     );
